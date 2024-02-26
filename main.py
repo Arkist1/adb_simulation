@@ -9,55 +9,49 @@ from pygame.locals import (
     QUIT,
 )
 import agent
+import globals
 
 pygame.init()
 
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 700
-
-root2 = 2**1 / 2
-
-screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
+screen = pygame.display.set_mode([globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT])
 
 running = True
 
-pos = [250, 250]
-
 clock = pygame.time.Clock()
-
-player = agent.Agent()
+player = agent.Agent(screen=screen)
 
 while running:
+    dt = clock.tick(globals.FPS) / 1000
     # check for closing window
     for event in pygame.event.get():  # event loop
         if event.type == pygame.QUIT:
             running = False
 
     keys = pygame.key.get_pressed()
-    keypresses = {pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d}
+    mouse_keys = pygame.mouse.get_pressed()
+    mouse_pos = pygame.mouse.get_pos()
 
     inputs = {
         "up": keys[pygame.K_w],
         "down": keys[pygame.K_s],
         "left": keys[pygame.K_a],
         "right": keys[pygame.K_d],
+        "shoot": mouse_keys[0],
+        "block": mouse_keys[2],
+        "mouse_pos": mouse_pos,
+        "dt": dt,
     }
 
-    mov = player.get_move(inputs)
-    print(mov)
-    pos[0] += mov[0]
-    pos[1] += mov[1]
+    player.get_move(inputs)
 
     ################ Drawing cycle ################
 
     screen.fill((255, 255, 255))  # white background
-    pygame.draw.circle(screen, (0, 0, 255), pos, 75)  # circle
+    pygame.draw.circle(screen, (0, 0, 255), player.position, 75)  # circle
 
     # Flip the display
 
     pygame.display.flip()
-
-    clock.tick(60) / 1000
 
 
 # Done! Time to quit.

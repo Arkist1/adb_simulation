@@ -1,7 +1,14 @@
+import pygame
+import globals
+
+
 class Agent:
-    def __init__(self) -> None:
+    def __init__(self, screen, start_pos=[250, 250]) -> None:
         self.type = "human"
-        self.root2 = 2 ** (1 / 2)
+        self.speed = 300
+        self.position = pygame.Vector2(start_pos)
+        self.hitbox = 75
+        self.screen = screen
 
     def get_move(self, inputs):
         if self.type == "human":
@@ -13,27 +20,26 @@ class Agent:
     def get_random_move():
         return
 
-    def get_human_move(self, inputs):
-        delta = [0, 0]  # [x, y]
+    def get_human_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
+        s = self.speed * inputs["dt"]
+        vec = pygame.Vector2(0, 0)
 
-        print(inputs)
         if inputs["up"]:
-            delta[1] -= 5
-
+            vec.y -= s
         if inputs["down"]:
-            delta[1] += 5
-
+            vec.y += s
         if inputs["left"]:
-            delta[0] -= 5
-
+            vec.x -= s
         if inputs["right"]:
-            delta[0] += 5
+            vec.x += s
 
-        print(delta)
-        if delta[0] != 0 and delta[1] != 0:
-            print([delta[0] / self.root2, delta[1] / self.root2])
-            delta = [delta[0] / self.root2, delta[1] / self.root2]
+        if vec.x != 0 and vec.y != 0:
+            vec.x /= globals.SQR2
+            vec.y /= globals.SQR2
 
-        print(delta)
+        self.position = self.position + vec
 
-        return delta
+    def draw(self):
+        pygame.draw.circle(
+            self.screen, (0, 0, 255), self.position, self.hitbox
+        )  # circle
