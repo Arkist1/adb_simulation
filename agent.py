@@ -3,8 +3,8 @@ import globals
 
 
 class Agent:
-    def __init__(self, screen, start_pos=[250, 250]) -> None:
-        self.type = "human"
+    def __init__(self, screen, start_pos=[250, 250], type="human") -> None:
+        self.type = type
         self.speed = 300
         self.position = pygame.Vector2(start_pos)
         self.hitbox = 75
