@@ -53,6 +53,11 @@ while running:
     for player in players:
         player.get_move(inputs)
 
+    # needs to be implemented
+    # for bullet in bullets:
+    #     bullet.move()
+    #     bullet.draw(screen)
+
     ################ Drawing cycle ################
     screen.fill((255, 255, 255))  # white background
 
