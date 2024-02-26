@@ -31,7 +31,6 @@ class Enemy(Agent):
 
         sdelta = sum([abs(player_delta[0]), abs(player_delta[1])])
         ratio = [abs(player_delta[0]) / sdelta, abs(player_delta[1]) / sdelta]
-        print(ratio)
 
         self.position -= pygame.Vector2(
             ratio[0] * self.speed * inputs["dt"] * neg_x,

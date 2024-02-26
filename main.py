@@ -1,13 +1,4 @@
 import pygame
-from pygame.locals import (
-    K_UP,
-    K_DOWN,
-    K_LEFT,
-    K_RIGHT,
-    K_ESCAPE,
-    KEYDOWN,
-    QUIT,
-)
 import agent
 import globals
 import enemy
@@ -48,11 +39,12 @@ while running:
         "dt": dt,
     }
 
-    if cd < 0:
-        cd -= dt
+    if cd >= 0:
+        cd -= clock.get_time()
 
-    if keys[pygame.K_b] and cd <= 0:
-        cd = clock.get_time() + 1000
+    if keys[pygame.K_b] and clock.get_time() - cd > 0:
+        print("dabhsdas")
+        cd = 1000
         enemies.append(enemy.Enemy(screen=screen, type="enemy"))
 
     for en in enemies:
