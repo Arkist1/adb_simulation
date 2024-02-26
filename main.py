@@ -1,97 +1,74 @@
 import pygame
-from objects import HitboxType, Object
+import agent
+import globals
+import enemy
 
-SQR2 = 1.41421356237
-
-# pygame setup
 pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
+
+screen = pygame.display.set_mode([globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT])
+
 running = True
-dt = 0
 
-def calculate_movement(keys: dict[str, bool], spd: float, dt: float) -> pygame.Vector2:
-    s = spd * dt
-    vec = pygame.Vector2(0, 0)
-    
-    if keys["up"]:
-        vec.y -= s
-    if keys["down"]:
-        vec.y += s
-    if keys["left"]:
-        vec.x -= s
-    if keys["right"]:
-        vec.x += s
-        
-    if vec.x != 0 and vec.y != 0:
-        vec.x /= SQR2
-        vec.y /= SQR2
-    
-    return vec
-        
+players = [agent.Agent(screen=screen)]
+enemies = []
+boxes = []
+bullets = []
 
-class Player:
-    def __init__(self, size: float, sw: int, sh: int, x: float, y: float) -> None:
-        self.size = size
-        self.sw = sw
-        self.sh = sh
-        self.x = x
-        self.y = y
-        
-    def get_vec(self) -> pygame.Vector2:
-        if self.x < self.size:
-            self.x = self.size
-        if self.y < self.size:
-            self.y = self.size
-        if self.x > self.sw - self.size:
-            self.x = self.sw - self.size
-        if self.y > self.sh - self.size:
-            self.y = self.sh - self.size
-            
-        return pygame.Vector2(self.x, self.y)    
-        
-player = Object(screen.get_width(), screen.get_height(), screen.get_width() / 2 - 80, screen.get_height() / 2, 40)#pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
-player2 = Object(screen.get_width(), screen.get_height(), screen.get_width() / 2 + 80, screen.get_height() / 2, 40)
+clock = pygame.time.Clock()
 
+cd = 0
 while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
-    for event in pygame.event.get():
+    dt = clock.tick(globals.FPS) / 1000
+    # check for closing window
+    for event in pygame.event.get():  # event loop
         if event.type == pygame.QUIT:
             running = False
 
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("gray")
-
-    
-    
-    spd = 300
-
     keys = pygame.key.get_pressed()
-    
-    if keys[pygame.K_LSHIFT]:
-        spd = 600
-    
-    ks = {
+    mouse_keys = pygame.mouse.get_pressed()
+    mouse_pos = pygame.mouse.get_pos()
+
+    inputs = {
         "up": keys[pygame.K_w],
         "down": keys[pygame.K_s],
         "left": keys[pygame.K_a],
-        "right": keys[pygame.K_d]
+        "right": keys[pygame.K_d],
+        "shoot": mouse_keys[0],
+        "block": mouse_keys[2],
+        "mouse_pos": mouse_pos,
+        "dt": dt,
     }
-    velocity = calculate_movement(ks, spd, dt)
-    
-    player.move(velocity, [player2])
-    #player2.move(velocity, [player])
-    
-    pygame.draw.circle(screen, "blue", player.pos, 40)
-    pygame.draw.circle(screen, "red", player2.pos, 40)
 
-    # flip() the display to put your work on screen
+    if cd >= 0:
+        cd -= clock.get_time()
+
+    if keys[pygame.K_b] and clock.get_time() - cd > 0:
+        print("dabhsdas")
+        cd = 1000
+        enemies.append(enemy.Enemy(screen=screen, type="enemy"))
+
+    for en in enemies:
+        en.get_move(inputs={"nearest_player": players[0], "dt": dt})
+
+    for player in players:
+        player.get_move(inputs)
+
+    ################ Drawing cycle ################
+    screen.fill((255, 255, 255))  # white background
+
+    for en in enemies:
+        en.draw()
+
+    for player in players:
+        player.draw()
+
+    players[0].draw()
+
+    # Flip the display
+
     pygame.display.flip()
 
-    # limits FPS to 60
-    # dt is delta time in seconds since last frame, used for framerate-
-    # independent physics.
-    dt = clock.tick(60) / 1000
+
+# Done! Time to quit.
 
 pygame.quit()
