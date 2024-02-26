@@ -1,15 +1,22 @@
 import pygame
 import globals
+import objects
 
 
-class Agent:
+class Agent(objects.Object):
     def __init__(
-        self, screen, start_pos=[250, 250], type="human", colour=(0, 0, 255)
+        self,
+        screen,
+        start_pos=[250, 250],
+        type="human",
+        colour=(0, 0, 255),
+        size=75,
+        speed=300,
     ) -> None:
+        super().__init__(pos_x=start_pos[0], pos_y=start_pos[1], width=size)
         self.type = type
-        self.speed = 300
-        self.position = pygame.Vector2(start_pos)
-        self.hitbox = 75
+        self.speed = speed
+        self.hitbox = size
         self.colour = colour
         self.screen = screen
 
@@ -40,9 +47,7 @@ class Agent:
             vec.x /= globals.SQR2
             vec.y /= globals.SQR2
 
-        self.position = self.position + vec
+        self.pos = self.pos + vec
 
     def draw(self):
-        pygame.draw.circle(
-            self.screen, self.colour, self.position, self.hitbox
-        )  # circle
+        pygame.draw.circle(self.screen, self.colour, self.pos, self.hitbox)  # circle

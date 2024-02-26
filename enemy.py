@@ -19,7 +19,7 @@ class Enemy(Agent):
             self.get_enemy_move(inputs)
 
     def get_enemy_move(self, inputs):
-        player_delta = self.position - inputs["nearest_player"].position
+        player_delta = self.pos - inputs["nearest_player"].pos
 
         neg_x = 1
         neg_y = 1
@@ -32,7 +32,7 @@ class Enemy(Agent):
         sdelta = sum([abs(player_delta[0]), abs(player_delta[1])])
         ratio = [abs(player_delta[0]) / sdelta, abs(player_delta[1]) / sdelta]
 
-        self.position -= pygame.Vector2(
+        self.pos -= pygame.Vector2(
             ratio[0] * self.speed * inputs["dt"] * neg_x,
             ratio[1] * self.speed * inputs["dt"] * neg_y,
         )
