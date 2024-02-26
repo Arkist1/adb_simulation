@@ -25,6 +25,8 @@ pos = [250, 250]
 
 clock = pygame.time.Clock()
 
+player = agent.Agent()
+
 while running:
     # check for closing window
     for event in pygame.event.get():  # event loop
@@ -40,6 +42,8 @@ while running:
         "left": pygame.K_a,
         "right": pygame.K_d,
     }
+
+    player.get_move()
 
     ################ Drawing cycle ################
 
