@@ -14,17 +14,17 @@ class Agent(objects.Object):
         speed=300,
     ) -> None:
         super().__init__(pos_x=start_pos[0], pos_y=start_pos[1], width=size)
-        self.type = type
+        self.controltype = type
         self.speed = speed
         self.hitbox = size
         self.colour = colour
         self.screen = screen
 
     def get_move(self, inputs):
-        if self.type == "human":
+        if self.controltype == "human":
             return self.get_human_move(inputs)
 
-        if self.type == "random":
+        if self.controltype == "random":
             return self.get_random_move()
 
     def get_random_move():

@@ -88,9 +88,10 @@ class Object:
 
     def hitbox_others(self, velocity: pygame.Vector2, objects: list[any], temp):
         for object in objects:
-            if self.type == HitboxType.CIRCLE:
+            print(object.type)
+            if object.type == HitboxType.CIRCLE:
                 if object.hitbox_circle(self):
-                    if object.type == HitboxType.CIRCLE:
+                    if self.type == HitboxType.CIRCLE:
                         velocity_length = math.sqrt(velocity.x**2 + velocity.y**2)
                         if velocity_length == 0:
                             self.pos = temp
@@ -103,8 +104,7 @@ class Object:
                     else:
                         self.pos = temp
                     return True
-            else:
-                if object.hitbox_rectangle(self):
-                    self.pos = temp
-                    return True
+            elif object.hitbox_rectangle(self):
+                self.pos = temp
+                return True
         return False
