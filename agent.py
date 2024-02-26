@@ -1,9 +1,9 @@
 class Agent:
     def __init__(self) -> None:
         self.type = "human"
-        self.root2 = 2**1 / 2
+        self.root2 = 2 ** (1 / 2)
 
-    def move(self, inputs):
+    def get_move(self, inputs):
         if self.type == "human":
             return self.get_human_move(inputs)
 
@@ -15,23 +15,25 @@ class Agent:
 
     def get_human_move(self, inputs):
         delta = [0, 0]  # [x, y]
-        total_inputs = 0
+
+        print(inputs)
         if inputs["up"]:
-            total_inputs += 1
             delta[1] -= 5
 
         if inputs["down"]:
-            total_inputs += 1
             delta[1] += 5
 
         if inputs["left"]:
-            total_inputs += 1
             delta[0] -= 5
 
         if inputs["right"]:
-            total_inputs += 1
             delta[0] += 5
 
-        if total_inputs > 2:
-            delta[0] = delta[0] / self.root2
-            delta[1] = delta[1] / self.root2
+        print(delta)
+        if delta[0] != 0 and delta[1] != 0:
+            print([delta[0] / self.root2, delta[1] / self.root2])
+            delta = [delta[0] / self.root2, delta[1] / self.root2]
+
+        print(delta)
+
+        return delta

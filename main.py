@@ -37,13 +37,16 @@ while running:
     keypresses = {pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d}
 
     inputs = {
-        "up": pygame.K_w,
-        "down": pygame.K_s,
-        "left": pygame.K_a,
-        "right": pygame.K_d,
+        "up": keys[pygame.K_w],
+        "down": keys[pygame.K_s],
+        "left": keys[pygame.K_a],
+        "right": keys[pygame.K_d],
     }
 
-    player.get_move()
+    mov = player.get_move(inputs)
+    print(mov)
+    pos[0] += mov[0]
+    pos[1] += mov[1]
 
     ################ Drawing cycle ################
 
