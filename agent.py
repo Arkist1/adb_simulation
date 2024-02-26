@@ -1,7 +1,7 @@
 import pygame
 import globals
 import objects
-
+import gun
 
 class Agent(objects.Object):
     def __init__(
@@ -19,6 +19,7 @@ class Agent(objects.Object):
         self.hitbox = size
         self.colour = colour
         self.screen = screen
+        self.weapon = gun.Gun()
 
     def get_move(self, inputs):
         if self.controltype == "human":
@@ -49,5 +50,11 @@ class Agent(objects.Object):
 
         self.pos = self.pos + vec
 
+        # bullets don't move
+        if inputs["shoot"]:
+            self.weapon.fire()
+
     def draw(self):
         pygame.draw.circle(self.screen, self.colour, self.pos, self.hitbox)  # circle
+        self.weapon.position = self.pos
+        self.weapon.draw(self.screen)
