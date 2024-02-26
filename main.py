@@ -10,6 +10,7 @@ from pygame.locals import (
 )
 import agent
 import globals
+import enemy
 
 pygame.init()
 
@@ -17,9 +18,14 @@ screen = pygame.display.set_mode([globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT])
 
 running = True
 
-clock = pygame.time.Clock()
-player = agent.Agent(screen=screen)
+players = [agent.Agent(screen=screen)]
+enemies = []
+boxes = []
+bullets = []
 
+clock = pygame.time.Clock()
+
+cd = 0
 while running:
     dt = clock.tick(globals.FPS) / 1000
     # check for closing window
@@ -42,12 +48,29 @@ while running:
         "dt": dt,
     }
 
-    player.get_move(inputs)
+    if cd < 0:
+        cd -= dt
+
+    if keys[pygame.K_b] and cd <= 0:
+        cd = clock.get_time() + 1000
+        enemies.append(enemy.Enemy(screen=screen, type="enemy"))
+
+    for en in enemies:
+        en.get_move(inputs={"nearest_player": players[0], "dt": dt})
+
+    for player in players:
+        player.get_move(inputs)
 
     ################ Drawing cycle ################
-
     screen.fill((255, 255, 255))  # white background
-    pygame.draw.circle(screen, (0, 0, 255), player.position, 75)  # circle
+
+    for en in enemies:
+        en.draw()
+
+    for player in players:
+        player.draw()
+
+    players[0].draw()
 
     # Flip the display
 

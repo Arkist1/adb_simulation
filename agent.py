@@ -3,11 +3,14 @@ import globals
 
 
 class Agent:
-    def __init__(self, screen, start_pos=[250, 250], type="human") -> None:
+    def __init__(
+        self, screen, start_pos=[250, 250], type="human", colour=(0, 0, 255)
+    ) -> None:
         self.type = type
         self.speed = 300
         self.position = pygame.Vector2(start_pos)
         self.hitbox = 75
+        self.colour = colour
         self.screen = screen
 
     def get_move(self, inputs):
@@ -41,5 +44,5 @@ class Agent:
 
     def draw(self):
         pygame.draw.circle(
-            self.screen, (0, 0, 255), self.position, self.hitbox
+            self.screen, self.colour, self.position, self.hitbox
         )  # circle
