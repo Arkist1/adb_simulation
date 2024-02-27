@@ -5,7 +5,14 @@ import math
 
 class Bullet(objects.Object):
     def __init__(
-        self, position, aim, counting, bullet_speed=50, bullet_damage=50, screen=None
+        self,
+        position,
+        aim,
+        counting,
+        bullet_speed=50,
+        bullet_damage=50,
+        screen=None,
+        owner=None,
     ) -> None:
         offset = owner.get_offset()
         new_pos = position + offset
@@ -27,12 +34,12 @@ class Bullet(objects.Object):
 
     def draw(self):
         # pygame.draw.circle(self.screen, (0, 0, 0), self.pos, 5)
-        
+
         black = (0, 0, 0)
-        font = pygame.font.SysFont('Comic Sans MS', 36)
+        font = pygame.font.SysFont("Comic Sans MS", 36)
         text = font.render("HelloWorld!"[self.counting], True, black, None)
         textRect = text.get_rect()
-        textRect.center = (self.pos)
+        textRect.center = self.pos
         self.screen.blit(text, textRect)
 
     def hit(self):

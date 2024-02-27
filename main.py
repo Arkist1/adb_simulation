@@ -30,7 +30,6 @@ while running:
     keys = pygame.key.get_pressed()
     mouse_keys = pygame.mouse.get_pressed()
     mouse_pos = pygame.mouse.get_pos()
-    
 
     inputs = {
         "up": keys[pygame.K_w],
@@ -49,7 +48,7 @@ while running:
         cd["spawn"] -= clock.get_time()
     if reversecd >= 0:
         reversecd -= clock.get_time()
-        
+
     if reversecd <= 0:
         counting = 10
 
@@ -58,9 +57,19 @@ while running:
         cd["bullet"] = 75
         if counting == 5:
             cd["bullet"] = 150
-        bullets.append(bullet.Bullet(players[0].pos, mouse_pos, counting, 725, 50, screen))
+        bullets.append(
+            bullet.Bullet(
+                players[0].pos,
+                mouse_pos,
+                counting,
+                725,
+                50,
+                screen,
+                owner=players[0].weapon,
+            )
+        )
         counting -= 1
-        
+
         if counting == -1:
             cd["bullet"] = 350
             counting = 10
@@ -79,7 +88,7 @@ while running:
 
     for bl in bullets:
         bl.move(inputs)
-        
+
     # for bullet in bullets:
     #     bullet.move()
     #     bullet.draw(screen)
@@ -106,10 +115,10 @@ while running:
         if bl.pos[0] >= globals.SCREEN_WIDTH:
             bullets.remove(bl)
         elif bl.pos[0] < 0:
-            bullets.remove(bl) 
+            bullets.remove(bl)
         elif bl.pos[1] >= globals.SCREEN_HEIGHT:
             bullets.remove(bl)
-        elif bl.pos[1] < 0:   
+        elif bl.pos[1] < 0:
             bullets.remove(bl)
         bl.draw()
 

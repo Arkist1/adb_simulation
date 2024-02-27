@@ -17,8 +17,9 @@ class Gun:
         )
         self.owner = owner
 
-        print(owner.pos)
         self.gunoffset = 30
+        self.bulletoffset = 30
+
         self.rect = self.img.get_rect(center=owner.pos)
 
         self.screen = screen
@@ -56,7 +57,7 @@ class Gun:
 
     def get_offset(self, offsetmulti=None):
         if not offsetmulti:
-            offsetmulti = self.owner.radius + 10
+            offsetmulti = self.owner.radius + self.bullet_offset
         rads = math.radians(self.rotation)
         newvec = pygame.math.Vector2(math.cos(rads), -math.sin(rads)) * (offsetmulti)
 
