@@ -2,6 +2,7 @@ import pygame
 import agent
 import globals
 import enemy
+import bullet
 
 pygame.init()
 
@@ -42,9 +43,12 @@ while running:
     if cd >= 0:
         cd -= clock.get_time()
 
+    if mouse_keys[0]:
+        print("spawning bullet")
+        bullets.append(bullet.Bullet(mouse_pos, 50, 50, screen))
+
     if keys[pygame.K_b] and clock.get_time() - cd > 0:
-        print("dabhsdas")
-        cd = 1000
+        cd = 1
         enemies.append(enemy.Enemy(screen=screen, type="enemy"))
 
     for en in enemies:
@@ -54,6 +58,9 @@ while running:
         player.get_move(inputs)
 
     # needs to be implemented
+
+    for bl in bullets:
+        bl.move(inputs)
     # for bullet in bullets:
     #     bullet.move()
     #     bullet.draw(screen)
@@ -67,7 +74,9 @@ while running:
     for player in players:
         player.draw()
 
-    players[0].draw()
+    for bl in bullets:
+        print(bl.pos)
+        bl.draw()
 
     # Flip the display
 
