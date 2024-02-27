@@ -17,7 +17,7 @@ bullets = []
 
 clock = pygame.time.Clock()
 
-cd = 0
+cd = {"spawn": 0, "bullet": 0}
 while running:
     dt = clock.tick(globals.FPS) / 1000
     # check for closing window
@@ -40,17 +40,19 @@ while running:
         "dt": dt,
     }
 
-    if cd >= 0:
-        cd -= clock.get_time()
+    if cd["bullet"] >= 0:
+        cd["bullet"] -= clock.get_time()
+    if cd["spawn"] >= 0:
+        cd["spawn"] -= clock.get_time()
 
-    if mouse_keys[0] and clock.get_time() - cd > 0:
-        cd = 100
+    if mouse_keys[0] and clock.get_time() - cd["bullet"] > 0:
+        cd["bullet"] = 100
         # print("spawning bullet")
         # print(mouse_pos)
         bullets.append(bullet.Bullet(players[0].pos, mouse_pos, 1000, 50, screen))
 
-    if keys[pygame.K_b] and clock.get_time() - cd > 0:
-        cd = 1000
+    if keys[pygame.K_b] and clock.get_time() - cd["spawn"] > 0:
+        cd["spawn"] = 100
         enemies.append(enemy.Enemy(screen=screen, type="enemy"))
 
     for en in enemies:

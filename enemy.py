@@ -8,6 +8,7 @@ class Enemy(Agent):
         self, screen, start_pos=[250, 250], type=..., colour=(255, 0, 0)
     ) -> None:
         super().__init__(screen, start_pos, type=type, colour=colour)
+        self.weapon = None
 
         self.speed = self.speed / 2
 

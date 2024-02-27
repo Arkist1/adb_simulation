@@ -3,14 +3,15 @@ import globals
 import objects
 import gun
 
+
 class Agent(objects.Object):
     def __init__(
         self,
         screen,
-        start_pos=[250, 250],
+        start_pos=[300, 300],
         type="human",
         colour=(0, 0, 255),
-        size=75,
+        size=30,
         speed=300,
     ) -> None:
         super().__init__(pos_x=start_pos[0], pos_y=start_pos[1], width=size)
@@ -19,7 +20,7 @@ class Agent(objects.Object):
         self.hitbox = size
         self.colour = colour
         self.screen = screen
-        self.weapon = gun.Gun()
+        self.weapon = gun.Gun(screen=self.screen, owner=self)
 
     def get_move(self, inputs):
         if self.controltype == "human":
@@ -51,10 +52,10 @@ class Agent(objects.Object):
         self.pos = self.pos + vec
 
         # bullets don't move
-        if inputs["shoot"]:
-            self.weapon.fire()
+        # if inputs["shoot"]:
+        #     self.weapon.fire()
 
     def draw(self):
         pygame.draw.circle(self.screen, self.colour, self.pos, self.hitbox)  # circle
-        self.weapon.position = self.pos
-        self.weapon.draw(self.screen)
+        if self.weapon:
+            self.weapon.draw()
