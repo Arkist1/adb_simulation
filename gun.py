@@ -13,7 +13,8 @@ class Gun:
 
     def fire(self):
         #on pressing initialize a bullet
-        projectile = bullet.Bullet(self.position, self.bullet_speed, self.bullet_damage)
+        # projectile = bullet.Bullet(self.position, self.bullet_speed, self.bullet_damage)
+        pass
         
 
     def draw(self, screen):
