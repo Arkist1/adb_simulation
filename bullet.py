@@ -6,7 +6,7 @@ class Bullet(objects.Object):
     def __init__(
         self, position, aim, bullet_speed=50, bullet_damage=50, screen=None
     ) -> None:
-        super().__init__(position[0], position[1], 5)
+        super().__init__(position[0]+100, position[1]+40, 5)
         self.aim = aim
         self.speed = bullet_speed
         self.bullet_damage = bullet_damage
