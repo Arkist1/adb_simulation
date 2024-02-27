@@ -47,7 +47,7 @@ while running:
         cd = 100
         # print("spawning bullet")
         # print(mouse_pos)
-        bullets.append(bullet.Bullet(players[0].pos, mouse_pos, 600, 50, screen))
+        bullets.append(bullet.Bullet(players[0].pos, mouse_pos, 1000, 50, screen))
 
     if keys[pygame.K_b] and clock.get_time() - cd > 0:
         cd = 1000
