@@ -44,8 +44,8 @@ while running:
         cd -= clock.get_time()
 
     if mouse_keys[0] and clock.get_time() - cd > 0:
-        cd = 1000
-        print("spawning bullet")
+        cd = 100
+        # print("spawning bullet")
         # print(mouse_pos)
         bullets.append(bullet.Bullet(players[0].pos, mouse_pos, 600, 50, screen))
 
