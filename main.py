@@ -50,7 +50,7 @@ while running:
         bullets.append(bullet.Bullet(players[0].pos, mouse_pos, 600, 50, screen))
 
     if keys[pygame.K_b] and clock.get_time() - cd > 0:
-        cd = 1000
+        cd = 1
         enemies.append(enemy.Enemy(screen=screen, type="enemy"))
 
     for en in enemies:
