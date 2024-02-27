@@ -4,9 +4,11 @@ import objects
 
 class Bullet(objects.Object):
     def __init__(
-        self, position, aim, bullet_speed=50, bullet_damage=50, screen=None
+        self, position, aim, bullet_speed=50, bullet_damage=50, screen=None, owner=None
     ) -> None:
-        super().__init__(position[0]+100, position[1]+40, 5)
+        offset = owner.get_offset()
+        new_pos = position + offset
+        super().__init__(*new_pos, 5)
         self.aim = aim
         self.speed = bullet_speed
         self.bullet_damage = bullet_damage

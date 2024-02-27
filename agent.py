@@ -51,6 +51,7 @@ class Agent(objects.Object):
 
         self.pos = self.pos + vec
 
+        self.weapon.get_move(inputs)
         # bullets don't move
         # if inputs["shoot"]:
         #     self.weapon.fire()

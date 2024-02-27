@@ -49,7 +49,11 @@ while running:
         cd["bullet"] = 100
         # print("spawning bullet")
         # print(mouse_pos)
-        bullets.append(bullet.Bullet(players[0].pos, mouse_pos, 1000, 50, screen))
+        bullets.append(
+            bullet.Bullet(
+                players[0].pos, mouse_pos, 1000, 50, screen, owner=players[0].weapon
+            )
+        )
 
     if keys[pygame.K_b] and clock.get_time() - cd["spawn"] > 0:
         cd["spawn"] = 100
@@ -72,16 +76,26 @@ while running:
     ################ Drawing cycle ################
     screen.fill((255, 255, 255))  # white background
 
+    # pygame.draw.line(
+    #     screen, (255, 0, 0), players[0].pos, pygame.math.Vector2(mouse_pos)
+    # )
+
+    # pygame.draw.line(
+    #     screen,
+    #     (255, 0, 0),
+    #     players[0].pos,
+    #     pygame.math.Vector2(players[0].pos[0] + 500, players[0].pos[1]),
+    # )
+
     for en in enemies:
         en.draw()
-
-    for player in players:
-        player.draw()
 
     for bl in bullets:
         # print(bl.pos)
         bl.draw()
 
+    for player in players:
+        player.draw()
     # Flip the display
 
     pygame.display.flip()
