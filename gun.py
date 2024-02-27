@@ -18,7 +18,7 @@ class Gun:
         self.owner = owner
 
         self.gunoffset = 30
-        self.bulletoffset = 30
+        self.bullet_offset = 30
 
         self.rect = self.img.get_rect(center=owner.pos)
 
