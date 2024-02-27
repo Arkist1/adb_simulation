@@ -43,12 +43,14 @@ while running:
     if cd >= 0:
         cd -= clock.get_time()
 
-    if mouse_keys[0]:
+    if mouse_keys[0] and clock.get_time() - cd > 0:
+        cd = 1000
         print("spawning bullet")
-        bullets.append(bullet.Bullet(mouse_pos, 50, 50, screen))
+        # print(mouse_pos)
+        bullets.append(bullet.Bullet(players[0].pos, mouse_pos, 600, 50, screen))
 
     if keys[pygame.K_b] and clock.get_time() - cd > 0:
-        cd = 1
+        cd = 1000
         enemies.append(enemy.Enemy(screen=screen, type="enemy"))
 
     for en in enemies:
@@ -75,7 +77,7 @@ while running:
         player.draw()
 
     for bl in bullets:
-        print(bl.pos)
+        # print(bl.pos)
         bl.draw()
 
     # Flip the display
