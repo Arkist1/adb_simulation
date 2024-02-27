@@ -14,14 +14,17 @@ class Bullet(objects.Object):
         screen=None,
         owner=None,
     ) -> None:
-        offset = owner.get_offset()
+        self.owner = owner
+        offset = self.owner.get_offset()
         new_pos = position + offset
         super().__init__(*new_pos, 5)
+
         self.aim = aim
         self.speed = bullet_speed
         self.bullet_damage = bullet_damage
         self.screen = screen
         self.velocity = self.calc_velocity(aim)
+        self.rotation = self.owner.rotation
 
         self.counting = counting
 
@@ -38,6 +41,7 @@ class Bullet(objects.Object):
         black = (0, 0, 0)
         font = pygame.font.SysFont("Comic Sans MS", 36)
         text = font.render("HelloWorld!"[self.counting], True, black, None)
+        text = pygame.transform.rotate(text, self.rotation)
         textRect = text.get_rect()
         textRect.center = self.pos
         self.screen.blit(text, textRect)

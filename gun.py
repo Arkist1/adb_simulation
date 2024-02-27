@@ -40,6 +40,11 @@ class Gun:
         # draw the gun on the screen
 
     def rot_img(self):
+
+        # new_img = self.img.copy()
+        # if 90 < self.rotation < 270:
+        #     new_img = pygame.transform.flip(new_img, flip_x=1, flip_y=0)
+
         new_img = pygame.transform.rotate(self.img, self.rotation)
 
         self.rect = new_img.get_rect()
