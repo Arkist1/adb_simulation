@@ -16,7 +16,10 @@ class Bullet(objects.Object):
 
     def move(self, inputs):
         # print(self.aim)
-        self.pos = (self.pos[0] + self.velocity[0] * inputs["dt"], self.pos[1] + self.velocity[1] * inputs["dt"] )
+        self.pos = (
+            self.pos[0] + self.velocity[0] * inputs["dt"],
+            self.pos[1] + self.velocity[1] * inputs["dt"],
+        )
 
     def draw(self):
         pygame.draw.circle(self.screen, (0, 0, 0), self.pos, 5)

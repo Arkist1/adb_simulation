@@ -52,11 +52,10 @@ class Agent(objects.Object):
         self.pos = self.pos + vec
 
         # bullets don't move
-        if inputs["shoot"]:
-            self.weapon.fire()
+        # if inputs["shoot"]:
+        #     self.weapon.fire()
 
     def draw(self):
         pygame.draw.circle(self.screen, self.colour, self.pos, self.hitbox)  # circle
-
         if self.weapon:
             self.weapon.draw()
