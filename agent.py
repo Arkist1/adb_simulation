@@ -1,23 +1,32 @@
 import pygame
 import globals
+import objects
+import gun
 
 
-class Agent:
+class Agent(objects.Object):
     def __init__(
-        self, screen, start_pos=[250, 250], type="human", colour=(0, 0, 255)
+        self,
+        screen,
+        start_pos=[300, 300],
+        type="human",
+        colour=(0, 0, 255),
+        size=30,
+        speed=300,
     ) -> None:
-        self.type = type
-        self.speed = 300
-        self.position = pygame.Vector2(start_pos)
-        self.hitbox = 75
+        super().__init__(pos_x=start_pos[0], pos_y=start_pos[1], width=size)
+        self.controltype = type
+        self.speed = speed
+        self.hitbox = size
         self.colour = colour
         self.screen = screen
+        self.weapon = gun.Gun(screen=self.screen, owner=self)
 
     def get_move(self, inputs):
-        if self.type == "human":
+        if self.controltype == "human":
             return self.get_human_move(inputs)
 
-        if self.type == "random":
+        if self.controltype == "random":
             return self.get_random_move()
 
     def get_random_move():
@@ -40,9 +49,14 @@ class Agent:
             vec.x /= globals.SQR2
             vec.y /= globals.SQR2
 
-        self.position = self.position + vec
+        self.pos = self.pos + vec
+
+        self.weapon.get_move(inputs)
+        # bullets don't move
+        # if inputs["shoot"]:
+        #     self.weapon.fire()
 
     def draw(self):
-        pygame.draw.circle(
-            self.screen, self.colour, self.position, self.hitbox
-        )  # circle
+        pygame.draw.circle(self.screen, self.colour, self.pos, self.hitbox)  # circle
+        if self.weapon:
+            self.weapon.draw()

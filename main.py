@@ -2,6 +2,7 @@ import pygame
 import agent
 import globals
 import enemy
+import bullet
 
 pygame.init()
 
@@ -13,10 +14,12 @@ players = [agent.Agent(screen=screen)]
 enemies = []
 boxes = []
 bullets = []
+counting = 11
 
 clock = pygame.time.Clock()
 
-cd = 0
+cd = {"spawn": 0, "bullet": 0}
+reversecd = 0
 while running:
     dt = clock.tick(globals.FPS) / 1000
     # check for closing window
@@ -39,12 +42,40 @@ while running:
         "dt": dt,
     }
 
-    if cd >= 0:
-        cd -= clock.get_time()
+    if cd["bullet"] >= 0:
+        cd["bullet"] -= clock.get_time()
+    if cd["spawn"] >= 0:
+        cd["spawn"] -= clock.get_time()
+    if reversecd >= 0:
+        reversecd -= clock.get_time()
 
-    if keys[pygame.K_b] and clock.get_time() - cd > 0:
-        print("dabhsdas")
-        cd = 1000
+    if reversecd <= 0:
+        counting = 10
+
+    if mouse_keys[0] and clock.get_time() - cd["bullet"] > 0:
+        reversecd = 600
+        cd["bullet"] = 75
+        if counting == 5:
+            cd["bullet"] = 150
+        bullets.append(
+            bullet.Bullet(
+                players[0].pos,
+                mouse_pos,
+                counting,
+                725,
+                50,
+                screen,
+                owner=players[0].weapon,
+            )
+        )
+        counting -= 1
+
+        if counting == -1:
+            cd["bullet"] = 350
+            counting = 10
+
+    if keys[pygame.K_b] and clock.get_time() - cd["spawn"] > 0:
+        cd["spawn"] = 100
         enemies.append(enemy.Enemy(screen=screen, type="enemy"))
 
     for en in enemies:
@@ -53,17 +84,46 @@ while running:
     for player in players:
         player.get_move(inputs)
 
+    # needs to be implemented
+
+    for bl in bullets:
+        bl.move(inputs)
+
+    # for bullet in bullets:
+    #     bullet.move()
+    #     bullet.draw(screen)
+
     ################ Drawing cycle ################
     screen.fill((255, 255, 255))  # white background
+
+    # pygame.draw.line(
+    #     screen, (255, 0, 0), players[0].pos, pygame.math.Vector2(mouse_pos)
+    # )
+
+    # pygame.draw.line(
+    #     screen,
+    #     (255, 0, 0),
+    #     players[0].pos,
+    #     pygame.math.Vector2(players[0].pos[0] + 500, players[0].pos[1]),
+    # )
 
     for en in enemies:
         en.draw()
 
+    for bl in bullets:
+        # print(bl.pos)
+        if bl.pos[0] >= globals.SCREEN_WIDTH:
+            bullets.remove(bl)
+        elif bl.pos[0] < 0:
+            bullets.remove(bl)
+        elif bl.pos[1] >= globals.SCREEN_HEIGHT:
+            bullets.remove(bl)
+        elif bl.pos[1] < 0:
+            bullets.remove(bl)
+        bl.draw()
+
     for player in players:
         player.draw()
-
-    players[0].draw()
-
     # Flip the display
 
     pygame.display.flip()
