@@ -5,15 +5,27 @@ import gun
 
 
 class Agent(objects.Object):
+    """An agent instance
+    """    
     def __init__(
         self,
-        screen,
-        start_pos=[300, 300],
-        type="human",
-        colour=(0, 0, 255),
-        size=30,
-        speed=300,
+        screen: pygame.Surface,
+        start_pos: list[int] = [300, 300],
+        type: str = "human",
+        colour: tuple[int] = (0, 0, 255),
+        size: int = 30,
+        speed: int = 300,
     ) -> None:
+        """Create an agent object
+
+        Args:
+            screen (pygame.Surface): The screen to draw the agent to
+            start_pos (list[int], optional): Starting position [x, y]. Defaults to [300, 300].
+            type (str, optional): The type of agent "human", "random". Defaults to "human".
+            colour (tuple[int], optional): The color of the agent (r, g, b). Defaults to (0, 0, 255).
+            size (int, optional): The size of the agent. Defaults to 30.
+            speed (int, optional): The movement speed of the agent. Defaults to 300.
+        """               
         super().__init__(pos_x=start_pos[0], pos_y=start_pos[1], width=size)
         self.controltype = type
         self.speed = speed
