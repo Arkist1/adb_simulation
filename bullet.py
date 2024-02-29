@@ -36,15 +36,15 @@ class Bullet(objects.Object):
         )
 
     def draw(self):
-        # pygame.draw.circle(self.screen, (0, 0, 0), self.pos, 5)
+        pygame.draw.circle(self.screen, (0, 0, 0), self.pos, 5)
 
-        black = (0, 0, 0)
-        font = pygame.font.SysFont("Comic Sans MS", 36)
-        text = font.render("HelloWorld!"[self.counting], True, black, None)
-        text = pygame.transform.rotate(text, self.rotation)
-        textRect = text.get_rect()
-        textRect.center = self.pos
-        self.screen.blit(text, textRect)
+        # black = (0, 0, 0)
+        # font = pygame.font.SysFont("Comic Sans MS", 36)
+        # text = font.render("HelloWorld!"[self.counting], True, black, None)
+        # text = pygame.transform.rotate(text, self.rotation)
+        # textRect = text.get_rect()
+        # textRect.center = self.pos
+        # self.screen.blit(text, textRect)
 
     def hit(self):
         pass

@@ -3,6 +3,7 @@ import agent
 import globals
 import enemy
 import bullet
+import random
 
 pygame.init()
 
