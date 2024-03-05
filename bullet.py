@@ -8,7 +8,6 @@ class Bullet(objects.Object):
         self,
         position,
         aim,
-        counting,
         bullet_speed=50,
         bullet_damage=50,
         screen=None,
@@ -26,8 +25,6 @@ class Bullet(objects.Object):
         self.velocity = self.calc_velocity(aim)
         self.rotation = self.owner.rotation
 
-        self.counting = counting
-
     def move(self, inputs):
         # print(self.aim)
         self.pos = (
@@ -37,14 +34,6 @@ class Bullet(objects.Object):
 
     def draw(self):
         pygame.draw.circle(self.screen, (0, 0, 0), self.pos, 5)
-
-        # black = (0, 0, 0)
-        # font = pygame.font.SysFont("Comic Sans MS", 36)
-        # text = font.render("HelloWorld!"[self.counting], True, black, None)
-        # text = pygame.transform.rotate(text, self.rotation)
-        # textRect = text.get_rect()
-        # textRect.center = self.pos
-        # self.screen.blit(text, textRect)
 
     def hit(self):
         pass

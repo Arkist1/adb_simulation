@@ -17,10 +17,8 @@ def main():
     enemies = []
     boxes = []
     bullets = []
-    counting = 11
 
     cd = {"spawn": 0, "bullet": 0}
-    reversecd = 0
     while running:
         dt = clock.tick(globals.FPS) / 1000
         # check for closing window
@@ -47,33 +45,19 @@ def main():
             cd["bullet"] -= clock.get_time()
         if cd["spawn"] >= 0:
             cd["spawn"] -= clock.get_time()
-        if reversecd >= 0:
-            reversecd -= clock.get_time()
-
-        if reversecd <= 0:
-            counting = 10
 
         if mouse_keys[0] and clock.get_time() - cd["bullet"] > 0:
-            reversecd = 600
             cd["bullet"] = 75
-            if counting == 5:
-                cd["bullet"] = 150
             bullets.append(
                 bullet.Bullet(
                     players[0].pos,
                     mouse_pos,
-                    counting,
                     725,
                     50,
                     screen,
                     owner=players[0].weapon,
                 )
             )
-            counting -= 1
-
-            if counting == -1:
-                cd["bullet"] = 350
-                counting = 10
 
         if keys[pygame.K_b] and clock.get_time() - cd["spawn"] > 0:
             cd["spawn"] = 100
