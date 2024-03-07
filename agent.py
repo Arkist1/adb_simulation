@@ -34,6 +34,8 @@ class Agent(object.Object):
         self.stamina = stamina
         self.max_stamina = stamina
 
+        self.is_moving = False
+
     def get_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
         """
         Returns the move for the agent based on the given inputs.
@@ -81,9 +83,10 @@ class Agent(object.Object):
         self.pos = self.pos + vec
 
         self.weapon.get_move(inputs)
-        # bullets don't move
-        # if inputs["shoot"]:
-        #     self.weapon.fire()
+
+    def shoot(self, location):
+        if self.weapon:
+            return self.weapon.fire(location)
 
     def draw(self, cam):
         """
