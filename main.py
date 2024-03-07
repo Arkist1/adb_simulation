@@ -92,21 +92,6 @@ def main():
                 players.remove(pl)
                 players.append(agent.Agent(screen=screen))
 
-        ### bullet fire ###
-        if mouse_keys[0] and dt_mili - cd["bullet"] > 0:
-            # current_player.food += 1
-            cd["bullet"] = 75
-            bullets.append(
-                bullet.Bullet(
-                    current_player.pos,
-                    inputs["mouse_pos"],
-                    775,
-                    50,
-                    screen=screen,
-                    owner=current_player.weapon,
-                )
-            )
-
         ### pickup collision detection ###
         for pu in pickups:
             if current_player.is_colliding(pu):
@@ -196,6 +181,13 @@ def main():
 
         for bl in bullets:
             bl.move(inputs)
+
+        ### bullet fire ###
+        if mouse_keys[0] and dt_mili - cd["bullet"] > 0:
+            # current_player.food += 1
+            cd["bullet"] = 75
+
+            bullets.append(current_player.shoot(inputs["mouse_pos"]))
 
         ################ Drawing cycle ################
 

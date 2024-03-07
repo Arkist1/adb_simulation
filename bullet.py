@@ -35,6 +35,7 @@ class Bullet(object.Object):
         bullet_speed=50,
         bullet_damage=50,
         bullet_size=5,
+        owner_delta=None,
         screen=None,
         owner=None,
     ) -> None:

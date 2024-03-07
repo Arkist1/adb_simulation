@@ -39,9 +39,11 @@ class Gun:
             owner (Player, optional): The owner of the gun. Defaults to None.
         """
         self.position = None  # inherit from the player location
-        self.fire_rate = 1
-        self.bullet_damage = 1
-        self.bullet_speed = 5
+        self.fire_rate = 1000  # in miliseconds, 1000 = once every second
+        self.bullet_damage = 50
+        self.bullet_speed = 750
+        self.bullet_size = 5
+
         self.hitbox = 10
         self.img_size = pygame.Vector2(70, 70)
         self.img = pygame.transform.smoothscale(
@@ -59,11 +61,19 @@ class Gun:
         self.screen = screen
         self.rotation = 0
 
-    def fire(self):
+    def fire(self, location):
         """
         Fires a bullet from the gun.
         """
-        projectile = bullet.Bullet(self.position, self.bullet_speed, self.bullet_damage)
+        return bullet.Bullet(
+            self.owner.pos,
+            location,
+            self.bullet_speed,
+            self.bullet_damage,
+            self.bullet_size,
+            screen=self.screen,
+            owner=self,
+        )
 
     def draw(self, cam):
         """
