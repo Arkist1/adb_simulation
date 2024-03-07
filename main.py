@@ -66,6 +66,7 @@ def main():
             "dt": dt,
         }
 
+        ### cooldowns ###
         if cd["bullet"] >= 0:
             cd["bullet"] -= dt_mili
         if cd["spawn"] >= 0:
@@ -77,6 +78,7 @@ def main():
         if cd["cam_switch"] >= 0:
             cd["cam_switch"] -= dt_mili
 
+        ### bullet fire ###
         if mouse_keys[0] and dt_mili - cd["bullet"] > 0:
             # players[0].food += 1
             cd["bullet"] = 75
@@ -91,20 +93,26 @@ def main():
                 )
             )
 
+        ### sprint and crouch ###
         if inputs["sprint"] and players[0].stamina > 0:
-            players[0].stamina -= 0.5
+            players[0].stamina -= 1
             players[0].speed = 450
             cd["stamina_regen"] = stamina_cooldown
         elif inputs["crouch"] and players[0].stamina > 0:
-            players[0].stamina -= 0.25
+            players[0].stamina -= 0.5
             players[0].speed = 150
             cd["stamina_regen"] = stamina_cooldown
         else:
             players[0].speed = 300
 
+        ### stamina regen ###
         if cd["stamina_regen"] <= 0 and players[0].stamina < players[0].max_stamina:
-            players[0].stamina += 0.25
+            hunger_rate = 1000
+            players[0].stamina += 0.75
+        else:
+            hunger_rate = 2500
 
+        ### hunger depletion ###
         if cd["food"] >= hunger_rate:
             cd["food"] = 0
             players[0].food -= 1
@@ -112,6 +120,7 @@ def main():
                 players[0].food = 0
                 players[0].health -= 0.5
 
+        ### cam switch ###
         if mouse_keys[2] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 1000
             (
@@ -120,6 +129,7 @@ def main():
                 else cameracontroller.change_cam("cam1")
             )
 
+        ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 100
             enemies.append(enemy.Enemy(screen=screen, type="enemy"))
