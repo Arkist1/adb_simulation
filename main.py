@@ -54,6 +54,7 @@ def main():
         keys = pygame.key.get_pressed()
         mouse_keys = pygame.mouse.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
+        current_player = players[0]
 
         inputs = {
             "up": keys[pygame.K_w],
@@ -88,54 +89,54 @@ def main():
 
         ### bullet fire ###
         if mouse_keys[0] and dt_mili - cd["bullet"] > 0:
-            # players[0].food += 1
+            # current_player.food += 1
             cd["bullet"] = 75
             bullets.append(
                 bullet.Bullet(
-                    players[0].pos,
+                    current_player.pos,
                     inputs["mouse_pos"],
                     775,
                     50,
                     screen,
-                    owner=players[0].weapon,
+                    owner=current_player.weapon,
                 )
             )
 
         ### pickup collision detection ###
         for pu in pickups:
-            if players[0].is_colliding(pu):
+            if current_player.is_colliding(pu):
                 pickups.remove(pu)
                 if pu.pickup_type == 0 or pu.pickup_type == 1:
-                    players[0].health = min((players[0].health + pu.picked_up()), players[0].max_health)
-                else:
-                    players[0].food = min((players[0].food + pu.picked_up()), players[0].max_food)
+                    current_player.health = min((current_player.health + pu.picked_up()), current_player.max_health)
+                elif pu.pickup_type == 2 or pu.pickup_type == 3:
+                    current_player.food = min((current_player.food + pu.picked_up()), current_player.max_food)
             
         ### sprint and crouch ###
-        if inputs["sprint"] and players[0].stamina > 0:
-            players[0].stamina -= 1
-            players[0].speed = 450
+        if inputs["sprint"] and current_player.stamina > 0:
+            current_player.stamina -= 1
+            current_player.speed = 450
             cd["stamina_regen"] = stamina_cooldown
-        elif inputs["crouch"] and players[0].stamina > 0:
-            players[0].stamina -= 0.5
-            players[0].speed = 150
+        elif inputs["crouch"] and current_player.stamina > 0:
+            current_player.stamina -= 0.5
+            current_player.speed = 150
             cd["stamina_regen"] = stamina_cooldown
         else:
-            players[0].speed = 300
+            current_player.speed = 300
 
         ### stamina regen ###
-        if cd["stamina_regen"] <= 0 and players[0].stamina < players[0].max_stamina:
+        if cd["stamina_regen"] <= 0 and current_player.stamina < current_player.max_stamina:
             hunger_rate = 1000
-            players[0].stamina += 0.75
+            current_player.stamina += 0.75
         else:
             hunger_rate = 2500
 
         ### hunger depletion ###
         if cd["food"] >= hunger_rate:
             cd["food"] = 0
-            players[0].food -= 1
-            if players[0].food <= 0:
-                players[0].food = 0
-                players[0].health -= 0.5
+            current_player.food -= 1
+            if current_player.food <= 0:
+                current_player.food = 0
+                current_player.health -= 0.5
 
         ### cam switch ###
         if mouse_keys[2] and dt_mili - cd["cam_switch"] >= 0:
@@ -158,10 +159,10 @@ def main():
 
         if keys[pygame.K_f] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 10
-            players[0].health -= 25
+            current_player.health -= 25
 
         for en in enemies:
-            en.get_move(inputs={"nearest_player": players[0], "dt": dt})
+            en.get_move(inputs={"nearest_player": current_player, "dt": dt})
 
         for player in players:
             player.get_move(inputs)
@@ -225,21 +226,21 @@ def main():
         stamina_bar2 = pygame.Rect(20, 600, 258, 23)
         pygame.draw.rect(screen, bar_grey, stamina_bar2)
         stamina_bar = pygame.Rect(
-            24, 604, int(players[0].stamina / players[0].max_stamina * 250), 15
+            24, 604, int(current_player.stamina / current_player.max_stamina * 250), 15
         )
         pygame.draw.rect(screen, stamina_yellow, stamina_bar)
 
         food_bar2 = pygame.Rect(20, 630, 258, 23)
         pygame.draw.rect(screen, bar_grey, food_bar2)
         food_bar = pygame.Rect(
-            24, 634, int(players[0].food / players[0].max_food * 250), 15
+            24, 634, int(current_player.food / current_player.max_food * 250), 15
         )
         pygame.draw.rect(screen, food_green, food_bar)
 
         health_bar2 = pygame.Rect(20, 660, 258, 23)
         pygame.draw.rect(screen, bar_grey, health_bar2)
         health_bar = pygame.Rect(
-            24, 664, int(players[0].health / players[0].max_health * 250), 15
+            24, 664, int(current_player.health / current_player.max_health * 250), 15
         )
         pygame.draw.rect(screen, health_red, health_bar)
 
