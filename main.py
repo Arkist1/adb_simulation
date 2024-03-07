@@ -62,7 +62,7 @@ def main():
             "crouch": keys[pygame.K_LCTRL],
             "shoot": mouse_keys[0],
             "block": mouse_keys[2],
-            "mouse_pos": mouse_pos,
+            "mouse_pos": mouse_pos + cameracontroller.get_current_cam_pos(),
             "dt": dt,
         }
 
@@ -83,7 +83,7 @@ def main():
             bullets.append(
                 bullet.Bullet(
                     players[0].pos,
-                    mouse_pos,
+                    inputs["mouse_pos"],
                     775,
                     50,
                     screen,
@@ -130,6 +130,11 @@ def main():
         for player in players:
             player.get_move(inputs)
 
+            cam1.position = (
+                player.pos
+                - pygame.Vector2(globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT) / 2
+            )
+
         # needs to be implemented
 
         for bl in bullets:
@@ -143,7 +148,7 @@ def main():
 
         screen.fill((255, 255, 255))  # white background
 
-        curr_view = cameracontroller.get_current_cam_pos()
+        curr_cam_pos = cameracontroller.get_current_cam_pos()
 
         for bl in bullets:
             if bl.pos[0] >= globals.SCREEN_WIDTH:
@@ -155,13 +160,28 @@ def main():
             elif bl.pos[1] < 0:
                 bullets.remove(bl)
 
-            bl.draw(cam_pos=curr_view)
+            bl.draw(cam_pos=curr_cam_pos)
 
         for en in enemies:
-            en.draw(cam_pos=curr_view)
+            en.draw(cam_pos=curr_cam_pos)
 
         for player in players:
-            player.draw(cam_pos=curr_view)
+            player.draw(cam_pos=curr_cam_pos)
+
+        ######## Map boundary drawing ########
+        boundry_rgb = (100, 0, 255)
+
+        origin = pygame.Vector2(0, 0) - curr_cam_pos
+        bottom = pygame.Vector2(0, globals.SCREEN_HEIGHT) - curr_cam_pos
+        right = pygame.Vector2(globals.SCREEN_WIDTH, 0) - curr_cam_pos
+        rightbottom = (
+            pygame.Vector2(globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT) - curr_cam_pos
+        )
+
+        pygame.draw.line(screen, boundry_rgb, origin, right)
+        pygame.draw.line(screen, boundry_rgb, origin, bottom)
+        pygame.draw.line(screen, boundry_rgb, right, rightbottom)
+        pygame.draw.line(screen, boundry_rgb, bottom, rightbottom)
 
         stamina_bar2 = pygame.Rect(20, 600, 258, 23)
         pygame.draw.rect(screen, bar_grey, stamina_bar2)
