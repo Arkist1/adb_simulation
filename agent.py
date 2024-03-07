@@ -5,8 +5,8 @@ import gun
 
 
 class Agent(object.Object):
-    """An agent instance
-    """    
+    """An agent instance"""
+
     def __init__(
         self,
         screen: pygame.Surface,
@@ -17,8 +17,8 @@ class Agent(object.Object):
         speed: int = 300,
         stamina: int = 250,
         food: int = 250,
-        health: int = 250
-    ) -> None:             
+        health: int = 250,
+    ) -> None:
         super().__init__(pos=pygame.Vector2(start_pos[0], start_pos[1]), radius=size)
         self.controltype = type
         self.speed = speed
@@ -26,7 +26,7 @@ class Agent(object.Object):
         self.colour = colour
         self.screen = screen
         self.weapon = gun.Gun(screen=self.screen, owner=self)
-        
+
         self.health = health
         self.max_health = health
         self.food = food
@@ -85,7 +85,7 @@ class Agent(object.Object):
         # if inputs["shoot"]:
         #     self.weapon.fire()
 
-    def draw(self, cam_pos):
+    def draw(self, cam):
         """
         Draw the agent on the screen.
 
@@ -93,7 +93,10 @@ class Agent(object.Object):
         If the agent has a weapon, it also calls the `draw` method of the weapon to draw it on the screen.
         """
         pygame.draw.circle(
-            self.screen, self.colour, self.pos - cam_pos, self.hitbox
+            self.screen,
+            self.colour,
+            self.pos * cam.zoom - cam.position,
+            self.hitbox * cam.zoom,
         )  # circle
         if self.weapon:
-            self.weapon.draw(cam_pos)
+            self.weapon.draw(cam)

@@ -1,6 +1,8 @@
 from agent import Agent
 import globals
 import pygame
+import enum
+import random
 
 
 class Enemy(Agent):
@@ -21,8 +23,14 @@ class Enemy(Agent):
     ) -> None:
         super().__init__(screen, start_pos, type=type, colour=colour)
         self.weapon = None
+        self.poi = self.pos
 
         self.speed = self.speed / 2
+        self.wanderspeed = self.speed / 4
+
+        self.moving = False
+        self.move_timer = 0
+        self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
 
     def get_move(self, inputs):
         """
@@ -50,22 +58,49 @@ class Enemy(Agent):
         Returns:
             None
         """
-        player_delta = self.pos - inputs["nearest_player"].pos
+        if self.move_timer > 0:
+            self.move_timer -= inputs["dt"]
 
-        neg_x = -1
-        neg_y = -1
-
-        if player_delta[0] < 0:
+        elif self.state == "wandering":
             neg_x = 1
-        if player_delta[1] < 0:
             neg_y = 1
 
-        sdelta = sum([abs(player_delta[0]), abs(player_delta[1])])
-        ratio = [abs(player_delta[0]) / sdelta, abs(player_delta[1]) / sdelta]
+            dx = self.poi[0] - self.pos[0]
+            dy = self.poi[1] - self.pos[1]
 
-        new_pos = pygame.Vector2(
-            ratio[0] * self.speed * inputs["dt"] * neg_x,
-            ratio[1] * self.speed * inputs["dt"] * neg_y,
-        )
+            if dx < 0:
+                neg_x = -1
+            if dy < 0:
+                neg_y = -1
 
-        self.move(new_pos, [inputs["nearest_player"]])
+            sdelta = sum([abs(dx), abs(dy)])
+
+            if sdelta < self.wanderspeed:
+                self.moving = False
+                self.move_timer = random.random() * 2 + 2
+
+            if not sdelta == 0:
+                ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
+
+                delta = (
+                    pygame.Vector2(
+                        self.wanderspeed * ratio[0] * neg_x,
+                        self.wanderspeed * ratio[1] * neg_y,
+                    )
+                    * inputs["dt"]
+                )
+
+                self.pos += delta
+
+        # TODO: inplement
+        # if self.state == "alert":
+
+        # if self.state == "chasing":
+
+    def percept(self):
+        if self.state == "wandering" and not self.moving and self.move_timer <= 0:
+            self.poi = pygame.Vector2(
+                random.randrange(round(self.pos[0]) - 100, round(self.pos[0]) + 100),
+                random.randrange(round(self.pos[1]) - 100, round(self.pos[1]) + 100),
+            )
+            self.moving = True

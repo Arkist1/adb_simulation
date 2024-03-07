@@ -4,11 +4,14 @@ import pygame
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
+SCREEN_SIZE = pygame.Vector2(SCREEN_WIDTH, SCREEN_HEIGHT)
 SQR2 = 2 ** (1 / 2)
 FPS = 60
 root = os.getcwd()
-MAP_WIDTH = 1000
-MAP_HEIGHT = 700
+MAP_WIDTH = 2000
+MAP_HEIGHT = 1400
+MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
+
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
     """

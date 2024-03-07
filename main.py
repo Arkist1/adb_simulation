@@ -34,8 +34,8 @@ def main():
 
     cd = {"spawn": 0, "bullet": 0, "food": 0, "stamina_regen": 0, "cam_switch": 0}
 
-    cam1 = camera.Camera(pygame.Vector2([0, 0]), pygame.Vector2([1000, 700]))
-    cam2 = camera.Camera(pygame.Vector2([200, 200]), pygame.Vector2([1000, 700]))
+    cam1 = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
+    cam2 = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE * 1.5)
 
     cams = {"cam1": cam1, "cam2": cam2}
     cameracontroller = camera.Camera_controller(
@@ -53,7 +53,7 @@ def main():
 
         keys = pygame.key.get_pressed()
         mouse_keys = pygame.mouse.get_pressed()
-        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
         current_player = players[0]
 
         inputs = {
@@ -65,9 +65,14 @@ def main():
             "crouch": keys[pygame.K_LCTRL],
             "shoot": mouse_keys[0],
             "block": mouse_keys[2],
-            "mouse_pos": mouse_pos + cameracontroller.get_current_cam_pos(),
+            "mouse_pos": mouse_pos / cameracontroller.curr_cam.zoom
+            + cameracontroller.curr_cam.position,
             "dt": dt,
         }
+
+        print(
+            f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
+        )
 
         ### cooldowns ###
         if cd["bullet"] >= 0:
@@ -161,61 +166,59 @@ def main():
             cd["cam_switch"] = 10
             current_player.health -= 25
 
+        ###### Perceptions #####
+        for en in enemies:
+            en.percept()
+
+        ###### Movement #####
         for en in enemies:
             en.get_move(inputs={"nearest_player": current_player, "dt": dt})
 
         for player in players:
             player.get_move(inputs)
 
-            cam1.position = (
-                player.pos
-                - pygame.Vector2(globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT) / 2
-            )
-
-        # needs to be implemented
+            cam1.position = player.pos - cam1.size / 2
+            # cam2.position = player.pos - cam2.size / 2
 
         for bl in bullets:
             bl.move(inputs)
-
-        # for bullet in bullets:
-        #     bullet.move()
-        #     bullet.draw(screen)
 
         ################ Drawing cycle ################
 
         screen.fill((255, 255, 255))  # white background
 
-        curr_cam_pos = cameracontroller.get_current_cam_pos()
+        cam = cameracontroller.curr_cam
 
         for bl in bullets:
-            if bl.pos[0] >= globals.SCREEN_WIDTH:
+            if bl.pos[0] >= globals.MAP_WIDTH:
                 bullets.remove(bl)
             elif bl.pos[0] < 0:
                 bullets.remove(bl)
-            elif bl.pos[1] >= globals.SCREEN_HEIGHT:
+            elif bl.pos[1] >= globals.MAP_HEIGHT:
                 bullets.remove(bl)
             elif bl.pos[1] < 0:
                 bullets.remove(bl)
 
-            bl.draw(cam_pos=curr_cam_pos)
+            bl.draw(cam=cam)
 
         for pu in pickups:
             pu.draw(cam_pos=curr_cam_pos)
 
         for en in enemies:
-            en.draw(cam_pos=curr_cam_pos)
+            en.draw(cam=cam)
 
         for player in players:
-            player.draw(cam_pos=curr_cam_pos)
+            player.draw(cam=cam)
 
         ######## Map boundary drawing ########
         boundry_rgb = (100, 0, 255)
 
-        origin = pygame.Vector2(0, 0) - curr_cam_pos
-        bottom = pygame.Vector2(0, globals.SCREEN_HEIGHT) - curr_cam_pos
-        right = pygame.Vector2(globals.SCREEN_WIDTH, 0) - curr_cam_pos
+        origin = pygame.Vector2(0, 0) - cam.position * cam.zoom
+        bottom = pygame.Vector2(0, globals.MAP_HEIGHT) - cam.position * cam.zoom
+        right = pygame.Vector2(globals.MAP_WIDTH, 0) - cam.position * cam.zoom
         rightbottom = (
-            pygame.Vector2(globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT) - curr_cam_pos
+            pygame.Vector2(globals.MAP_WIDTH, globals.MAP_HEIGHT)
+            - cam.position * cam.zoom
         )
 
         pygame.draw.line(screen, boundry_rgb, origin, right)
@@ -223,6 +226,7 @@ def main():
         pygame.draw.line(screen, boundry_rgb, right, rightbottom)
         pygame.draw.line(screen, boundry_rgb, bottom, rightbottom)
 
+        ####### Status bars ######
         stamina_bar2 = pygame.Rect(20, 600, 258, 23)
         pygame.draw.rect(screen, bar_grey, stamina_bar2)
         stamina_bar = pygame.Rect(
