@@ -96,4 +96,4 @@ class Agent(objects.Object):
             self.screen, self.colour, self.pos - cam_pos, self.hitbox
         )  # circle
         if self.weapon:
-            self.weapon.draw()
+            self.weapon.draw(cam_pos)

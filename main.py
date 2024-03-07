@@ -1,9 +1,11 @@
+from pygame._sdl2.video import Window
 import pygame
 import agent
 import globals
 import enemy
 import bullet
 import random
+import camera
 
 
 def main():
@@ -19,9 +21,18 @@ def main():
     boxes = []
     bullets = []
 
-    cd = {"spawn": 0, "bullet": 0}
+    cam1 = camera.Camera(pygame.Vector2([0, 0]), pygame.Vector2([1000, 700]))
+    cam2 = camera.Camera(pygame.Vector2([200, 200]), pygame.Vector2([1000, 700]))
+
+    cams = {"cam1": cam1, "cam2": cam2}
+    cameracontroller = camera.Camera_controller(
+        cams=cams, window=Window.from_display_module()
+    )
+
+    cd = {"spawn": 0, "bullet": 0, "cam_switch": 0}
     while running:
         dt = clock.tick(globals.FPS) / 1000
+        dt_mili = clock.get_time()
         # check for closing window
         for event in pygame.event.get():  # event loop
             if event.type == pygame.QUIT:
@@ -46,26 +57,28 @@ def main():
             cd["bullet"] -= clock.get_time()
         if cd["spawn"] >= 0:
             cd["spawn"] -= clock.get_time()
+        if cd["cam_switch"] >= 0:
+            cd["cam_switch"] -= dt_mili
 
         if mouse_keys[0] and clock.get_time() - cd["bullet"] > 0:
-<<<<<<< HEAD
-            cd["bullet"] = 0
-=======
             cd["bullet"] = 1
->>>>>>> 1c10aa20e6aab904dd5ecd5304078d46a44aaf3e
             bullets.append(
                 bullet.Bullet(
                     players[0].pos,
                     mouse_pos,
-<<<<<<< HEAD
-                    750,
-=======
                     775,
->>>>>>> 1c10aa20e6aab904dd5ecd5304078d46a44aaf3e
                     50,
                     screen,
                     owner=players[0].weapon,
                 )
+            )
+
+        if mouse_keys[2] and clock.get_time() - cd["cam_switch"] >= 0:
+            cd["cam_switch"] = 1000
+            (
+                cameracontroller.change_cam("cam2")
+                if cameracontroller.curr_cam_name == "cam1"
+                else cameracontroller.change_cam("cam1")
             )
 
         if keys[pygame.K_b] and clock.get_time() - cd["spawn"] > 0:
@@ -80,30 +93,18 @@ def main():
 
         # needs to be implemented
 
-        if not mouse_keys[0]:
-            for bl in bullets:
-                bl.move(inputs)
+        for bl in bullets:
+            bl.move(inputs)
 
         # for bullet in bullets:
         #     bullet.move()
         #     bullet.draw(screen)
 
         ################ Drawing cycle ################
+
         screen.fill((255, 255, 255))  # white background
 
-        # pygame.draw.line(
-        #     screen, (255, 0, 0), players[0].pos, pygame.math.Vector2(mouse_pos)
-        # )
-
-        # pygame.draw.line(
-        #     screen,
-        #     (255, 0, 0),
-        #     players[0].pos,
-        #     pygame.math.Vector2(players[0].pos[0] + 500, players[0].pos[1]),
-        # )
-
-        for en in enemies:
-            en.draw()
+        curr_view = cameracontroller.get_current_cam_pos()
 
         for bl in bullets:
             if bl.pos[0] >= globals.SCREEN_WIDTH:
@@ -114,10 +115,14 @@ def main():
                 bullets.remove(bl)
             elif bl.pos[1] < 0:
                 bullets.remove(bl)
-            bl.draw()
+
+            bl.draw(cam_pos=curr_view)
+
+        for en in enemies:
+            en.draw(cam_pos=curr_view)
 
         for player in players:
-            player.draw()
+            player.draw(cam_pos=curr_view)
 
         # Flip (draw) the display
         pygame.display.flip()
