@@ -31,11 +31,7 @@ def main():
     hunger_rate = 2500
     stamina_cooldown = 1000
 
-    cd = {"spawn": 0, "bullet": 0, "food": 0, "stamina_regen": 0}
-
-    while running:
-        dt = clock.tick(globals.FPS) / 1000
-        print(dt)
+    cd = {"spawn": 0, "bullet": 0, "food": 0, "stamina_regen": 0, "cam_switch": 0}
 
     cam1 = camera.Camera(pygame.Vector2([0, 0]), pygame.Vector2([1000, 700]))
     cam2 = camera.Camera(pygame.Vector2([200, 200]), pygame.Vector2([1000, 700]))
@@ -45,7 +41,6 @@ def main():
         cams=cams, window=Window.from_display_module()
     )
 
-    cd = {"spawn": 0, "bullet": 0, "cam_switch": 0}
     while running:
         dt = clock.tick(globals.FPS) / 1000
         dt_mili = clock.get_time()
@@ -73,18 +68,18 @@ def main():
         }
 
         if cd["bullet"] >= 0:
-            cd["bullet"] -= clock.get_time()
+            cd["bullet"] -= dt_mili
         if cd["spawn"] >= 0:
-            cd["spawn"] -= clock.get_time()
+            cd["spawn"] -= dt_mili
         if cd["food"] <= hunger_rate:
-            cd["food"] += clock.get_time()
+            cd["food"] += dt_mili
         if cd["stamina_regen"] >= 0:
-            cd["stamina_regen"] -= clock.get_time()
+            cd["stamina_regen"] -= dt_mili
         if cd["cam_switch"] >= 0:
             cd["cam_switch"] -= dt_mili
 
 
-        if mouse_keys[0] and clock.get_time() - cd["bullet"] > 0:
+        if mouse_keys[0] and dt_mili - cd["bullet"] > 0:
             # players[0].food += 1
             cd["bullet"] = 75
             bullets.append(
@@ -120,7 +115,7 @@ def main():
                 players[0].food = 0
                 players[0].health -= 0.5
 
-        if mouse_keys[2] and clock.get_time() - cd["cam_switch"] >= 0:
+        if mouse_keys[2] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 1000
             (
                 cameracontroller.change_cam("cam2")
@@ -129,7 +124,7 @@ def main():
             )
 
 
-        if keys[pygame.K_b] and clock.get_time() - cd["spawn"] > 0:
+        if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 100
             enemies.append(enemy.Enemy(screen=screen, type="enemy"))
 
