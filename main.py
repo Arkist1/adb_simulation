@@ -193,6 +193,7 @@ def main():
         pygame.draw.line(screen, boundry_rgb, right, rightbottom)
         pygame.draw.line(screen, boundry_rgb, bottom, rightbottom)
 
+        ####### Status bars ######
         stamina_bar2 = pygame.Rect(20, 600, 258, 23)
         pygame.draw.rect(screen, bar_grey, stamina_bar2)
         stamina_bar = pygame.Rect(
