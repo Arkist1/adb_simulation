@@ -5,8 +5,9 @@ import enemy
 import bullet
 import random
 
+
 def main():
-    
+
     pygame.init()
 
     screen = pygame.display.set_mode([globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT])
@@ -47,12 +48,12 @@ def main():
             cd["spawn"] -= clock.get_time()
 
         if mouse_keys[0] and clock.get_time() - cd["bullet"] > 0:
-            cd["bullet"] = 75
+            cd["bullet"] = 0
             bullets.append(
                 bullet.Bullet(
                     players[0].pos,
                     mouse_pos,
-                    725,
+                    750,
                     50,
                     screen,
                     owner=players[0].weapon,
@@ -71,8 +72,9 @@ def main():
 
         # needs to be implemented
 
-        for bl in bullets:
-            bl.move(inputs)
+        if not mouse_keys[0]:
+            for bl in bullets:
+                bl.move(inputs)
 
         # for bullet in bullets:
         #     bullet.move()
@@ -108,12 +110,12 @@ def main():
 
         for player in players:
             player.draw()
-            
+
         # Flip (draw) the display
         pygame.display.flip()
     #
     # End of running loop
-    #=======================================
+    # =======================================
 
     pygame.quit()
 
