@@ -106,7 +106,10 @@ def main():
             players[0].speed = 300
 
         if cd["stamina_regen"] <= 0 and players[0].stamina < players[0].max_stamina:
+            hunger_rate = 1000
             players[0].stamina += 0.75
+        else:
+            hunger_rate = 2500
         
         if cd["food"] >= hunger_rate:
             cd["food"] = 0
@@ -186,7 +189,7 @@ def main():
         pygame.draw.rect(screen, bar_grey, health_bar2)
         health_bar = pygame.Rect(24, 664, int(players[0].health/players[0].max_health*250), 15)
         pygame.draw.rect(screen, health_red, health_bar)
-        
+
         ### ###
 
         # Flip (draw) the display

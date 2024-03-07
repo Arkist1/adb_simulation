@@ -15,6 +15,9 @@ class Agent(object.Object):
         colour: tuple[int] = (0, 0, 255),
         size: int = 30,
         speed: int = 300,
+        stamina: int = 250,
+        food: int = 250,
+        health: int = 250
     ) -> None:             
         super().__init__(pos=pygame.Vector2(start_pos[0], start_pos[1]), radius=size)
         self.controltype = type
