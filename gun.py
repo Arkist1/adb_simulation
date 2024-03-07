@@ -73,7 +73,7 @@ class Gun:
 
         self.screen.blit(
             rot_img,
-            self.rect.move(-(cam.position * cam.zoom)),
+            self.rect,
         )
 
     def rot_img(self, cam):

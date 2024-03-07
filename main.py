@@ -33,7 +33,7 @@ def main():
     cd = {"spawn": 0, "bullet": 0, "food": 0, "stamina_regen": 0, "cam_switch": 0}
 
     cam1 = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
-    cam2 = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE * 2)
+    cam2 = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE * 1.5)
 
     cams = {"cam1": cam1, "cam2": cam2}
     cameracontroller = camera.Camera_controller(
@@ -62,15 +62,14 @@ def main():
             "crouch": keys[pygame.K_LCTRL],
             "shoot": mouse_keys[0],
             "block": mouse_keys[2],
-            "mouse_pos": mouse_pos
-            + cameracontroller.curr_cam.position * cameracontroller.curr_cam.zoom,
+            "mouse_pos": mouse_pos / cameracontroller.curr_cam.zoom
+            + cameracontroller.curr_cam.position,
             "dt": dt,
         }
 
         print(
             f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
         )
-        print(players[0].pos, inputs["mouse_pos"])
 
         ### cooldowns ###
         if cd["bullet"] >= 0:
@@ -94,7 +93,7 @@ def main():
                     inputs["mouse_pos"],
                     775,
                     50,
-                    screen,
+                    screen=screen,
                     owner=players[0].weapon,
                 )
             )
@@ -164,11 +163,11 @@ def main():
         cam = cameracontroller.curr_cam
 
         for bl in bullets:
-            if bl.pos[0] >= globals.SCREEN_WIDTH:
+            if bl.pos[0] >= globals.MAP_WIDTH:
                 bullets.remove(bl)
             elif bl.pos[0] < 0:
                 bullets.remove(bl)
-            elif bl.pos[1] >= globals.SCREEN_HEIGHT:
+            elif bl.pos[1] >= globals.MAP_HEIGHT:
                 bullets.remove(bl)
             elif bl.pos[1] < 0:
                 bullets.remove(bl)

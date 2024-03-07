@@ -34,6 +34,7 @@ class Bullet(object.Object):
         aim,
         bullet_speed=50,
         bullet_damage=50,
+        bullet_size=5,
         screen=None,
         owner=None,
     ) -> None:
@@ -57,6 +58,8 @@ class Bullet(object.Object):
         self.aim = aim
         self.speed = bullet_speed
         self.bullet_damage = bullet_damage
+        self.bullet_size = bullet_size
+
         self.screen = screen
         self.velocity = self.calc_velocity(aim)
         self.rotation = self.owner.rotation
@@ -80,7 +83,12 @@ class Bullet(object.Object):
         Returns:
             None
         """
-        pygame.draw.circle(self.screen, (0, 0, 0), self.pos - cam.position, 5)
+        pygame.draw.circle(
+            self.screen,
+            (0, 0, 0),
+            self.pos * cam.zoom - cam.position,
+            self.bullet_size * cam.zoom,
+        )
 
     def hit(self):
         """
