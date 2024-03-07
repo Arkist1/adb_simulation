@@ -1,10 +1,12 @@
 import pygame
+import globals
 
 
 class Camera:
     def __init__(self, position: pygame.Vector2, size: pygame.Vector2) -> None:
         self.position = position
         self.size = size
+        self.zoom = sum(globals.SCREEN_SIZE) / sum(size)
 
     def move_cam(self, new_pos: pygame.Vector2):
         self.position = new_pos
@@ -24,7 +26,7 @@ class Camera_controller:
         self.window = window
 
     def change_cam(self, cam: str):
-        print("switching to ", cam)
+        print("switching to", cam)
         self.curr_cam_name = cam
         self.curr_cam = self.cameras[cam]
 

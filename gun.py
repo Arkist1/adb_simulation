@@ -43,9 +43,10 @@ class Gun:
         self.bullet_damage = 1
         self.bullet_speed = 5
         self.hitbox = 10
+        self.img_size = pygame.Vector2(70, 70)
         self.img = pygame.transform.smoothscale(
             pygame.image.load(f"{globals.root}/sprites/gun.png").convert_alpha(),
-            (70, 70),
+            self.img_size,
         )
 
         self.owner = owner
@@ -64,25 +65,33 @@ class Gun:
         """
         projectile = bullet.Bullet(self.position, self.bullet_speed, self.bullet_damage)
 
-    def draw(self, cam_pos):
+    def draw(self, cam):
         """
         Draws the gun on the screen.
         """
-        rot_img = self.rot_img()
+        rot_img = self.rot_img(cam)
 
-        self.screen.blit(rot_img, self.rect.move(-cam_pos))
+        self.screen.blit(
+            rot_img,
+            self.rect.move(-(cam.position * cam.zoom)),
+        )
 
-    def rot_img(self):
+    def rot_img(self, cam):
         """
         Rotates the gun image based on the rotation angle.
 
         Returns:
             pygame.Surface: The rotated gun image.
         """
-        new_img = pygame.transform.rotate(self.img, self.rotation)
+        scaled_img = pygame.transform.smoothscale(self.img, self.img_size * cam.zoom)
+        new_img = pygame.transform.rotate(scaled_img, self.rotation)
 
         self.rect = new_img.get_rect()
-        self.rect.center = self.owner.pos + self.get_offset(self.gunoffset)
+        # self.rect.w = self.rect.w / cam.zoom
+        # self.rect.h = self.rect.h / cam.zoom
+        self.rect.center = (
+            self.owner.pos * cam.zoom - cam.position + self.get_offset(self.gunoffset)
+        )  # / cam.zoom
 
         return new_img
 

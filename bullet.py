@@ -73,14 +73,14 @@ class Bullet(object.Object):
         """
         self.pos = self.pos + self.velocity * inputs["dt"]
 
-    def draw(self, cam_pos):
+    def draw(self, cam):
         """
         Draws the bullet on the screen.
 
         Returns:
             None
         """
-        pygame.draw.circle(self.screen, (0, 0, 0), self.pos - cam_pos, 5)
+        pygame.draw.circle(self.screen, (0, 0, 0), self.pos - cam.position, 5)
 
     def hit(self):
         """
