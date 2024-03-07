@@ -21,7 +21,6 @@ def main():
     boxes = []
     bullets = []
 
-
     # Colors
     stamina_yellow = (255, 255, 10)
     food_green = (90, 255, 140)
@@ -83,7 +82,6 @@ def main():
         if cd["cam_switch"] >= 0:
             cd["cam_switch"] -= dt_mili
 
-
         if mouse_keys[0] and clock.get_time() - cd["bullet"] > 0:
             # players[0].food += 1
             cd["bullet"] = 75
@@ -98,7 +96,6 @@ def main():
                 )
             )
 
-
         if inputs["sprint"] and players[0].stamina > 0:
             players[0].stamina -= 0.5
             players[0].speed = 450
@@ -112,7 +109,7 @@ def main():
 
         if cd["stamina_regen"] <= 0 and players[0].stamina < players[0].max_stamina:
             players[0].stamina += 0.25
-        
+
         if cd["food"] >= hunger_rate:
             cd["food"] = 0
             players[0].food -= 1
@@ -128,7 +125,6 @@ def main():
                 else cameracontroller.change_cam("cam1")
             )
 
-
         if keys[pygame.K_b] and clock.get_time() - cd["spawn"] > 0:
             cd["spawn"] = 100
             enemies.append(enemy.Enemy(screen=screen, type="enemy"))
@@ -138,8 +134,6 @@ def main():
 
         for player in players:
             player.get_move(inputs)
-
-
 
         # needs to be implemented
 
@@ -176,23 +170,24 @@ def main():
 
         stamina_bar2 = pygame.Rect(20, 600, 258, 23)
         pygame.draw.rect(screen, bar_grey, stamina_bar2)
-        stamina_bar = pygame.Rect(24, 604, int(players[0].stamina/players[0].max_stamina*250), 15)
+        stamina_bar = pygame.Rect(
+            24, 604, int(players[0].stamina / players[0].max_stamina * 250), 15
+        )
         pygame.draw.rect(screen, stamina_yellow, stamina_bar)
 
         food_bar2 = pygame.Rect(20, 630, 258, 23)
         pygame.draw.rect(screen, bar_grey, food_bar2)
-        food_bar = pygame.Rect(24, 634, int(players[0].food/players[0].max_food*250), 15)
+        food_bar = pygame.Rect(
+            24, 634, int(players[0].food / players[0].max_food * 250), 15
+        )
         pygame.draw.rect(screen, food_green, food_bar)
-        
+
         health_bar2 = pygame.Rect(20, 660, 258, 23)
         pygame.draw.rect(screen, bar_grey, health_bar2)
-        health_bar = pygame.Rect(24, 664, int(players[0].health/players[0].max_health*250), 15)
+        health_bar = pygame.Rect(
+            24, 664, int(players[0].health / players[0].max_health * 250), 15
+        )
         pygame.draw.rect(screen, health_red, health_bar)
-        
-            
-
-            
-
 
         # Flip (draw) the display
         pygame.display.flip()
