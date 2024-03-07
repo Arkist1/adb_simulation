@@ -15,6 +15,9 @@ class Agent(objects.Object):
         colour: tuple[int] = (0, 0, 255),
         size: int = 30,
         speed: int = 300,
+        health: int = 250,
+        food: int = 250,
+        stamina: int = 250,
     ) -> None:
         """Create an agent object
 
@@ -33,6 +36,13 @@ class Agent(objects.Object):
         self.colour = colour
         self.screen = screen
         self.weapon = gun.Gun(screen=self.screen, owner=self)
+        
+        self.health = health
+        self.max_health = health
+        self.food = food
+        self.max_food = food
+        self.stamina = stamina
+        self.max_stamina = stamina
 
     def get_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
         """
