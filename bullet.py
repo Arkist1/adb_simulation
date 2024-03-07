@@ -27,6 +27,7 @@ class Bullet(objects.Object):
         calc_velocity(self, aim)
             Calculates the velocity of the bullet based on the aim position.
     """
+
     def __init__(
         self,
         position,
@@ -70,19 +71,16 @@ class Bullet(objects.Object):
         Returns:
             None
         """
-        self.pos = (
-            self.pos[0] + self.velocity[0] * inputs["dt"],
-            self.pos[1] + self.velocity[1] * inputs["dt"],
-        )
+        self.pos = self.pos + self.velocity * inputs["dt"]
 
-    def draw(self):
+    def draw(self, cam_pos):
         """
         Draws the bullet on the screen.
 
         Returns:
             None
         """
-        pygame.draw.circle(self.screen, (0, 0, 0), self.pos, 5)
+        pygame.draw.circle(self.screen, (0, 0, 0), self.pos - cam_pos, 5)
 
     def hit(self):
         """
@@ -113,4 +111,6 @@ class Bullet(objects.Object):
             neg_y = -1
         sdelta = sum([abs(dx), abs(dy)])
         ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
-        return (self.speed * ratio[0] * neg_x, self.speed * ratio[1] * neg_y)
+        return pygame.Vector2(
+            self.speed * ratio[0] * neg_x, self.speed * ratio[1] * neg_y
+        )

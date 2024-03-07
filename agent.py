@@ -5,8 +5,8 @@ import gun
 
 
 class Agent(objects.Object):
-    """An agent instance
-    """    
+    """An agent instance"""
+
     def __init__(
         self,
         screen: pygame.Surface,
@@ -28,7 +28,7 @@ class Agent(objects.Object):
             colour (tuple[int], optional): The color of the agent (r, g, b). Defaults to (0, 0, 255).
             size (int, optional): The size of the agent. Defaults to 30.
             speed (int, optional): The movement speed of the agent. Defaults to 300.
-        """               
+        """
         super().__init__(pos_x=start_pos[0], pos_y=start_pos[1], width=size)
         self.controltype = type
         self.speed = speed
@@ -45,20 +45,20 @@ class Agent(objects.Object):
         self.max_stamina = stamina
 
     def get_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
-            """
-            Returns the move for the agent based on the given inputs.
+        """
+        Returns the move for the agent based on the given inputs.
 
-            Args:
-                inputs (dict[str, bool]): A dictionary containing the inputs for the agent.
+        Args:
+            inputs (dict[str, bool]): A dictionary containing the inputs for the agent.
 
-            Returns:
-                pygame.Vector2: The move for the agent.
-            """        
-            if self.controltype == "human":
-                return self.get_human_move(inputs)
+        Returns:
+            pygame.Vector2: The move for the agent.
+        """
+        if self.controltype == "human":
+            return self.get_human_move(inputs)
 
-            if self.controltype == "random":
-                return self.get_random_move()
+        if self.controltype == "random":
+            return self.get_random_move()
 
     def get_human_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
         """
@@ -95,13 +95,15 @@ class Agent(objects.Object):
         # if inputs["shoot"]:
         #     self.weapon.fire()
 
-    def draw(self):
+    def draw(self, cam_pos):
         """
         Draw the agent on the screen.
 
         This method draws a circle representing the agent on the screen using the specified colour and position.
         If the agent has a weapon, it also calls the `draw` method of the weapon to draw it on the screen.
         """
-        pygame.draw.circle(self.screen, self.colour, self.pos, self.hitbox)  # circle
+        pygame.draw.circle(
+            self.screen, self.colour, self.pos - cam_pos, self.hitbox
+        )  # circle
         if self.weapon:
-            self.weapon.draw()
+            self.weapon.draw(cam_pos)
