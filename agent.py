@@ -34,17 +34,34 @@ class Agent(objects.Object):
         self.screen = screen
         self.weapon = gun.Gun(screen=self.screen, owner=self)
 
-    def get_move(self, inputs):
-        if self.controltype == "human":
-            return self.get_human_move(inputs)
+    def get_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
+            """
+            Returns the move for the agent based on the given inputs.
 
-        if self.controltype == "random":
-            return self.get_random_move()
+            Args:
+                inputs (dict[str, bool]): A dictionary containing the inputs for the agent.
 
-    def get_random_move():
-        return
+            Returns:
+                pygame.Vector2: The move for the agent.
+            """        
+            if self.controltype == "human":
+                return self.get_human_move(inputs)
+
+            if self.controltype == "random":
+                return self.get_random_move()
 
     def get_human_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
+        """
+        Calculates the movement vector based on the user inputs.
+
+        Args:
+            inputs (dict[str, bool]): A dictionary containing the user inputs.
+                The keys represent the input types, and the values represent
+                whether the input is active or not.
+
+        Returns:
+            pygame.Vector2: The movement vector calculated based on the user inputs.
+        """
         s = self.speed * inputs["dt"]
         vec = pygame.Vector2(0, 0)
 
@@ -69,6 +86,12 @@ class Agent(objects.Object):
         #     self.weapon.fire()
 
     def draw(self):
+        """
+        Draw the agent on the screen.
+
+        This method draws a circle representing the agent on the screen using the specified colour and position.
+        If the agent has a weapon, it also calls the `draw` method of the weapon to draw it on the screen.
+        """
         pygame.draw.circle(self.screen, self.colour, self.pos, self.hitbox)  # circle
         if self.weapon:
             self.weapon.draw()
