@@ -18,6 +18,7 @@ class Bullet(objects.Object):
         new_pos = position + offset
         super().__init__(*new_pos, 5)
 
+        self.p_pos = position
         self.aim = aim
         self.speed = bullet_speed
         self.bullet_damage = bullet_damage
@@ -41,8 +42,8 @@ class Bullet(objects.Object):
     def calc_velocity(self, aim):
         neg_x = 1
         neg_y = 1
-        dx = aim[0] - self.pos[0]
-        dy = aim[1] - self.pos[1]
+        dx = aim[0] - self.p_pos[0]
+        dy = aim[1] - self.p_pos[1]
         if dx < 0:
             neg_x = -1
         if dy < 0:
