@@ -27,6 +27,7 @@ class Bullet(object.Object):
         calc_velocity(self, aim)
             Calculates the velocity of the bullet based on the aim position.
     """
+
     def __init__(
         self,
         position,
@@ -52,6 +53,7 @@ class Bullet(object.Object):
         new_pos = position + offset
         super().__init__(pos=new_pos, radius=5)
 
+        self.p_pos = position
         self.aim = aim
         self.speed = bullet_speed
         self.bullet_damage = bullet_damage
@@ -69,19 +71,16 @@ class Bullet(object.Object):
         Returns:
             None
         """
-        self.pos = (
-            self.pos[0] + self.velocity[0] * inputs["dt"],
-            self.pos[1] + self.velocity[1] * inputs["dt"],
-        )
+        self.pos = self.pos + self.velocity * inputs["dt"]
 
-    def draw(self):
+    def draw(self, cam_pos):
         """
         Draws the bullet on the screen.
 
         Returns:
             None
         """
-        pygame.draw.circle(self.screen, (0, 0, 0), self.pos, 5)
+        pygame.draw.circle(self.screen, (0, 0, 0), self.pos - cam_pos, 5)
 
     def hit(self):
         """
@@ -104,12 +103,14 @@ class Bullet(object.Object):
         """
         neg_x = 1
         neg_y = 1
-        dx = aim[0] - self.pos[0]
-        dy = aim[1] - self.pos[1]
+        dx = aim[0] - self.p_pos[0]
+        dy = aim[1] - self.p_pos[1]
         if dx < 0:
             neg_x = -1
         if dy < 0:
             neg_y = -1
         sdelta = sum([abs(dx), abs(dy)])
         ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
-        return (self.speed * ratio[0] * neg_x, self.speed * ratio[1] * neg_y)
+        return pygame.Vector2(
+            self.speed * ratio[0] * neg_x, self.speed * ratio[1] * neg_y
+        )

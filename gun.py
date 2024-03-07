@@ -30,7 +30,7 @@ class Gun:
         get_offset(offsetmulti): Calculates the offset vector based on the rotation angle.
     """
 
-    def __init__(self, screen: pygame.Surface=None, owner: any=None):
+    def __init__(self, screen: pygame.Surface = None, owner: any = None):
         """
         Initializes a Gun object.
 
@@ -47,7 +47,7 @@ class Gun:
             pygame.image.load(f"{globals.root}/sprites/gun.png").convert_alpha(),
             (70, 70),
         )
-        
+
         self.owner = owner
 
         self.gunoffset = 30
@@ -64,12 +64,13 @@ class Gun:
         """
         projectile = bullet.Bullet(self.position, self.bullet_speed, self.bullet_damage)
 
-    def draw(self):
+    def draw(self, cam_pos):
         """
         Draws the gun on the screen.
         """
         rot_img = self.rot_img()
-        self.screen.blit(rot_img, self.rect)
+
+        self.screen.blit(rot_img, self.rect.move(-cam_pos))
 
     def rot_img(self):
         """
@@ -99,7 +100,7 @@ class Gun:
 
         self.rotation = angle
 
-    def get_offset(self, offsetmulti: int=None):
+    def get_offset(self, offsetmulti: int = None):
         """
         Calculates the offset vector based on the rotation angle.
 

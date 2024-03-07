@@ -5,7 +5,7 @@ import pygame
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
 SQR2 = 2 ** (1 / 2)
-FPS = 240
+FPS = 60
 root = os.getcwd()
 MAP_WIDTH = 1000
 MAP_HEIGHT = 700

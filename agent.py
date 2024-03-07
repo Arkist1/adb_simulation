@@ -23,22 +23,29 @@ class Agent(object.Object):
         self.colour = colour
         self.screen = screen
         self.weapon = gun.Gun(screen=self.screen, owner=self)
+        
+        self.health = health
+        self.max_health = health
+        self.food = food
+        self.max_food = food
+        self.stamina = stamina
+        self.max_stamina = stamina
 
     def get_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
-            """
-            Returns the move for the agent based on the given inputs.
+        """
+        Returns the move for the agent based on the given inputs.
 
-            Args:
-                inputs (dict[str, bool]): A dictionary containing the inputs for the agent.
+        Args:
+            inputs (dict[str, bool]): A dictionary containing the inputs for the agent.
 
-            Returns:
-                pygame.Vector2: The move for the agent.
-            """        
-            if self.controltype == "human":
-                return self.get_human_move(inputs)
+        Returns:
+            pygame.Vector2: The move for the agent.
+        """
+        if self.controltype == "human":
+            return self.get_human_move(inputs)
 
-            if self.controltype == "random":
-                return self.get_random_move()
+        if self.controltype == "random":
+            return self.get_random_move()
 
     def get_human_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
         """
@@ -75,13 +82,15 @@ class Agent(object.Object):
         # if inputs["shoot"]:
         #     self.weapon.fire()
 
-    def draw(self):
+    def draw(self, cam_pos):
         """
         Draw the agent on the screen.
 
         This method draws a circle representing the agent on the screen using the specified colour and position.
         If the agent has a weapon, it also calls the `draw` method of the weapon to draw it on the screen.
         """
-        pygame.draw.circle(self.screen, self.colour, self.pos, self.hitbox)  # circle
+        pygame.draw.circle(
+            self.screen, self.colour, self.pos - cam_pos, self.hitbox
+        )  # circle
         if self.weapon:
-            self.weapon.draw()
+            self.weapon.draw(cam_pos)
