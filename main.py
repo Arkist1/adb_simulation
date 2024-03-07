@@ -6,6 +6,7 @@ import enemy
 import bullet
 import random
 import camera
+import pickup
 
 
 def main():
@@ -20,6 +21,7 @@ def main():
     enemies = []
     boxes = []
     bullets = []
+    pickups = []
 
     # Colors
     stamina_yellow = (255, 255, 10)
@@ -78,6 +80,12 @@ def main():
         if cd["cam_switch"] >= 0:
             cd["cam_switch"] -= dt_mili
 
+        ### kill player ###
+        for pl in players:
+            if pl.health <= 0:
+                players.remove(pl)
+                players.append(agent.Agent(screen=screen))
+
         ### bullet fire ###
         if mouse_keys[0] and dt_mili - cd["bullet"] > 0:
             # players[0].food += 1
@@ -93,6 +101,15 @@ def main():
                 )
             )
 
+        ### pickup collision detection ###
+        for pu in pickups:
+            if players[0].is_colliding(pu):
+                pickups.remove(pu)
+                if pu.pickup_type == 0 or pu.pickup_type == 1:
+                    players[0].health = min((players[0].health + pu.picked_up()), players[0].max_health)
+                else:
+                    players[0].food = min((players[0].food + pu.picked_up()), players[0].max_food)
+            
         ### sprint and crouch ###
         if inputs["sprint"] and players[0].stamina > 0:
             players[0].stamina -= 1
@@ -134,6 +151,15 @@ def main():
             cd["spawn"] = 100
             enemies.append(enemy.Enemy(screen=screen, type="enemy"))
 
+        ### manual pickup spawning ###
+        if keys[pygame.K_n] and dt_mili - cd["spawn"] > 0:
+            cd["spawn"] = 500
+            pickups.append(pickup.Pickup(pickup_type=random.randint(0, 3), start_pos=[random.randint(200, 600), random.randint(200, 600)], screen=screen))
+
+        if keys[pygame.K_f] and dt_mili - cd["cam_switch"] >= 0:
+            cd["cam_switch"] = 10
+            players[0].health -= 25
+
         for en in enemies:
             en.get_move(inputs={"nearest_player": players[0], "dt": dt})
 
@@ -171,6 +197,9 @@ def main():
                 bullets.remove(bl)
 
             bl.draw(cam_pos=curr_cam_pos)
+
+        for pu in pickups:
+            pu.draw(cam_pos=curr_cam_pos)
 
         for en in enemies:
             en.draw(cam_pos=curr_cam_pos)
