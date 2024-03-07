@@ -1,9 +1,9 @@
 import pygame
-import objects
+import object
 import math
 
 
-class Bullet(objects.Object):
+class Bullet(object.Object):
     """
     Represents a bullet object in the game.
 
@@ -51,7 +51,7 @@ class Bullet(objects.Object):
         self.owner = owner
         offset = self.owner.get_offset()
         new_pos = position + offset
-        super().__init__(*new_pos, 5)
+        super().__init__(pos=new_pos, radius=5)
 
         self.p_pos = position
         self.aim = aim
