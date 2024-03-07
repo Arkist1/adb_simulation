@@ -70,9 +70,9 @@ def main():
             "dt": dt,
         }
 
-        print(
-            f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
-        )
+        # print(
+        #     f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
+        # )
 
         ### cooldowns ###
         if cd["bullet"] >= 0:
@@ -102,7 +102,7 @@ def main():
                     inputs["mouse_pos"],
                     775,
                     50,
-                    screen,
+                    screen=screen,
                     owner=current_player.weapon,
                 )
             )
@@ -112,10 +112,15 @@ def main():
             if current_player.is_colliding(pu):
                 pickups.remove(pu)
                 if pu.pickup_type == 0 or pu.pickup_type == 1:
-                    current_player.health = min((current_player.health + pu.picked_up()), current_player.max_health)
+                    current_player.health = min(
+                        (current_player.health + pu.picked_up()),
+                        current_player.max_health,
+                    )
                 elif pu.pickup_type == 2 or pu.pickup_type == 3:
-                    current_player.food = min((current_player.food + pu.picked_up()), current_player.max_food)
-            
+                    current_player.food = min(
+                        (current_player.food + pu.picked_up()), current_player.max_food
+                    )
+
         ### sprint and crouch ###
         if inputs["sprint"] and current_player.stamina > 0:
             current_player.stamina -= 1
@@ -129,7 +134,10 @@ def main():
             current_player.speed = 300
 
         ### stamina regen ###
-        if cd["stamina_regen"] <= 0 and current_player.stamina < current_player.max_stamina:
+        if (
+            cd["stamina_regen"] <= 0
+            and current_player.stamina < current_player.max_stamina
+        ):
             hunger_rate = 1000
             current_player.stamina += 0.75
         else:
@@ -160,7 +168,13 @@ def main():
         ### manual pickup spawning ###
         if keys[pygame.K_n] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 500
-            pickups.append(pickup.Pickup(pickup_type=random.randint(0, 3), start_pos=[random.randint(200, 600), random.randint(200, 600)], screen=screen))
+            pickups.append(
+                pickup.Pickup(
+                    pickup_type=random.randint(0, 3),
+                    start_pos=[random.randint(200, 600), random.randint(200, 600)],
+                    screen=screen,
+                )
+            )
 
         if keys[pygame.K_f] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 10
@@ -202,7 +216,7 @@ def main():
             bl.draw(cam=cam)
 
         for pu in pickups:
-            pu.draw(cam_pos=curr_cam_pos)
+            pu.draw(cam=cam)
 
         for en in enemies:
             en.draw(cam=cam)
