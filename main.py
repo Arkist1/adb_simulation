@@ -95,18 +95,18 @@ def main():
 
 
         if inputs["sprint"] and players[0].stamina > 0:
-            players[0].stamina -= 0.5
+            players[0].stamina -= 1
             players[0].speed = 450
             cd["stamina_regen"] = stamina_cooldown
         elif inputs["crouch"] and players[0].stamina > 0:
-            players[0].stamina -= 0.25
+            players[0].stamina -= 0.5
             players[0].speed = 150
             cd["stamina_regen"] = stamina_cooldown
         else:
             players[0].speed = 300
 
         if cd["stamina_regen"] <= 0 and players[0].stamina < players[0].max_stamina:
-            players[0].stamina += 0.25
+            players[0].stamina += 0.75
         
         if cd["food"] >= hunger_rate:
             cd["food"] = 0
@@ -169,6 +169,9 @@ def main():
         for player in players:
             player.draw(cam_pos=curr_view)
 
+
+        ### status bars draw functies ###
+            
         stamina_bar2 = pygame.Rect(20, 600, 258, 23)
         pygame.draw.rect(screen, bar_grey, stamina_bar2)
         stamina_bar = pygame.Rect(24, 604, int(players[0].stamina/players[0].max_stamina*250), 15)
@@ -184,10 +187,7 @@ def main():
         health_bar = pygame.Rect(24, 664, int(players[0].health/players[0].max_health*250), 15)
         pygame.draw.rect(screen, health_red, health_bar)
         
-            
-
-            
-
+        ### ###
 
         # Flip (draw) the display
         pygame.display.flip()
