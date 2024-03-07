@@ -48,12 +48,20 @@ def main():
             cd["spawn"] -= clock.get_time()
 
         if mouse_keys[0] and clock.get_time() - cd["bullet"] > 0:
+<<<<<<< HEAD
             cd["bullet"] = 0
+=======
+            cd["bullet"] = 1
+>>>>>>> 1c10aa20e6aab904dd5ecd5304078d46a44aaf3e
             bullets.append(
                 bullet.Bullet(
                     players[0].pos,
                     mouse_pos,
+<<<<<<< HEAD
                     750,
+=======
+                    775,
+>>>>>>> 1c10aa20e6aab904dd5ecd5304078d46a44aaf3e
                     50,
                     screen,
                     owner=players[0].weapon,
