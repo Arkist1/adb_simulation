@@ -47,9 +47,15 @@ class Object(Hitbox):
         
         for other in colliding:
             if self.is_colliding(other):
-                vec = other.pos - self.pos
-                other.pos += vec / 100
-                self.pos -= vec / 100
+                if self.type == "circle" and other.type == "circle":
+                    perc = (globals.dist(self.pos, other.pos) / (self.radius + other.radius))
+                    vec = other.pos - self.pos
+                    other.pos += vec / (100 * perc)
+                    self.pos -= vec / (100 * perc)
+                else:
+                    vec = other.pos - self.pos
+                    other.pos += vec / 300
+                    self.pos -= vec / 300
             
         return True
         
