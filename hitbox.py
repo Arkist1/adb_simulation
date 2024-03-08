@@ -48,8 +48,8 @@ class Hitbox:
         return self.is_hitbox_within(other.min_xy(), other.max_xy())
         
     def is_hitbox_within(self, min_coords: pygame.Vector2, max_coords: pygame.Vector2) -> bool:
-        return  self.min_xy().x >= min_coords.x and \
-                self.max_xy().x < max_coords.x and \
-                self.min_xy().y >= min_coords.y and \
-                self.max_xy().y < max_coords.y
+        return  self.max_xy().x >= min_coords.x and \
+                self.min_xy().x < max_coords.x and \
+                self.max_xy().y >= min_coords.y and \
+                self.min_xy().y < max_coords.y
                 

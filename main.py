@@ -1,15 +1,31 @@
 from pygame._sdl2.video import Window
 import pygame
-import agent
 import globals
-import enemy
-import bullet
 import random
 import camera
 import pickup
+from bullet import Bullet
+from agent import Agent
 from wall import Wall
+from object import Object
+from hitbox import Hitbox
+from pickup import Pickup
+from enemy import Enemy
 
-
+class EntityHolder:
+    def __init__(self) -> None:
+        self.players: list[Agent] = []
+        self.boxes: list[Hitbox] = []
+        self.bullets: list[Bullet] = []
+        self.pickups: list[Pickup] = []
+        self.enemies: list[Enemy] = []
+        self.walls: list[Wall] = []
+        
+    def get_objects(self) -> list[Object]:
+        return self.players + self.enemies + self.walls
+    
+    def get_items(self) -> list[Hitbox]:
+        return self.players + self.boxes + self.bullets + self.pickups + self.enemies + self.walls
 
 def main():
 
@@ -19,12 +35,8 @@ def main():
     clock = pygame.time.Clock()
 
     running = True
-    players = [agent.Agent(screen=screen)]
-    boxes = []
-    bullets = []
-    pickups = []
-    enemies = []
-    walls = []
+    entities = EntityHolder()
+    entities.players.append(Agent(screen=screen))
 
     # Colors
     stamina_yellow = (255, 255, 10)
@@ -60,7 +72,7 @@ def main():
         cams=cams, window=Window.from_display_module()
     )
 
-    camera_target = players[0]
+    camera_target = entities.players[0]
     vectors = []
 
     while running:
@@ -75,7 +87,7 @@ def main():
         keys = pygame.key.get_pressed()
         mouse_keys = pygame.mouse.get_pressed()
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
-        current_player = players[0]
+        current_player = entities.players[0]
 
         inputs = {
             "up": keys[pygame.K_w],
@@ -101,15 +113,15 @@ def main():
                 cd[key] = item - dt_mili
 
         ### kill player ###
-        for pl in players:
+        for pl in entities.players:
             if pl.health <= 0:
-                players.remove(pl)
-                players.append(agent.Agent(screen=screen))
+                entities.players.remove(pl)
+                entities.players.append(Agent(screen=screen))
 
         ### pickup collision detection ###
-        for pu in pickups:
+        for pu in entities.pickups:
             if current_player.is_colliding(pu):
-                pickups.remove(pu)
+                entities.pickups.remove(pu)
                 if pu.pickup_type == 0 or pu.pickup_type == 1:
                     current_player.health = min(
                         (current_player.health + pu.picked_up()),
@@ -164,7 +176,7 @@ def main():
             vectors = []
             closest_obj = None
             closest_dist = None
-            for item in enemies + players + bullets + pickups + boxes:
+            for item in entities.get_items():
                 dist = abs(sum(inputs["mouse_pos"] - item.pos))
                 vectors.append([inputs["mouse_pos"], item.pos.copy()])
                 if not closest_dist:
@@ -184,37 +196,37 @@ def main():
         ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 100
-            enemies.append(
-                enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
+            entities.enemies.append(
+                Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
             )
 
         ### manual pickup spawning ###
         if keys[pygame.K_n] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 500
-            pickups.append(
-                pickup.Pickup(
+            entities.pickups.append(
+                Pickup(
                     pickup_type=random.randint(0, 3),
                     start_pos=[random.randint(200, 600), random.randint(200, 600)],
                     screen=screen,
                 )
             )
              
-        walls.append(Wall(screen, pygame.Vector2(200, 200)))
+        entities.walls.append(Wall(screen, pygame.Vector2(200, 200)))
 
         if keys[pygame.K_f] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 10
             current_player.health -= 25
 
         ###### Perceptions #####
-        for en in enemies:
+        for en in entities.enemies:
             en.percept()
 
         ###### Movement #####
-        for en in enemies:
-            en.get_move(inputs={"nearest_player": current_player, "dt": dt}, entities=enemies+players+walls)
+        for en in entities.enemies:
+            en.get_move(inputs={"nearest_player": current_player, "dt": dt}, entities=entities.get_objects())
 
-        for player in players:
-            player.get_move(inputs, enemies+players+walls)
+        for player in entities.players:
+            player.get_move(inputs, entities.get_objects())
 
             playercam.position = player.pos - playercam.size / 2
             # cam2.position = player.pos - cam2.size / 2
@@ -241,7 +253,7 @@ def main():
             if keys[pygame.K_p]:
                 freecam.apply_zoom(1.25)
 
-        for bl in bullets:
+        for bl in entities.bullets:
             bl.move(inputs)
 
         ### bullet fire ###
@@ -249,7 +261,7 @@ def main():
             # current_player.food += 1
             cd["bullet"] = 75
 
-            bullets.append(current_player.shoot(inputs["mouse_pos"]))
+            entities.bullets.append(current_player.shoot(inputs["mouse_pos"]))
 
         ################ Drawing cycle ################
 
@@ -257,28 +269,28 @@ def main():
 
         cam = cameracontroller.curr_cam
 
-        for bl in bullets:
+        for bl in entities.bullets:
             if bl.pos[0] >= globals.MAP_WIDTH:
-                bullets.remove(bl)
+                entities.bullets.remove(bl)
             elif bl.pos[0] < 0:
-                bullets.remove(bl)
+                entities.bullets.remove(bl)
             elif bl.pos[1] >= globals.MAP_HEIGHT:
-                bullets.remove(bl)
+                entities.bullets.remove(bl)
             elif bl.pos[1] < 0:
-                bullets.remove(bl)
+                entities.bullets.remove(bl)
 
             bl.draw(cam=cam)
 
-        for pu in pickups:
+        for pu in entities.pickups:
             pu.draw(cam=cam)
 
-        for en in enemies:
+        for en in entities.enemies:
             en.draw(cam=cam)
 
-        for player in players:
+        for player in entities.players:
             player.draw(cam=cam)
             
-        for wall in walls:
+        for wall in entities.walls:
             wall.draw(cam=cam)
 
         ######## Map boundary drawing ########

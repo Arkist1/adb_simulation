@@ -16,17 +16,20 @@ class Object(Hitbox):
         
     def move(self, velocity: pygame.Vector2, objects: list[Hitbox]) -> bool:
         self.pos += velocity
+        
         w_off = (self.radius if self.type == "circle" else self.width / 2)
         h_off = (self.radius if self.type == "circle" else self.height / 2)
-        
-        if self.pos.x - w_off <= self.min_pos.x:
+            
+        if self.min_xy().x <= self.min_pos.x:
             self.pos.x = self.min_pos.x + w_off
-        if self.pos.x + w_off >= self.max_pos.x:
+        if self.max_xy().x >= self.max_pos.x:
             self.pos.x = self.max_pos.x - w_off
-        if self.pos.y - h_off <= self.min_pos.y:
+        if self.min_xy().y <= self.min_pos.y:
             self.pos.y = self.min_pos.y + h_off
-        if self.pos.y + h_off >= self.max_pos.y:
+        if self.max_xy().y >= self.max_pos.y:
             self.pos.y = self.max_pos.y - h_off
+            
+        colliding = []
         
         for other in objects:
             if other == self:
@@ -37,15 +40,20 @@ class Object(Hitbox):
                     return False
                 other.pos += velocity / 2
                 self.pos -= velocity / 2
+                colliding.append(other)
         
-        for _ in range(100):
+        if len(colliding) == 0:
+            return True
+        
+        for _ in range(5):
             any_colliding = False
-            for other in objects:
+            for other in colliding:
                 if other == self:
                     continue
                 if self.is_colliding(other):
                     vec = other.pos - self.pos
-                    other.pos += vec / 1000
+                    other.pos += vec / 100
+                    self.pos -= vec / 100
                     any_colliding = True
             if not any_colliding:
                 break
