@@ -32,15 +32,25 @@ def main():
     hunger_rate = 2500
     stamina_cooldown = 1000
 
-    cd = {"spawn": 0, "bullet": 0, "food": 0, "stamina_regen": 0, "cam_switch": 0}
+    cd = {
+        "spawn": 0,
+        "bullet": 0,
+        "food": 0,
+        "stamina_regen": 0,
+        "cam_switch": 0,
+        "target_cd": 0,
+    }
 
-    cam1 = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
-    cam2 = camera.Camera(pygame.Vector2([0, 0]), globals.MAP_SIZE)
+    playercam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
+    followcam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
+    mapcam = camera.Camera(pygame.Vector2([0, 0]), globals.MAP_SIZE)
 
-    cams = {"cam1": cam1, "cam2": cam2}
+    cams = {"playercam": playercam, "mapcam": mapcam, "followcam": followcam}
     cameracontroller = camera.Camera_controller(
         cams=cams, window=Window.from_display_module()
     )
+
+    camera_target = players[0]
 
     while running:
         dt = clock.tick(globals.FPS) / 1000
@@ -75,16 +85,9 @@ def main():
         # )
 
         ### cooldowns ###
-        if cd["bullet"] >= 0:
-            cd["bullet"] -= dt_mili
-        if cd["spawn"] >= 0:
-            cd["spawn"] -= dt_mili
-        if cd["food"] <= hunger_rate:
-            cd["food"] += dt_mili
-        if cd["stamina_regen"] >= 0:
-            cd["stamina_regen"] -= dt_mili
-        if cd["cam_switch"] >= 0:
-            cd["cam_switch"] -= dt_mili
+        for key, item in cd.items():
+            if cd[key] >= 0:
+                cd[key] = item - dt_mili
 
         ### kill player ###
         for pl in players:
@@ -138,17 +141,31 @@ def main():
 
         ### cam switch ###
         if mouse_keys[2] and dt_mili - cd["cam_switch"] >= 0:
-            cd["cam_switch"] = 1000
-            (
-                cameracontroller.change_cam("cam2")
-                if cameracontroller.curr_cam_name == "cam1"
-                else cameracontroller.change_cam("cam1")
+            cd["cam_switch"] = 100
+            cams = list(cameracontroller.cameras.keys())
+            cameracontroller.change_cam(
+                cams[(cams.index(cameracontroller.curr_cam_name) + 1) % len(cams)]
             )
+
+        ### selector cam targeting ###
+        if mouse_keys[1] and dt_mili - cd["target_cd"] >= 0:
+            cd["target_cd"] = 100
 
         ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
-            cd["spawn"] = 100
-            enemies.append(enemy.Enemy(screen=screen, type="enemy"))
+            cd["spawn"] = 1
+            enemies.append(
+                enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
+            )
+            enemies.append(
+                enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
+            )
+            enemies.append(
+                enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
+            )
+            enemies.append(
+                enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
+            )
 
         ### manual pickup spawning ###
         if keys[pygame.K_n] and dt_mili - cd["spawn"] > 0:
@@ -176,8 +193,10 @@ def main():
         for player in players:
             player.get_move(inputs)
 
-            cam1.position = player.pos - cam1.size / 2
+            playercam.position = player.pos - playercam.size / 2
             # cam2.position = player.pos - cam2.size / 2
+
+        followcam.position = camera_target.pos - followcam.size / 2
 
         for bl in bullets:
             bl.move(inputs)
