@@ -100,7 +100,9 @@ class Gun:
         # self.rect.w = self.rect.w / cam.zoom
         # self.rect.h = self.rect.h / cam.zoom
         self.rect.center = (
-            self.owner.pos * cam.zoom - cam.position + self.get_offset(self.gunoffset)
+            self.owner.pos * cam.zoom
+            - cam.position
+            + self.get_offset(self.gunoffset) * cam.zoom
         )  # / cam.zoom
 
         return new_img

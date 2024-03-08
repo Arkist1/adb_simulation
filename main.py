@@ -35,7 +35,7 @@ def main():
     cd = {"spawn": 0, "bullet": 0, "food": 0, "stamina_regen": 0, "cam_switch": 0}
 
     cam1 = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
-    cam2 = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE * 1.5)
+    cam2 = camera.Camera(pygame.Vector2([0, 0]), globals.MAP_SIZE)
 
     cams = {"cam1": cam1, "cam2": cam2}
     cameracontroller = camera.Camera_controller(
