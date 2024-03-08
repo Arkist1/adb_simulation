@@ -1,10 +1,11 @@
+from .gun import Gun
+
+from utils import Globals, Object
+
 import pygame
-import globals
-import object
-import gun
 
 
-class Agent(object.Object):
+class Agent(Object):
     """An agent instance"""
 
     def __init__(
@@ -25,7 +26,7 @@ class Agent(object.Object):
         self.hitbox = size
         self.colour = colour
         self.screen = screen
-        self.weapon = gun.Gun(screen=self.screen, owner=self)
+        self.weapon = Gun(screen=self.screen, owner=self)
 
         self.health = health
         self.max_health = health
@@ -36,7 +37,7 @@ class Agent(object.Object):
 
         self.is_moving = False
 
-    def get_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
+    def get_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         """
         Returns the move for the agent based on the given inputs.
 
@@ -47,12 +48,12 @@ class Agent(object.Object):
             pygame.Vector2: The move for the agent.
         """
         if self.controltype == "human":
-            return self.get_human_move(inputs)
+            return self.get_human_move(inputs, entities)
 
         if self.controltype == "random":
             return self.get_random_move()
 
-    def get_human_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
+    def get_human_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         """
         Calculates the movement vector based on the user inputs.
 
@@ -77,10 +78,11 @@ class Agent(object.Object):
             vec.x += s
 
         if vec.x != 0 and vec.y != 0:
-            vec.x /= globals.SQR2
-            vec.y /= globals.SQR2
+            vec.x /= Globals().SQR2
+            vec.y /= Globals().SQR2
 
-        self.pos = self.pos + vec
+        #self.pos = self.pos + vec
+        self.move(vec, entities)
 
         self.weapon.get_move(inputs)
 

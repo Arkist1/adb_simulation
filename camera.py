@@ -1,12 +1,13 @@
+from utils import Globals
+
 import pygame
-import globals
 
 
 class Camera:
     def __init__(self, position: pygame.Vector2, size: pygame.Vector2) -> None:
         self.position = position
         self.size = size
-        self.zoom = sum(globals.SCREEN_SIZE) / sum(size)
+        self.zoom = sum(Globals().SCREEN_SIZE) / sum(size)
 
     def move_cam(self, new_pos: pygame.Vector2):
         self.position = new_pos

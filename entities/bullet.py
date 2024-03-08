@@ -1,9 +1,9 @@
+from utils import Object
+
 import pygame
-import object
-import math
 
 
-class Bullet(object.Object):
+class Bullet(Object):
     """
     Represents a bullet object in the game.
 
