@@ -30,6 +30,7 @@ def main():
 
     screen = pygame.display.set_mode([Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT])
     clock = pygame.time.Clock()
+    font = pygame.font.SysFont("Arial" , 18 , bold = True)
 
     running = True
     entities = EntityHolder()
@@ -75,6 +76,9 @@ def main():
     while running:
         dt = clock.tick(Globals.FPS) / 1000
         dt_mili = clock.get_time()
+        fps = clock.get_fps()
+        fps_text = font.render(f"FPS: {int(fps)}", True, (0, 0, 0))
+        fps_position = (0, 0)
 
         # check for closing pygame._sdl2.video.Window
         for event in pygame.event.get():  # event loop
@@ -263,8 +267,9 @@ def main():
         ################ Drawing cycle ################
 
         screen.fill((255, 255, 255))  # white background
-
+        
         cam = cameracontroller.curr_cam
+        screen.blit(fps_text, fps_position)
 
         for bl in entities.bullets:
             if bl.pos[0] >= Globals.MAP_WIDTH:
