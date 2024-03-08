@@ -37,6 +37,10 @@ class Object(Hitbox):
             if self.is_colliding(other):
                 if not other.is_pushable:
                     self.pos -= velocity
+                            
+                    if self.is_colliding(other):
+                        vec = other.pos - self.pos
+                        self.pos -= vec / 100
                     return False
                 other.pos += velocity * (2/3)
                 self.pos -= velocity * (1/3)
@@ -50,8 +54,8 @@ class Object(Hitbox):
                 if self.type == "circle" and other.type == "circle":
                     perc = (globals.dist(self.pos, other.pos) / (self.radius + other.radius))
                     vec = other.pos - self.pos
-                    other.pos += vec / (100 * perc)
-                    self.pos -= vec / (100 * perc)
+                    other.pos += vec / (50 * perc)
+                    self.pos -= vec / (50 * perc)
                 else:
                     vec = other.pos - self.pos
                     other.pos += vec / 300
