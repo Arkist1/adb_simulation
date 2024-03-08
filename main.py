@@ -44,13 +44,20 @@ def main():
     playercam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
     followcam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
     mapcam = camera.Camera(pygame.Vector2([0, 0]), globals.MAP_SIZE)
+    freecam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
 
-    cams = {"playercam": playercam, "mapcam": mapcam, "followcam": followcam}
+    cams = {
+        "playercam": playercam,
+        "mapcam": mapcam,
+        "followcam": followcam,
+        "freecam": freecam,
+    }
     cameracontroller = camera.Camera_controller(
         cams=cams, window=Window.from_display_module()
     )
 
     camera_target = players[0]
+    vectors = []
 
     while running:
         dt = clock.tick(globals.FPS) / 1000
@@ -149,7 +156,26 @@ def main():
 
         ### selector cam targeting ###
         if mouse_keys[1] and dt_mili - cd["target_cd"] >= 0:
-            cd["target_cd"] = 100
+            cd["target_cd"] = 500
+            vectors = []
+            closest_obj = None
+            closest_dist = None
+            for item in enemies + players + bullets + pickups + boxes:
+                dist = abs(sum(inputs["mouse_pos"] - item.pos))
+                vectors.append([inputs["mouse_pos"], item.pos.copy()])
+                if not closest_dist:
+                    closest_dist = dist
+                    closest_obj = item
+                    continue
+
+                if closest_dist > dist:
+                    closest_dist = dist
+                    closest_obj = item
+
+            camera_target = closest_obj
+
+        if keys[pygame.K_g]:
+            camera_target = None
 
         ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
@@ -196,7 +222,8 @@ def main():
             playercam.position = player.pos - playercam.size / 2
             # cam2.position = player.pos - cam2.size / 2
 
-        followcam.position = camera_target.pos - followcam.size / 2
+        if camera_target:
+            followcam.position = camera_target.pos - followcam.size / 2
 
         for bl in bullets:
             bl.move(inputs)
@@ -272,6 +299,16 @@ def main():
             24, 664, int(current_player.health / current_player.max_health * 250), 15
         )
         pygame.draw.rect(screen, health_red, health_bar)
+
+        # debug, draw vectors from mouse to every entity when targetting for target cam
+        # for vector in vectors:
+        #     if cd["target_cd"] != 0:
+        #         pygame.draw.line(
+        #             screen,
+        #             (100, 200, 200),
+        #             vector[0] * cam.zoom - cam.position,
+        #             vector[1] * cam.zoom - cam.position,
+        #         )
 
         # Flip (draw) the display
         pygame.display.flip()
