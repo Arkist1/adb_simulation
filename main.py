@@ -39,6 +39,7 @@ def main():
         "stamina_regen": 0,
         "cam_switch": 0,
         "target_cd": 0,
+        "zoom": 0,
     }
 
     playercam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
@@ -87,9 +88,9 @@ def main():
             "dt": dt,
         }
 
-        # print(
-        #     f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
-        # )
+        print(
+            f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
+        )
 
         ### cooldowns ###
         for key, item in cd.items():
@@ -179,16 +180,7 @@ def main():
 
         ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
-            cd["spawn"] = 1
-            enemies.append(
-                enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
-            )
-            enemies.append(
-                enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
-            )
-            enemies.append(
-                enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
-            )
+            cd["spawn"] = 100
             enemies.append(
                 enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
             )
@@ -224,6 +216,25 @@ def main():
 
         if camera_target:
             followcam.position = camera_target.pos - followcam.size / 2
+
+        ## free cam position movement
+        if keys[pygame.K_UP]:
+            freecam.position.y -= globals.FREECAM_SPEED * dt
+        if keys[pygame.K_DOWN]:
+            freecam.position.y += globals.FREECAM_SPEED * dt
+        if keys[pygame.K_LEFT]:
+            freecam.position.x -= globals.FREECAM_SPEED * dt
+        if keys[pygame.K_RIGHT]:
+            freecam.position.x += globals.FREECAM_SPEED * dt
+
+        ## free cam zoom
+
+        if cd["zoom"] <= 0:
+            cd["zoom"] = 100
+            if keys[pygame.K_o]:
+                freecam.apply_zoom(0.80)
+            if keys[pygame.K_p]:
+                freecam.apply_zoom(1.25)
 
         for bl in bullets:
             bl.move(inputs)
@@ -265,12 +276,12 @@ def main():
         ######## Map boundary drawing ########
         boundry_rgb = (100, 0, 255)
 
-        origin = pygame.Vector2(0, 0) - cam.position * cam.zoom
-        bottom = pygame.Vector2(0, globals.MAP_HEIGHT) - cam.position * cam.zoom
-        right = pygame.Vector2(globals.MAP_WIDTH, 0) - cam.position * cam.zoom
+        origin = pygame.Vector2(0, 0) * cam.zoom - cam.position
+        bottom = pygame.Vector2(0, globals.MAP_HEIGHT) * cam.zoom - cam.position
+        right = pygame.Vector2(globals.MAP_WIDTH, 0) * cam.zoom - cam.position
         rightbottom = (
-            pygame.Vector2(globals.MAP_WIDTH, globals.MAP_HEIGHT)
-            - cam.position * cam.zoom
+            pygame.Vector2(globals.MAP_WIDTH, globals.MAP_HEIGHT) * cam.zoom
+            - cam.position
         )
 
         pygame.draw.line(screen, boundry_rgb, origin, right)

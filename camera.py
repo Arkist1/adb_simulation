@@ -14,6 +14,11 @@ class Camera:
     def move_cam_delta(self, delta_pos: pygame.Vector2):
         self.position += delta_pos
 
+    def apply_zoom(self, amt):
+        newzoom = self.zoom * amt
+        self.size = self.size / self.zoom * newzoom
+        self.zoom = newzoom
+
     def get_view(self):
         return [self.position, self.position + self.size]
 
