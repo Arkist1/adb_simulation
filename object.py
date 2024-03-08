@@ -38,25 +38,18 @@ class Object(Hitbox):
                 if not other.is_pushable:
                     self.pos -= velocity
                     return False
-                other.pos += velocity / 2
-                self.pos -= velocity / 2
+                other.pos += velocity * (2/3)
+                self.pos -= velocity * (1/3)
                 colliding.append(other)
         
         if len(colliding) == 0:
             return True
         
-        for _ in range(5):
-            any_colliding = False
-            for other in colliding:
-                if other == self:
-                    continue
-                if self.is_colliding(other):
-                    vec = other.pos - self.pos
-                    other.pos += vec / 100
-                    self.pos -= vec / 100
-                    any_colliding = True
-            if not any_colliding:
-                break
+        for other in colliding:
+            if self.is_colliding(other):
+                vec = other.pos - self.pos
+                other.pos += vec / 100
+                self.pos -= vec / 100
             
         return True
         

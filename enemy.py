@@ -91,11 +91,15 @@ class Enemy(Agent):
                 )
 
                 self.move(delta, entities)
+                return
 
         # TODO: inplement
         # if self.state == "alert":
 
         # if self.state == "chasing":
+        
+        
+        self.move(pygame.Vector2(0,0), entities)
 
     def percept(self):
         if self.state == "wandering" and not self.moving and self.move_timer <= 0:
