@@ -36,7 +36,7 @@ class Agent(object.Object):
 
         self.is_moving = False
 
-    def get_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
+    def get_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         """
         Returns the move for the agent based on the given inputs.
 
@@ -47,12 +47,12 @@ class Agent(object.Object):
             pygame.Vector2: The move for the agent.
         """
         if self.controltype == "human":
-            return self.get_human_move(inputs)
+            return self.get_human_move(inputs, entities)
 
         if self.controltype == "random":
             return self.get_random_move()
 
-    def get_human_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
+    def get_human_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         """
         Calculates the movement vector based on the user inputs.
 
@@ -80,7 +80,8 @@ class Agent(object.Object):
             vec.x /= globals.SQR2
             vec.y /= globals.SQR2
 
-        self.pos = self.pos + vec
+        #self.pos = self.pos + vec
+        self.move(vec, entities)
 
         self.weapon.get_move(inputs)
 

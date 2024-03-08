@@ -32,7 +32,7 @@ class Enemy(Agent):
         self.move_timer = 0
         self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
 
-    def get_move(self, inputs):
+    def get_move(self, inputs, entities):
         """
         Determines the movement of the enemy based on the inputs.
 
@@ -43,12 +43,12 @@ class Enemy(Agent):
             None
         """
         if self.controltype == "human":
-            self.get_human_move(inputs)
+            self.get_human_move(inputs, entities)
 
         if self.controltype == "enemy":
-            self.get_enemy_move(inputs)
+            self.get_enemy_move(inputs, entities)
 
-    def get_enemy_move(self, inputs):
+    def get_enemy_move(self, inputs, entities):
         """
         Calculates the movement of the enemy towards the nearest player.
 
@@ -90,7 +90,7 @@ class Enemy(Agent):
                     * inputs["dt"]
                 )
 
-                self.pos += delta
+                self.move(delta, entities)
 
         # TODO: inplement
         # if self.state == "alert":

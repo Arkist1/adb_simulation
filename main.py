@@ -7,6 +7,8 @@ import bullet
 import random
 import camera
 import pickup
+from wall import Wall
+
 
 
 def main():
@@ -18,10 +20,11 @@ def main():
 
     running = True
     players = [agent.Agent(screen=screen)]
-    enemies = []
     boxes = []
     bullets = []
     pickups = []
+    enemies = []
+    walls = []
 
     # Colors
     stamina_yellow = (255, 255, 10)
@@ -195,6 +198,8 @@ def main():
                     screen=screen,
                 )
             )
+             
+        walls.append(Wall(screen, pygame.Vector2(200, 200)))
 
         if keys[pygame.K_f] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 10
@@ -206,10 +211,10 @@ def main():
 
         ###### Movement #####
         for en in enemies:
-            en.get_move(inputs={"nearest_player": current_player, "dt": dt})
+            en.get_move(inputs={"nearest_player": current_player, "dt": dt}, entities=enemies+players+walls)
 
         for player in players:
-            player.get_move(inputs)
+            player.get_move(inputs, enemies+players+walls)
 
             playercam.position = player.pos - playercam.size / 2
             # cam2.position = player.pos - cam2.size / 2
@@ -272,6 +277,9 @@ def main():
 
         for player in players:
             player.draw(cam=cam)
+            
+        for wall in walls:
+            wall.draw(cam=cam)
 
         ######## Map boundary drawing ########
         boundry_rgb = (100, 0, 255)
