@@ -10,7 +10,6 @@ import pickup
 
 
 def main():
-
     pygame.init()
 
     screen = pygame.display.set_mode([globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT])
