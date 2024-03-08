@@ -1,5 +1,7 @@
+from utils import Object
+
 import pygame
-from object import Object
+
 
 class Wall(Object):
     def __init__(self, screen: pygame.Surface, pos: pygame.Vector2, colour: tuple[int] = (255, 0, 255),) -> None:

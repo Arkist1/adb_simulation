@@ -1,5 +1,5 @@
 from __future__ import annotations
-import globals
+from utils import Globals, dist
 
 import pygame
 
@@ -7,9 +7,9 @@ class Hitbox:
     def __init__(
         self, 
         type_: str = "circle", 
-        pos: pygame.Vector2 = pygame.Vector2(globals.MAP_WIDTH / 2, globals.MAP_HEIGHT / 2),
+        pos: pygame.Vector2 = pygame.Vector2(Globals().MAP_WIDTH / 2, Globals().MAP_HEIGHT / 2),
         min_pos: pygame.Vector2 = pygame.Vector2(0.0, 0.0),
-        max_pos: pygame.Vector2 = pygame.Vector2(globals.MAP_WIDTH, globals.MAP_HEIGHT),
+        max_pos: pygame.Vector2 = pygame.Vector2(Globals().MAP_WIDTH, Globals().MAP_HEIGHT),
         is_pushable: bool = True,
         **kwargs: float
     ) -> None:
@@ -44,7 +44,7 @@ class Hitbox:
         
     def is_colliding(self, other: Hitbox) -> bool:
         if self.type == "circle" and other.type == "circle":
-            return globals.dist(self.pos, other.pos) < (self.radius + other.radius)
+            return dist(self.pos, other.pos) < (self.radius + other.radius)
         return self.is_hitbox_within(other.min_xy(), other.max_xy())
         
     def is_hitbox_within(self, min_coords: pygame.Vector2, max_coords: pygame.Vector2) -> bool:

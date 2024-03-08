@@ -1,7 +1,9 @@
-import pygame
-import bullet
-import globals
+from .bullet import Bullet
+
+from utils import Globals
+
 import math
+import pygame
 
 
 class Gun:
@@ -47,7 +49,7 @@ class Gun:
         self.hitbox = 10
         self.img_size = pygame.Vector2(70, 70)
         self.img = pygame.transform.smoothscale(
-            pygame.image.load(f"{globals.root}/sprites/gun.png").convert_alpha(),
+            pygame.image.load(f"{Globals().root}/sprites/gun.png").convert_alpha(),
             self.img_size,
         )
 
@@ -65,7 +67,7 @@ class Gun:
         """
         Fires a bullet from the gun.
         """
-        return bullet.Bullet(
+        return Bullet(
             self.owner.pos,
             location,
             self.bullet_speed,

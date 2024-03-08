@@ -1,9 +1,9 @@
-import globals
-import object
+from utils import Object
+
 import pygame
 
 
-class Pickup(object.Object):
+class Pickup(Object):
     def __init__(
         self,
         pickup_type,

@@ -1,16 +1,13 @@
-from pygame._sdl2.video import Window
-import pygame
-import globals
+from camera import Camera, Camera_controller
+
+from entities import Bullet, Agent, Wall, Pickup, Enemy
+from utils import Object, Hitbox, Globals
+
 import random
-import camera
-import pickup
-from bullet import Bullet
-from agent import Agent
-from wall import Wall
-from object import Object
-from hitbox import Hitbox
-from pickup import Pickup
-from enemy import Enemy
+import pygame
+
+from pygame._sdl2.video import Window
+
 
 class EntityHolder:
     def __init__(self) -> None:
@@ -31,7 +28,7 @@ def main():
 
     pygame.init()
 
-    screen = pygame.display.set_mode([globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT])
+    screen = pygame.display.set_mode([Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT])
     clock = pygame.time.Clock()
 
     running = True
@@ -57,10 +54,10 @@ def main():
         "zoom": 0,
     }
 
-    playercam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
-    followcam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
-    mapcam = camera.Camera(pygame.Vector2([0, 0]), globals.MAP_SIZE)
-    freecam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
+    playercam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
+    followcam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
+    mapcam = Camera(pygame.Vector2([0, 0]), Globals.MAP_SIZE)
+    freecam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
 
     cams = {
         "playercam": playercam,
@@ -68,7 +65,7 @@ def main():
         "followcam": followcam,
         "freecam": freecam,
     }
-    cameracontroller = camera.Camera_controller(
+    cameracontroller = Camera_controller(
         cams=cams, window=Window.from_display_module()
     )
 
@@ -76,10 +73,10 @@ def main():
     vectors = []
 
     while running:
-        dt = clock.tick(globals.FPS) / 1000
+        dt = clock.tick(Globals.FPS) / 1000
         dt_mili = clock.get_time()
 
-        # check for closing window
+        # check for closing pygame._sdl2.video.Window
         for event in pygame.event.get():  # event loop
             if event.type == pygame.QUIT:
                 running = False
@@ -236,13 +233,13 @@ def main():
 
         ## free cam position movement
         if keys[pygame.K_UP]:
-            freecam.position.y -= globals.FREECAM_SPEED * dt
+            freecam.position.y -= Globals.FREECAM_SPEED * dt
         if keys[pygame.K_DOWN]:
-            freecam.position.y += globals.FREECAM_SPEED * dt
+            freecam.position.y += Globals.FREECAM_SPEED * dt
         if keys[pygame.K_LEFT]:
-            freecam.position.x -= globals.FREECAM_SPEED * dt
+            freecam.position.x -= Globals.FREECAM_SPEED * dt
         if keys[pygame.K_RIGHT]:
-            freecam.position.x += globals.FREECAM_SPEED * dt
+            freecam.position.x += Globals.FREECAM_SPEED * dt
 
         ## free cam zoom
 
@@ -270,11 +267,11 @@ def main():
         cam = cameracontroller.curr_cam
 
         for bl in entities.bullets:
-            if bl.pos[0] >= globals.MAP_WIDTH:
+            if bl.pos[0] >= Globals.MAP_WIDTH:
                 entities.bullets.remove(bl)
             elif bl.pos[0] < 0:
                 entities.bullets.remove(bl)
-            elif bl.pos[1] >= globals.MAP_HEIGHT:
+            elif bl.pos[1] >= Globals.MAP_HEIGHT:
                 entities.bullets.remove(bl)
             elif bl.pos[1] < 0:
                 entities.bullets.remove(bl)
@@ -297,10 +294,10 @@ def main():
         boundry_rgb = (100, 0, 255)
 
         origin = pygame.Vector2(0, 0) * cam.zoom - cam.position
-        bottom = pygame.Vector2(0, globals.MAP_HEIGHT) * cam.zoom - cam.position
-        right = pygame.Vector2(globals.MAP_WIDTH, 0) * cam.zoom - cam.position
+        bottom = pygame.Vector2(0, Globals.MAP_HEIGHT) * cam.zoom - cam.position
+        right = pygame.Vector2(Globals.MAP_WIDTH, 0) * cam.zoom - cam.position
         rightbottom = (
-            pygame.Vector2(globals.MAP_WIDTH, globals.MAP_HEIGHT) * cam.zoom
+            pygame.Vector2(Globals.MAP_WIDTH, Globals.MAP_HEIGHT) * cam.zoom
             - cam.position
         )
 

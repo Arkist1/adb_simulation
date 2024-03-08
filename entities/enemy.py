@@ -1,8 +1,7 @@
-from agent import Agent
-import globals
-import pygame
-import enum
+from .agent import Agent
+
 import random
+import pygame
 
 
 class Enemy(Agent):

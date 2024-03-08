@@ -1,15 +1,15 @@
-from hitbox import Hitbox
-import globals
+from utils import Globals, Hitbox, dist
 
 import pygame
+
 
 class Object(Hitbox):
     def __init__(
         self, 
         type_: str = "circle", 
-        pos: pygame.Vector2 = pygame.Vector2(globals.MAP_WIDTH / 2, globals.MAP_HEIGHT / 2),
+        pos: pygame.Vector2 = pygame.Vector2(Globals().MAP_WIDTH / 2, Globals().MAP_HEIGHT / 2),
         min_pos: pygame.Vector2 = pygame.Vector2(0.0, 0.0),
-        max_pos: pygame.Vector2 = pygame.Vector2(globals.MAP_WIDTH, globals.MAP_HEIGHT),
+        max_pos: pygame.Vector2 = pygame.Vector2(Globals().MAP_WIDTH, Globals().MAP_HEIGHT),
         **kwargs: float
     ) -> None:
         super().__init__(type_, pos, min_pos, max_pos, **kwargs)
@@ -52,7 +52,7 @@ class Object(Hitbox):
         for other in colliding:
             if self.is_colliding(other):
                 if self.type == "circle" and other.type == "circle":
-                    perc = (globals.dist(self.pos, other.pos) / (self.radius + other.radius))
+                    perc = (dist(self.pos, other.pos) / (self.radius + other.radius))
                     vec = other.pos - self.pos
                     other.pos += vec / (50 * perc)
                     self.pos -= vec / (50 * perc)
