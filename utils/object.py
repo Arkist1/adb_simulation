@@ -1,4 +1,4 @@
-from utils import Globals, Hitbox, dist
+from utils import Globals, Hitbox, dist, dist_sqr
 
 import pygame
 
@@ -34,6 +34,9 @@ class Object(Hitbox):
         for other in objects:
             if other == self:
                 continue
+            if dist_sqr(self.pos, other.pos) > (self.max_xy().x - self.min_xy().x) ** 2:
+                continue
+            
             if self.is_colliding(other):
                 if not other.is_pushable:
                     self.pos -= velocity

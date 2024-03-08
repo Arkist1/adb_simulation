@@ -30,4 +30,19 @@ def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
     Returns:
         float: The Euclidean distance between p1 and p2.
     """
-    return math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2)
+    return math.sqrt(dist_sqr(p1, p2))
+
+def dist_sqr(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
+    """
+    Calculate the Euclidean distance squared between two points.
+
+    Args:
+        p1 (pygame.Vector2): The first point.
+        p2 (pygame.Vector2): The second point.
+
+    Returns:
+        float: The Euclidean distance squared between p1 and p2.
+    """
+    dx = p1.x - p2.x
+    dy = p1.y - p2.y
+    return dx * dx + dy * dy
