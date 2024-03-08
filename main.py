@@ -88,9 +88,9 @@ def main():
             "dt": dt,
         }
 
-        print(
-            f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
-        )
+        # print(
+        #     f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
+        # )
 
         ### cooldowns ###
         for key, item in cd.items():
