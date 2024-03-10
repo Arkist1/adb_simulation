@@ -129,7 +129,7 @@ class Enemy(Agent):
                 return True
         return False
     
-    def is_point_inside_polygon(point, vertices):
+    def is_point_inside_polygon(self, point, vertices):
         # Ray casting algorithm
         x, y = point
         count = 0
