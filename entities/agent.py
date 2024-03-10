@@ -1,5 +1,5 @@
 from .gun import Gun
-
+from .vision_cone import VisionCone
 from utils import Globals, Object
 
 import pygame
@@ -27,6 +27,7 @@ class Agent(Object):
         self.colour = colour
         self.screen = screen
         self.weapon = Gun(screen=self.screen, owner=self)
+        self.vision_cone = VisionCone(screen=self.screen, owner=self)
 
         self.health = health
         self.max_health = health
@@ -34,6 +35,7 @@ class Agent(Object):
         self.max_food = food
         self.stamina = stamina
         self.max_stamina = stamina
+        self.is_crouching = False
 
         self.is_moving = False
 
@@ -85,6 +87,7 @@ class Agent(Object):
         self.move(vec, entities)
 
         self.weapon.get_move(inputs)
+        self.vision_cone.get_move(inputs)
 
     def shoot(self, location):
         if self.weapon:
@@ -103,5 +106,25 @@ class Agent(Object):
             self.pos * cam.zoom - cam.position,
             self.hitbox * cam.zoom,
         )  # circle
+        if self.is_crouching:
+            pygame.draw.circle(
+                self.screen,
+                (0, 0, 0),
+                self.pos * cam.zoom - cam.position,
+                self.hitbox * cam.zoom + 100,
+                1
+            ) # detection circle
+            self.is_crouching = False
+        else:
+            pygame.draw.circle(
+                self.screen,
+                (0, 0, 0),
+                self.pos * cam.zoom - cam.position,
+                self.hitbox * cam.zoom + 200,
+                1
+            )
         if self.weapon:
             self.weapon.draw(cam)
+
+        if self.vision_cone:
+            self.vision_cone.draw(cam)
