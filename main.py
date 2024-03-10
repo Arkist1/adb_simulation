@@ -141,6 +141,7 @@ def main():
         elif inputs["crouch"] and current_player.stamina > 0:
             current_player.stamina -= 0.5
             current_player.speed = 150
+            current_player.is_crouching = True
             cd["stamina_regen"] = stamina_cooldown
         else:
             current_player.speed = 300
@@ -265,7 +266,7 @@ def main():
             entities.bullets.append(current_player.shoot(inputs["mouse_pos"]))
 
         ################ Drawing cycle ################
-
+            
         screen.fill((255, 255, 255))  # white background
         
         cam = cameracontroller.curr_cam
