@@ -8,6 +8,7 @@ class VisionCone:
         self.position = None  # inherit from the player location
         self.owner = owner
         self.screen = screen
+        self.vision_cone_vertices = None
 
         self.vision_range = 400
         self.vision_angle = 60
@@ -26,13 +27,14 @@ class VisionCone:
         vision_angle = self.vision_angle
 
 
-        points = [
+        vertices = [
         pygame.math.Vector2(pos[0], pos[1]),
         pygame.math.Vector2(pos[0], pos[1]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle - vision_angle / 2),
         pygame.math.Vector2(pos[0], pos[1]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle + vision_angle / 2)
         ]
 
-        pygame.draw.polygon(self.screen, (0, 0, 0), points, 1)
+        pygame.draw.polygon(self.screen, (0, 0, 0), vertices, 1)
+        self.vision_cone_vertices = vertices
 
 
     def get_move(self, inputs: dict):
@@ -64,3 +66,6 @@ class VisionCone:
         newvec = pygame.math.Vector2(math.cos(rads), math.sin(rads)) * offsetmulti
 
         return newvec
+    
+    def get_vision_cone_vertices(self):
+        return self.vision_cone_vertices
