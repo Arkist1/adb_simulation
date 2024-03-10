@@ -9,33 +9,30 @@ class VisionCone:
         self.owner = owner
         self.screen = screen
 
-        self.vision_range = 200
+        self.vision_range = 400
         self.vision_angle = 60
         self.rotation = 0
-        self.offset = 30
+        self.offset = 1
 
     def draw(self, cam):
         """
         Draws the vision cone on the screen.
+
         """
         
         pos = (self.owner.pos * cam.zoom - cam.position)
-    
         angle = self.rotation
         vision_range = self.vision_range
         vision_angle = self.vision_angle
-        
-        print(self.get_offset(self.offset)*cam.zoom)
-
 
 
         points = [
-        pygame.math.Vector2(pos[0]),
-        pygame.math.Vector2(pos[0]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle - vision_angle / 2),
-        pygame.math.Vector2(pos[0]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle + vision_angle / 2)
+        pygame.math.Vector2(pos[0], pos[1]),
+        pygame.math.Vector2(pos[0], pos[1]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle - vision_angle / 2),
+        pygame.math.Vector2(pos[0], pos[1]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle + vision_angle / 2)
         ]
 
-        pygame.draw.polygon(self.screen, (0, 0, 0), points)
+        pygame.draw.polygon(self.screen, (0, 0, 0), points, 1)
 
 
     def get_move(self, inputs: dict):
@@ -45,10 +42,10 @@ class VisionCone:
         Args:
             inputs (dict): The input dictionary containing the mouse position.
         """
-        v1 = self.owner.pos - pygame.math.Vector2(inputs["mouse_pos"])
-        v2 = pygame.math.Vector2([-100, 0])
+        v1 = pygame.math.Vector2(inputs["mouse_pos"]) - self.owner.pos
+        v2 = pygame.math.Vector2([0, 0])
 
-        angle = v1.angle_to(v2)
+        angle = v2.angle_to(v1)
 
         self.rotation = angle
 
@@ -63,9 +60,7 @@ class VisionCone:
         Returns:
             pygame.math.Vector2: The offset vector.
         """
-        if not offsetmulti:
-            offsetmulti = self.owner.radius + self.bullet_offset
         rads = math.radians(self.rotation)
-        newvec = pygame.math.Vector2(math.cos(rads), -math.sin(rads)) * (offsetmulti)
+        newvec = pygame.math.Vector2(math.cos(rads), math.sin(rads)) * offsetmulti
 
         return newvec
