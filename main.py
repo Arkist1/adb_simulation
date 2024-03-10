@@ -138,6 +138,7 @@ def main():
             current_player.stamina -= 1
             current_player.speed = 450
             cd["stamina_regen"] = stamina_cooldown
+            current_player.is_running = True
         elif inputs["crouch"] and current_player.stamina > 0:
             current_player.stamina -= 0.5
             current_player.speed = 150
