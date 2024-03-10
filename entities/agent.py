@@ -36,6 +36,7 @@ class Agent(Object):
         self.stamina = stamina
         self.max_stamina = stamina
         self.is_crouching = False
+        self.is_running = False
 
         self.is_moving = False
 
@@ -115,6 +116,15 @@ class Agent(Object):
                 1
             ) # detection circle
             self.is_crouching = False
+        elif self.is_running:
+            pygame.draw.circle(
+                self.screen,
+                (0, 0, 0),
+                self.pos * cam.zoom - cam.position,
+                self.hitbox * cam.zoom + 400,
+                1
+            )
+            self.is_running = False
         else:
             pygame.draw.circle(
                 self.screen,
