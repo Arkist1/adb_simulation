@@ -101,38 +101,18 @@ class Agent(Object):
         This method draws a circle representing the agent on the screen using the specified colour and position.
         If the agent has a weapon, it also calls the `draw` method of the weapon to draw it on the screen.
         """
-        pygame.draw.circle(
-            self.screen,
-            self.colour,
-            self.pos * cam.zoom - cam.position,
-            self.hitbox * cam.zoom,
-        )  # circle
-        if self.is_crouching:
-            pygame.draw.circle(
-                self.screen,
-                (0, 0, 0),
-                self.pos * cam.zoom - cam.position,
-                self.hitbox * cam.zoom + 100,
-                1
-            ) # detection circle
-            self.is_crouching = False
-        elif self.is_running:
-            pygame.draw.circle(
-                self.screen,
-                (0, 0, 0),
-                self.pos * cam.zoom - cam.position,
-                self.hitbox * cam.zoom + 400,
-                1
-            )
-            self.is_running = False
-        else:
-            pygame.draw.circle(
-                self.screen,
-                (0, 0, 0),
-                self.pos * cam.zoom - cam.position,
-                self.hitbox * cam.zoom + 200,
-                1
-            )
+        pygame.draw.circle(self.screen, self.colour, self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom)  # circle (player)
+
+        if self.controltype == "human":
+            if self.is_crouching:
+                pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom + 100, 1) # crouching detection circle
+                self.is_crouching = False
+            elif self.is_running:
+                pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom + 400, 1) # running detection circle
+                self.is_running = False
+            else:
+                pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom + 200, 1 ) # base detection circle
+        
         if self.weapon:
             self.weapon.draw(cam)
 
