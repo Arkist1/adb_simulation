@@ -46,7 +46,7 @@ class Gun:
         self.bullet_speed = 750
         self.bullet_size = 5
 
-        self.hitbox = 10
+        # self.hitbox = 10 # not used
         self.img_size = pygame.Vector2(70, 70)
         self.img = pygame.transform.smoothscale(
             pygame.image.load(f"{Globals().root}/sprites/gun.png").convert_alpha(),
