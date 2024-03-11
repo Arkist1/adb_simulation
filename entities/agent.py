@@ -144,7 +144,7 @@ class Agent(Object):
         # self.pos = self.pos + vec
         self.move(vec, entities)
 
-        self.weapon.get_move(inputs)
+        self.weapon.get_move(inputs, center_pos=self.pos)
         self.vision_cone.get_rotate_vision_cone(inputs["mouse_pos"])
 
     def shoot(self, location):
