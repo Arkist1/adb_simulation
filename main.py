@@ -179,8 +179,7 @@ def main():
 
         ###### Perceptions #####
         for en in entities.enemies:
-            en.percept()
-            en.detect_vision_cone_collision(current_player)
+            en.percept(current_player)
 
         ###### Movement #####
         for en in entities.enemies:
