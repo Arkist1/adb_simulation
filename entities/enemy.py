@@ -1,3 +1,5 @@
+from math import sqrt, atan2, degrees
+import math
 from .agent import Agent
 
 import random
@@ -29,7 +31,10 @@ class Enemy(Agent):
 
         self.moving = False
         self.move_timer = 0
+        self.blocked_timer = 0
         self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
+        self.vision_cone.vision_range = 400
+        self.detected_agent = []
 
     def get_move(self, inputs, entities):
         """
@@ -57,10 +62,18 @@ class Enemy(Agent):
         Returns:
             None
         """
+
+        self.vision_cone.get_rotate_vision_cone(self.poi)
+        if self.state == "chasing":
+            self.poi = self.detected_agent
+            
+
         if self.move_timer > 0:
             self.move_timer -= inputs["dt"]
 
         elif self.state == "wandering":
+            self.blocked_timer -= inputs["dt"]
+            
             neg_x = 1
             neg_y = 1
 
@@ -74,9 +87,10 @@ class Enemy(Agent):
 
             sdelta = sum([abs(dx), abs(dy)])
 
-            if sdelta < self.wanderspeed:
+            if sdelta < self.wanderspeed or self.blocked_timer <= 0:  # detect if poi position is within reach
                 self.moving = False
                 self.move_timer = random.random() * 2 + 2
+                self.blocked_timer = random.random() * 2 + 2
 
             if not sdelta == 0:
                 ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
@@ -96,14 +110,39 @@ class Enemy(Agent):
         # if self.state == "alert":
 
         # if self.state == "chasing":
-        
-        
-        self.move(pygame.Vector2(0,0), entities)
 
-    def percept(self):
+        self.move(pygame.Vector2(0, 0), entities)
+
+    def percept(self, entity):
+        """
+        Checks if the given agent is within the vision cone of this enemy.
+
+        Args:
+            agent (Agent): The agent to check for collision.
+
+        Returns:
+            bool: True if the agent is within the vision cone, False otherwise.
+        """
         if self.state == "wandering" and not self.moving and self.move_timer <= 0:
             self.poi = pygame.Vector2(
                 random.randrange(round(self.pos[0]) - 100, round(self.pos[0]) + 100),
                 random.randrange(round(self.pos[1]) - 100, round(self.pos[1]) + 100),
             )
             self.moving = True
+        
+        if (self.vision_cone.get_vision_cone_info() is None):
+            return False
+        
+        dot_product, distance, self.state = self.detect(entity)
+        self.detected_agent = [dot_product, distance]
+
+    def get_debug_info(self):
+        return {
+            "Type": type(self).__name__,
+            "Position": self.pos,
+            "Rotation": self.vision_cone.rotation,
+            "Speed": self.speed,
+            "POI": self.poi,
+            "State": self.state,
+            "Pushable": self.is_pushable,
+        }

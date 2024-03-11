@@ -32,12 +32,12 @@ class Bullet(Object):
         self,
         position,
         aim,
+        rotation,
+        offset,
         bullet_speed=50,
         bullet_damage=50,
         bullet_size=5,
-        owner_delta=None,
         screen=None,
-        owner=None,
     ) -> None:
         """
         Initializes a Bullet object.
@@ -50,8 +50,6 @@ class Bullet(Object):
             screen (object, optional): The screen object on which the bullet is displayed. Defaults to None.
             owner (object, optional): The object that owns the bullet. Defaults to None.
         """
-        self.owner = owner
-        offset = self.owner.get_offset()
         new_pos = position + offset
         super().__init__(pos=new_pos, radius=5)
 
@@ -63,7 +61,7 @@ class Bullet(Object):
 
         self.screen = screen
         self.velocity = self.calc_velocity(aim)
-        self.rotation = self.owner.rotation
+        self.rotation = rotation
 
     def move(self, inputs):
         """
@@ -119,7 +117,21 @@ class Bullet(Object):
         if dy < 0:
             neg_y = -1
         sdelta = sum([abs(dx), abs(dy)])
-        ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
+
+        if sdelta == 0:
+            ratio = [-1, 0]
+        else:
+            ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
         return pygame.Vector2(
             self.speed * ratio[0] * neg_x, self.speed * ratio[1] * neg_y
         )
+
+    def get_debug_info(self):
+        return {
+            "Type": type(self).__name__,
+            "Position": self.pos,
+            "Rotation": self.rotation,
+            "Speed": self.speed,
+            "Velocity": self.velocity,
+            "Damage": self.bullet_damage,
+        }

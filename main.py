@@ -1,7 +1,7 @@
 from camera import Camera, Camera_controller
 
 from entities import Bullet, Agent, Wall, Pickup, Enemy
-from utils import Object, Hitbox, Globals
+from utils import Object, Hitbox, Globals, EntityHolder, generate_houses
 
 import random
 import pygame
@@ -9,23 +9,11 @@ import pygame
 from pygame._sdl2.video import Window
 
 
-class EntityHolder:
-    def __init__(self) -> None:
-        self.players: list[Agent] = []
-        self.boxes: list[Hitbox] = []
-        self.bullets: list[Bullet] = []
-        self.pickups: list[Pickup] = []
-        self.enemies: list[Enemy] = []
-        self.walls: list[Wall] = []
-        
-    def get_objects(self) -> list[Object]:
-        return self.players + self.enemies + self.walls
-    
-    def get_items(self) -> list[Hitbox]:
-        return self.players + self.boxes + self.bullets + self.pickups + self.enemies + self.walls
-
 def main():
     pygame.init()
+    pygame.font.init()
+
+    FONT = pygame.font.SysFont("Bahnschrift", 20)
 
     screen = pygame.display.set_mode([Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT])
     clock = pygame.time.Clock()
@@ -40,14 +28,9 @@ def main():
     health_red = (255, 30, 70)
     bar_grey = (75, 75, 75)
 
-    hunger_rate = 2500
-    stamina_cooldown = 1000
-
     cd = {
         "spawn": 0,
         "bullet": 0,
-        "food": 0,
-        "stamina_regen": 0,
         "cam_switch": 0,
         "target_cd": 0,
         "zoom": 0,
@@ -64,16 +47,18 @@ def main():
         "followcam": followcam,
         "freecam": freecam,
     }
-    cameracontroller = Camera_controller(
-        cams=cams, window=Window.from_display_module()
-    )
+    cameracontroller = Camera_controller(cams=cams, window=Window.from_display_module())
 
     camera_target = entities.players[0]
     vectors = []
 
+    generate_houses(screen, entities)
+
     while running:
         dt = clock.tick(Globals.FPS) / 1000
         dt_mili = clock.get_time()
+        fps = clock.get_fps()
+        fps_position = (0, 0)
 
         # check for closing pygame._sdl2.video.Window
         for event in pygame.event.get():  # event loop
@@ -95,18 +80,15 @@ def main():
             "shoot": mouse_keys[0],
             "block": mouse_keys[2],
             "mouse_pos": mouse_pos / cameracontroller.curr_cam.zoom
-            + cameracontroller.curr_cam.position,
+            + cameracontroller.curr_cam.position / cameracontroller.curr_cam.zoom,
             "dt": dt,
+            "dt_mili": dt_mili,
         }
-
-        # print(
-        #     f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
-        # )
 
         ### cooldowns ###
         for key, item in cd.items():
             if cd[key] >= 0:
-                cd[key] = item - dt_mili
+                cd[key] = max(0, item - dt_mili)
 
         ### kill player ###
         for pl in entities.players:
@@ -128,46 +110,29 @@ def main():
                         (current_player.food + pu.picked_up()), current_player.max_food
                     )
 
-        ### sprint and crouch ###
-        if inputs["sprint"] and current_player.stamina > 0:
-            current_player.stamina -= 1
-            current_player.speed = 450
-            cd["stamina_regen"] = stamina_cooldown
-        elif inputs["crouch"] and current_player.stamina > 0:
-            current_player.stamina -= 0.5
-            current_player.speed = 150
-            cd["stamina_regen"] = stamina_cooldown
-        else:
-            current_player.speed = 300
-
-        ### stamina regen ###
-        if (
-            cd["stamina_regen"] <= 0
-            and current_player.stamina < current_player.max_stamina
-        ):
-            hunger_rate = 1000
-            current_player.stamina += 0.75
-        else:
-            hunger_rate = 2500
-
-        ### hunger depletion ###
-        if cd["food"] >= hunger_rate:
-            cd["food"] = 0
-            current_player.food -= 1
-            if current_player.food <= 0:
-                current_player.food = 0
-                current_player.health -= 0.5
-
         ### cam switch ###
         if mouse_keys[2] and dt_mili - cd["cam_switch"] >= 0:
-            cd["cam_switch"] = 100
+            cd["cam_switch"] = 500
             cams = list(cameracontroller.cameras.keys())
             cameracontroller.change_cam(
                 cams[(cams.index(cameracontroller.curr_cam_name) + 1) % len(cams)]
             )
 
+        if dt_mili - cd["cam_switch"] >= 0:
+            cd["cam_switch"] = 200
+            if keys[pygame.K_1]:
+                cameracontroller.change_cam("playercam")
+            elif keys[pygame.K_2]:
+                cameracontroller.change_cam("mapcam")
+            elif keys[pygame.K_3]:
+                cameracontroller.change_cam("followcam")
+            elif keys[pygame.K_4]:
+                cameracontroller.change_cam("freecam")
+            else:
+                cd["cam_switch"] = 0
+
         ### selector cam targeting ###
-        if mouse_keys[1] and dt_mili - cd["target_cd"] >= 0:
+        if (mouse_keys[1] or keys[pygame.K_t]) and dt_mili - cd["target_cd"] >= 0:
             cd["target_cd"] = 500
             vectors = []
             closest_obj = None
@@ -206,8 +171,6 @@ def main():
                     screen=screen,
                 )
             )
-             
-        entities.walls.append(Wall(screen, pygame.Vector2(200, 200)))
 
         if keys[pygame.K_f] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 10
@@ -215,17 +178,19 @@ def main():
 
         ###### Perceptions #####
         for en in entities.enemies:
-            en.percept()
+            en.percept(current_player)
 
         ###### Movement #####
         for en in entities.enemies:
-            en.get_move(inputs={"nearest_player": current_player, "dt": dt}, entities=entities.get_objects())
+            en.get_move(
+                inputs={"nearest_player": current_player, "dt": dt},
+                entities=entities.get_objects(),
+            )
 
         for player in entities.players:
             player.get_move(inputs, entities.get_objects())
 
             playercam.position = player.pos - playercam.size / 2
-            # cam2.position = player.pos - cam2.size / 2
 
         if camera_target:
             followcam.position = camera_target.pos - followcam.size / 2
@@ -245,9 +210,11 @@ def main():
         if cd["zoom"] <= 0:
             cd["zoom"] = 100
             if keys[pygame.K_o]:
-                freecam.apply_zoom(0.80)
-            if keys[pygame.K_p]:
-                freecam.apply_zoom(1.25)
+                freecam.apply_zoom(1 / 0.5)
+            elif keys[pygame.K_p]:
+                freecam.apply_zoom(1 * 0.5)
+            else:
+                cd["zoom"] = 0
 
         for bl in entities.bullets:
             bl.move(inputs)
@@ -255,15 +222,27 @@ def main():
         ### bullet fire ###
         if mouse_keys[0] and dt_mili - cd["bullet"] > 0:
             # current_player.food += 1
-            cd["bullet"] = 75
+            cd["bullet"] = 100
 
             entities.bullets.append(current_player.shoot(inputs["mouse_pos"]))
 
-        ################ Drawing cycle ################
+        ##############################################
+        ##              Drawing cycle               ##
+        ##############################################
 
         screen.fill((255, 255, 255))  # white background
 
+        # FPS
         cam = cameracontroller.curr_cam
+        fps_text = FONT.render(f"FPS: {int(fps)}", False, (0, 0, 0))
+        screen.blit(fps_text, fps_position)
+
+        # ZOOM
+        if cam == freecam:
+            txt = FONT.render(
+                "x" + str(round(freecam.zoom * 10**3) / 10**3), False, (0, 0, 0)
+            )
+            screen.blit(txt, (Globals.SCREEN_WIDTH - txt.get_rect().width, 0))
 
         for bl in entities.bullets:
             if bl.pos[0] >= Globals.MAP_WIDTH:
@@ -285,7 +264,7 @@ def main():
 
         for player in entities.players:
             player.draw(cam=cam)
-            
+
         for wall in entities.walls:
             wall.draw(cam=cam)
 
@@ -326,6 +305,16 @@ def main():
             24, 664, int(current_player.health / current_player.max_health * 250), 15
         )
         pygame.draw.rect(screen, health_red, health_bar)
+
+        # debug mode for cam
+        if Globals.DEBUG and camera_target:
+            debug_info = camera_target.get_debug_info()
+
+            txt = FONT.render("DEBUG: ", False, (0, 0, 0))
+            screen.blit(txt, (0, 20))
+            for index, (key, value) in enumerate(debug_info.items()):
+                txt = FONT.render(f"{key}: {value}", False, (0, 0, 0))
+                screen.blit(txt, (0, index * 18 + 40))
 
         # debug, draw vectors from mouse to every entity when targetting for target cam
         # for vector in vectors:
