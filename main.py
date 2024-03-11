@@ -52,7 +52,7 @@ def main():
 
     camera_target = entities.players[0]
     vectors = []
-    
+
     generate_houses(screen, entities)
 
     while running:

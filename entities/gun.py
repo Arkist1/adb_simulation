@@ -32,7 +32,7 @@ class Gun:
         get_offset(offsetmulti): Calculates the offset vector based on the rotation angle.
     """
 
-    def __init__(self, screen: pygame.Surface = None, owner: any = None):
+    def __init__(self, pos, screen: pygame.Surface = None):
         """
         Initializes a Gun object.
 
@@ -53,42 +53,41 @@ class Gun:
             self.img_size,
         )
 
-        self.owner = owner
-
         self.gunoffset = 30
         self.bullet_offset = 30
 
-        self.rect = self.img.get_rect(center=owner.pos)
+        self.rect = self.img.get_rect(center=pos)
 
         self.screen = screen
         self.rotation = 0
 
-    def fire(self, location):
+    def fire(self, from_pos, to_pos):
         """
         Fires a bullet from the gun.
         """
         return Bullet(
-            self.owner.pos,
-            location,
-            self.bullet_speed,
-            self.bullet_damage,
-            self.bullet_size,
+            from_pos,
+            to_pos,
+            rotation=self.rotation,
+            offset=self.get_offset(2),
+            bullet_speed=self.bullet_speed,
+            bullet_damage=self.bullet_damage,
+            bullet_size=self.bullet_size,
             screen=self.screen,
-            owner=self,
         )
 
-    def draw(self, cam):
+    def draw(self, cam, pos):
         """
         Draws the gun on the screen.
         """
-        rot_img = self.rot_img(cam)
+        rot_img = self.rot_img(cam, center_pos=pos)
 
         self.screen.blit(
             rot_img,
             self.rect,
         )
 
-    def rot_img(self, cam):
+    def rot_img(self, cam, center_pos):
         """
         Rotates the gun image based on the rotation angle.
 
@@ -101,29 +100,28 @@ class Gun:
         self.rect = new_img.get_rect()
         # self.rect.w = self.rect.w / cam.zoom
         # self.rect.h = self.rect.h / cam.zoom
+
         self.rect.center = (
-            self.owner.pos * cam.zoom
-            - cam.position
-            + self.get_offset(self.gunoffset) * cam.zoom
+            center_pos * cam.zoom - cam.position + self.get_offset() * cam.zoom
         )  # / cam.zoom
 
         return new_img
 
-    def get_move(self, inputs: dict):
+    def get_move(self, inputs: dict, center_pos):
         """
         Calculates the rotation angle based on the mouse position.
 
         Args:
             inputs (dict): The input dictionary containing the mouse position.
         """
-        v1 = self.owner.pos - pygame.math.Vector2(inputs["mouse_pos"])
+        v1 = center_pos - pygame.math.Vector2(inputs["mouse_pos"])
         v2 = pygame.math.Vector2([-100, 0])
 
         angle = v1.angle_to(v2)
 
         self.rotation = angle
 
-    def get_offset(self, offsetmulti: int = None):
+    def get_offset(self, offsetmulti: int = 1):
         """
         Calculates the offset vector based on the rotation angle.
 
@@ -133,9 +131,10 @@ class Gun:
         Returns:
             pygame.math.Vector2: The offset vector.
         """
-        if not offsetmulti:
-            offsetmulti = self.owner.radius + self.bullet_offset
+
         rads = math.radians(self.rotation)
-        newvec = pygame.math.Vector2(math.cos(rads), -math.sin(rads)) * (offsetmulti)
+        newvec = pygame.math.Vector2(math.cos(rads), -math.sin(rads)) * (
+            offsetmulti * self.bullet_offset
+        )
 
         return newvec

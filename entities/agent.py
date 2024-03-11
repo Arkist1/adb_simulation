@@ -29,7 +29,7 @@ class Agent(Object):
         self.hitbox = size
         self.colour = colour
         self.screen = screen
-        self.weapon = Gun(screen=self.screen, owner=self)
+        self.weapon = Gun(pos=self.pos, screen=self.screen)
         self.vision_cone = VisionCone(vision_range=700, screen=self.screen, owner=self)
         self.detection_circle = None
 
@@ -144,12 +144,12 @@ class Agent(Object):
         # self.pos = self.pos + vec
         self.move(vec, entities)
 
-        self.weapon.get_move(inputs)
+        self.weapon.get_move(inputs, center_pos=self.pos)
         self.vision_cone.get_move(inputs["mouse_pos"])
 
     def shoot(self, location):
         if self.weapon:
-            return self.weapon.fire(location)
+            return self.weapon.fire(from_pos=self.pos, to_pos=location)
 
     def draw(self, cam):
         """
@@ -178,7 +178,7 @@ class Agent(Object):
                 self.update_detection_circle(cam, size=200)  # base detection circle
 
         if self.weapon:
-            self.weapon.draw(cam)
+            self.weapon.draw(cam, self.pos)
 
         if self.vision_cone:
             self.vision_cone.draw(cam)
