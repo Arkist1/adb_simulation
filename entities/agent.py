@@ -15,14 +15,17 @@ class Agent(Object):
         type: str = "human",
         colour: tuple[int] = (0, 0, 255),
         size: int = 30,
-        speed: int = 300,
+        crouchspeed: int = 150,
+        walkspeed: int = 300,
+        sprintspeed: int = 450,
         stamina: int = 250,
         food: int = 250,
         health: int = 250,
     ) -> None:
         super().__init__(pos=pygame.Vector2(start_pos[0], start_pos[1]), radius=size)
         self.controltype = type
-        self.speed = speed
+        self.speeds = {"sprinting": 450, "walking": 300, "crouching": 150}
+        self.speed = self.speeds["walking"]
         self.hitbox = size
         self.colour = colour
         self.screen = screen
@@ -37,6 +40,7 @@ class Agent(Object):
         self.food = food
         self.max_food = food
         self.hunger_rate = 2500
+        self.hunger_rates = {"high": 600, "low": 300}
 
         # staminda
         self.stamina = stamina
@@ -66,30 +70,33 @@ class Agent(Object):
             if self.cd[key] >= 0:
                 self.cd[key] = max(0, value - inputs["dt_mili"])
 
-        print(self.cd["stamina_regen"])
-
         ### sprint and crouch ###
         if inputs["sprint"] and self.stamina > 0:
             self.stamina -= 1
-            self.speed = 450
+            self.speed = self.speeds["sprinting"]
             self.cd["stamina_regen"] = self.stamina_cooldown
+
+            self.hunger_rate = self.hunger_rates["low"]
             self.is_running = True
 
         elif inputs["crouch"] and self.stamina > 0:
             self.stamina -= 0.5
-            self.speed = 150
-            self.is_crouching = True
+            self.speed = self.speeds["croucing"]
+            self.hunger_rate = self.hunger_rates["low"]
+
             self.cd["stamina_regen"] = self.stamina_cooldown
+            self.is_crouching = True
+
         else:
-            self.speed = 300
+            self.speed = self.speeds["walking"]
 
         ### stamina regen ###
         if self.cd["stamina_regen"] <= 0 and self.stamina < self.max_stamina:
-            self.hunger_rate = 1000
+            self.hunger_rate = self.hunger_rates["low"]
             self.stamina = min(0.75 + self.stamina, self.max_stamina)
 
         else:
-            self.hunger_rate = 2500
+            self.hunger_rate = self.hunger_rates["high"]
 
         ### hunger depletion ###
         if self.cd["food"] <= 0:
