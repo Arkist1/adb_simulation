@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from utils import Globals, Hitbox, dist, dist_sqr
 
 import pygame
@@ -14,7 +16,7 @@ class Object(Hitbox):
     ) -> None:
         super().__init__(type_, pos, min_pos, max_pos, **kwargs)
         
-    def move(self, velocity: pygame.Vector2, objects: list[Hitbox]) -> bool:
+    def move(self, velocity: pygame.Vector2, objects: list[Object], is_chain: bool = False) -> bool:
         self.pos += velocity
         
         w_off = (self.radius if self.type == "circle" else self.width / 2)
@@ -45,7 +47,8 @@ class Object(Hitbox):
                     #     vec = other.pos - self.pos
                     #     self.pos -= vec / 100
                     return False
-                other.pos += velocity * (2/3)
+                if not is_chain:
+                    other.move(velocity * (2/3), objects, True)
                 self.pos -= velocity * (1/3)
                 colliding.append(other)
         
@@ -57,11 +60,13 @@ class Object(Hitbox):
                 if self.type == "circle" and other.type == "circle":
                     perc = (dist(self.pos, other.pos) / (self.radius + other.radius))
                     vec = other.pos - self.pos
-                    other.pos += vec / (50 * perc)
+                    if not is_chain:
+                        other.move(vec / (50 * perc), objects, True)
                     self.pos -= vec / (50 * perc)
                 else:
                     vec = other.pos - self.pos
-                    other.pos += vec / 300
+                    if not is_chain:
+                        other.move(vec / 300, objects, True)
                     self.pos -= vec / 300
             
         return True
