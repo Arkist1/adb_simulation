@@ -1,9 +1,8 @@
 from .gun import Gun
 from .vision_cone import VisionCone
 from utils import Globals, Object
-
+from math import cos, radians
 import pygame
-
 
 class Agent(Object):
     """An agent instance"""
@@ -31,7 +30,8 @@ class Agent(Object):
         self.screen = screen
         self.weapon = Gun(screen=self.screen, owner=self)
         self.vision_cone = VisionCone(vision_range=700, screen=self.screen, owner=self)
-        self.detection_circle = None
+        self.sound_detection_circle = None
+        self.cos_half_vision_angle = cos(radians(self.vision_cone.vision_angle / 2))
 
         # hp
         self.health = health
@@ -145,7 +145,7 @@ class Agent(Object):
         self.move(vec, entities)
 
         self.weapon.get_move(inputs)
-        self.vision_cone.get_move(inputs["mouse_pos"])
+        self.vision_cone.get_rotate_vision_cone(inputs["mouse_pos"])
 
     def shoot(self, location):
         if self.weapon:
@@ -167,13 +167,13 @@ class Agent(Object):
 
         if self.controltype == "human":
             if self.is_crouching:
-                self.update_detection_circle(cam, size=100) # crouching detection circle
+                self.update_sound_circle(cam, size=100) # crouching detection circle
                 self.is_crouching = False
             elif self.is_running:
-                self.update_detection_circle(cam, size=400) # running detection circle
+                self.update_sound_circle(cam, size=400) # running detection circle
                 self.is_running = False
             else:
-                self.update_detection_circle(cam, size=200) # base detection circle
+                self.update_sound_circle(cam, size=200) # base detection circle
 
         if self.weapon:
             self.weapon.draw(cam)
@@ -181,13 +181,13 @@ class Agent(Object):
         if self.vision_cone:
             self.vision_cone.draw(cam)
 
-    def update_detection_circle(self, cam, size):
+    def update_sound_circle(self, cam, size):
         pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom, 1)
-        self.detection_circle = (self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom)
+        self.sound_detection_circle = (self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom)
 
 
-    def get_deteciton_circle(self):
-        return self.detection_circle
+    def get_sound_circle(self):
+        return self.sound_detection_circle
 
     def get_debug_info(self):
         return {
