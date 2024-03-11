@@ -267,11 +267,13 @@ def main():
         ### bullet fire ###
         if mouse_keys[0] and dt_mili - cd["bullet"] > 0:
             # current_player.food += 1
-            cd["bullet"] = 75
+            cd["bullet"] = 100
 
             entities.bullets.append(current_player.shoot(inputs["mouse_pos"]))
 
-        ################ Drawing cycle ################
+        ##############################################
+        ##              Drawing cycle               ##
+        ##############################################
 
         screen.fill((255, 255, 255))  # white background
 
