@@ -34,16 +34,16 @@ class Object(Hitbox):
         for other in objects:
             if other == self:
                 continue
-            if dist_sqr(self.pos, other.pos) > (self.max_xy().x - self.min_xy().x) ** 2:
-                continue
+            #if dist_sqr(self.pos, other.pos) > (self.max_xy().x - self.min_xy().x) ** 2:
+            #    continue
             
             if self.is_colliding(other):
                 if not other.is_pushable:
                     self.pos -= velocity
                             
-                    if self.is_colliding(other):
-                        vec = other.pos - self.pos
-                        self.pos -= vec / 100
+                    # if self.is_colliding(other):
+                    #     vec = other.pos - self.pos
+                    #     self.pos -= vec / 100
                     return False
                 other.pos += velocity * (2/3)
                 self.pos -= velocity * (1/3)

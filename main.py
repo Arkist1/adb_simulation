@@ -71,6 +71,10 @@ def main():
 
     camera_target = entities.players[0]
     vectors = []
+    
+    wall = Wall(screen, pygame.Vector2(200, 200))
+    entities.walls.append(wall)
+    print(wall, wall.type)
 
     while running:
         dt = clock.tick(Globals.FPS) / 1000
@@ -207,8 +211,6 @@ def main():
                     screen=screen,
                 )
             )
-             
-        entities.walls.append(Wall(screen, pygame.Vector2(200, 200)))
 
         if keys[pygame.K_f] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 10
