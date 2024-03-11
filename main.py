@@ -255,9 +255,9 @@ def main():
         if cd["zoom"] <= 0:
             cd["zoom"] = 100
             if keys[pygame.K_o]:
-                freecam.apply_zoom(0.80)
+                freecam.apply_zoom(1 / 0.5)
             elif keys[pygame.K_p]:
-                freecam.apply_zoom(1.25)
+                freecam.apply_zoom(1 * 0.5)
             else:
                 cd["zoom"] = 0
 
@@ -281,10 +281,10 @@ def main():
 
         # ZOOM
         if cam == freecam:
-            txt = FONT.render(round(freecam.zoom * 10) / 10, False, (0, 0, 0))
-            screen.blit(
-                txt,
+            txt = FONT.render(
+                "x" + str(round(freecam.zoom * 10**3) / 10**3), False, (0, 0, 0)
             )
+            screen.blit(txt, (Globals.SCREEN_WIDTH - txt.get_rect().width, 0))
 
         for bl in entities.bullets:
             if bl.pos[0] >= Globals.MAP_WIDTH:
