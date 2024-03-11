@@ -84,7 +84,7 @@ def main():
             "shoot": mouse_keys[0],
             "block": mouse_keys[2],
             "mouse_pos": mouse_pos / cameracontroller.curr_cam.zoom
-            + cameracontroller.curr_cam.position,
+            + cameracontroller.curr_cam.position / cameracontroller.curr_cam.zoom,
             "dt": dt,
         }
 
@@ -149,7 +149,7 @@ def main():
 
         ### cam switch ###
         if mouse_keys[2] and dt_mili - cd["cam_switch"] >= 0:
-            cd["cam_switch"] = 100
+            cd["cam_switch"] = 500
             cams = list(cameracontroller.cameras.keys())
             cameracontroller.change_cam(
                 cams[(cams.index(cameracontroller.curr_cam_name) + 1) % len(cams)]
