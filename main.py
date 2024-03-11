@@ -1,27 +1,40 @@
-from pygame._sdl2.video import Window
-import pygame
-import agent
-import globals
-import enemy
-import bullet
-import random
-import camera
-import pickup
+from camera import Camera, Camera_controller
 
+from entities import Bullet, Agent, Wall, Pickup, Enemy
+from utils import Object, Hitbox, Globals
+
+import random
+import pygame
+
+from pygame._sdl2.video import Window
+
+
+class EntityHolder:
+    def __init__(self) -> None:
+        self.players: list[Agent] = []
+        self.boxes: list[Hitbox] = []
+        self.bullets: list[Bullet] = []
+        self.pickups: list[Pickup] = []
+        self.enemies: list[Enemy] = []
+        self.walls: list[Wall] = []
+        
+    def get_objects(self) -> list[Object]:
+        return self.players + self.enemies + self.walls
+    
+    def get_items(self) -> list[Hitbox]:
+        return self.players + self.boxes + self.bullets + self.pickups + self.enemies + self.walls
 
 def main():
 
     pygame.init()
 
-    screen = pygame.display.set_mode([globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT])
+    screen = pygame.display.set_mode([Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT])
     clock = pygame.time.Clock()
+    font = pygame.font.SysFont("Arial" , 18 , bold = True)
 
     running = True
-    players = [agent.Agent(screen=screen)]
-    enemies = []
-    boxes = []
-    bullets = []
-    pickups = []
+    entities = EntityHolder()
+    entities.players.append(Agent(screen=screen))
 
     # Colors
     stamina_yellow = (255, 255, 10)
@@ -42,10 +55,10 @@ def main():
         "zoom": 0,
     }
 
-    playercam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
-    followcam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
-    mapcam = camera.Camera(pygame.Vector2([0, 0]), globals.MAP_SIZE)
-    freecam = camera.Camera(pygame.Vector2([0, 0]), globals.SCREEN_SIZE)
+    playercam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
+    followcam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
+    mapcam = Camera(pygame.Vector2([0, 0]), Globals.MAP_SIZE)
+    freecam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
 
     cams = {
         "playercam": playercam,
@@ -53,18 +66,21 @@ def main():
         "followcam": followcam,
         "freecam": freecam,
     }
-    cameracontroller = camera.Camera_controller(
+    cameracontroller = Camera_controller(
         cams=cams, window=Window.from_display_module()
     )
 
-    camera_target = players[0]
+    camera_target = entities.players[0]
     vectors = []
 
     while running:
-        dt = clock.tick(globals.FPS) / 1000
+        dt = clock.tick(Globals.FPS) / 1000
         dt_mili = clock.get_time()
+        fps = clock.get_fps()
+        fps_text = font.render(f"FPS: {int(fps)}", True, (0, 0, 0))
+        fps_position = (0, 0)
 
-        # check for closing window
+        # check for closing pygame._sdl2.video.Window
         for event in pygame.event.get():  # event loop
             if event.type == pygame.QUIT:
                 running = False
@@ -72,7 +88,7 @@ def main():
         keys = pygame.key.get_pressed()
         mouse_keys = pygame.mouse.get_pressed()
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
-        current_player = players[0]
+        current_player = entities.players[0]
 
         inputs = {
             "up": keys[pygame.K_w],
@@ -98,15 +114,15 @@ def main():
                 cd[key] = item - dt_mili
 
         ### kill player ###
-        for pl in players:
+        for pl in entities.players:
             if pl.health <= 0:
-                players.remove(pl)
-                players.append(agent.Agent(screen=screen))
+                entities.players.remove(pl)
+                entities.players.append(Agent(screen=screen))
 
         ### pickup collision detection ###
-        for pu in pickups:
+        for pu in entities.pickups:
             if current_player.is_colliding(pu):
-                pickups.remove(pu)
+                entities.pickups.remove(pu)
                 if pu.pickup_type == 0 or pu.pickup_type == 1:
                     current_player.health = min(
                         (current_player.health + pu.picked_up()),
@@ -122,9 +138,11 @@ def main():
             current_player.stamina -= 1
             current_player.speed = 450
             cd["stamina_regen"] = stamina_cooldown
+            current_player.is_running = True
         elif inputs["crouch"] and current_player.stamina > 0:
             current_player.stamina -= 0.5
             current_player.speed = 150
+            current_player.is_crouching = True
             cd["stamina_regen"] = stamina_cooldown
         else:
             current_player.speed = 300
@@ -161,7 +179,7 @@ def main():
             vectors = []
             closest_obj = None
             closest_dist = None
-            for item in enemies + players + bullets + pickups + boxes:
+            for item in entities.get_items():
                 dist = abs(sum(inputs["mouse_pos"] - item.pos))
                 vectors.append([inputs["mouse_pos"], item.pos.copy()])
                 if not closest_dist:
@@ -181,35 +199,38 @@ def main():
         ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 100
-            enemies.append(
-                enemy.Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
+            entities.enemies.append(
+                Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
             )
 
         ### manual pickup spawning ###
         if keys[pygame.K_n] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 500
-            pickups.append(
-                pickup.Pickup(
+            entities.pickups.append(
+                Pickup(
                     pickup_type=random.randint(0, 3),
                     start_pos=[random.randint(200, 600), random.randint(200, 600)],
                     screen=screen,
                 )
             )
+             
+        entities.walls.append(Wall(screen, pygame.Vector2(200, 200)))
 
         if keys[pygame.K_f] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 10
             current_player.health -= 25
 
         ###### Perceptions #####
-        for en in enemies:
+        for en in entities.enemies:
             en.percept()
+            en.detect_vision_cone_collision(current_player)
 
         ###### Movement #####
-        for en in enemies:
-            en.get_move(inputs={"nearest_player": current_player, "dt": dt})
+        for en in entities.enemies:
+            en.get_move(inputs={"nearest_player": current_player, "dt": dt}, entities=entities.get_objects())
 
-        for player in players:
-            player.get_move(inputs)
+        for player in entities.players:
+            player.get_move(inputs, entities.get_objects())
 
             playercam.position = player.pos - playercam.size / 2
             # cam2.position = player.pos - cam2.size / 2
@@ -219,13 +240,13 @@ def main():
 
         ## free cam position movement
         if keys[pygame.K_UP]:
-            freecam.position.y -= globals.FREECAM_SPEED * dt
+            freecam.position.y -= Globals.FREECAM_SPEED * dt
         if keys[pygame.K_DOWN]:
-            freecam.position.y += globals.FREECAM_SPEED * dt
+            freecam.position.y += Globals.FREECAM_SPEED * dt
         if keys[pygame.K_LEFT]:
-            freecam.position.x -= globals.FREECAM_SPEED * dt
+            freecam.position.x -= Globals.FREECAM_SPEED * dt
         if keys[pygame.K_RIGHT]:
-            freecam.position.x += globals.FREECAM_SPEED * dt
+            freecam.position.x += Globals.FREECAM_SPEED * dt
 
         ## free cam zoom
 
@@ -236,7 +257,7 @@ def main():
             if keys[pygame.K_p]:
                 freecam.apply_zoom(1.25)
 
-        for bl in bullets:
+        for bl in entities.bullets:
             bl.move(inputs)
 
         ### bullet fire ###
@@ -244,43 +265,47 @@ def main():
             # current_player.food += 1
             cd["bullet"] = 75
 
-            bullets.append(current_player.shoot(inputs["mouse_pos"]))
+            entities.bullets.append(current_player.shoot(inputs["mouse_pos"]))
 
         ################ Drawing cycle ################
-
+            
         screen.fill((255, 255, 255))  # white background
-
+        
         cam = cameracontroller.curr_cam
+        screen.blit(fps_text, fps_position)
 
-        for bl in bullets:
-            if bl.pos[0] >= globals.MAP_WIDTH:
-                bullets.remove(bl)
+        for bl in entities.bullets:
+            if bl.pos[0] >= Globals.MAP_WIDTH:
+                entities.bullets.remove(bl)
             elif bl.pos[0] < 0:
-                bullets.remove(bl)
-            elif bl.pos[1] >= globals.MAP_HEIGHT:
-                bullets.remove(bl)
+                entities.bullets.remove(bl)
+            elif bl.pos[1] >= Globals.MAP_HEIGHT:
+                entities.bullets.remove(bl)
             elif bl.pos[1] < 0:
-                bullets.remove(bl)
+                entities.bullets.remove(bl)
 
             bl.draw(cam=cam)
 
-        for pu in pickups:
+        for pu in entities.pickups:
             pu.draw(cam=cam)
 
-        for en in enemies:
+        for en in entities.enemies:
             en.draw(cam=cam)
 
-        for player in players:
+        for player in entities.players:
             player.draw(cam=cam)
+            
+        for wall in entities.walls:
+            wall.draw(cam=cam)
 
         ######## Map boundary drawing ########
         boundry_rgb = (100, 0, 255)
 
         origin = pygame.Vector2(0, 0) * cam.zoom - cam.position
-        bottom = pygame.Vector2(0, globals.MAP_HEIGHT) * cam.zoom - cam.position
-        right = pygame.Vector2(globals.MAP_WIDTH, 0) * cam.zoom - cam.position
+        bottom = pygame.Vector2(0, Globals.MAP_HEIGHT) * cam.zoom - cam.position
+        right = pygame.Vector2(Globals.MAP_WIDTH, 0) * cam.zoom - cam.position
         rightbottom = (
-            pygame.Vector2(globals.MAP_WIDTH, globals.MAP_HEIGHT) * cam.zoom
+            pygame.Vector2(Globals.MAP_WIDTH, Globals.MAP_HEIGHT) * cam.zoom
             - cam.position
         )
 

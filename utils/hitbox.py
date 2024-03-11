@@ -1,5 +1,5 @@
 from __future__ import annotations
-import globals
+from utils import Globals, dist
 
 import pygame
 
@@ -7,9 +7,10 @@ class Hitbox:
     def __init__(
         self, 
         type_: str = "circle", 
-        pos: pygame.Vector2 = pygame.Vector2(globals.MAP_WIDTH / 2, globals.MAP_HEIGHT / 2),
+        pos: pygame.Vector2 = pygame.Vector2(Globals().MAP_WIDTH / 2, Globals().MAP_HEIGHT / 2),
         min_pos: pygame.Vector2 = pygame.Vector2(0.0, 0.0),
-        max_pos: pygame.Vector2 = pygame.Vector2(globals.MAP_WIDTH, globals.MAP_HEIGHT),
+        max_pos: pygame.Vector2 = pygame.Vector2(Globals().MAP_WIDTH, Globals().MAP_HEIGHT),
+        is_pushable: bool = True,
         **kwargs: float
     ) -> None:
         if type_ not in ["circle", "rectangle"]:
@@ -19,6 +20,7 @@ class Hitbox:
         self.pos = pos
         self.min_pos = min_pos
         self.max_pos = max_pos
+        self.is_pushable = is_pushable
         
         if type_ == "circle":
             if "radius" not in kwargs:
@@ -42,12 +44,12 @@ class Hitbox:
         
     def is_colliding(self, other: Hitbox) -> bool:
         if self.type == "circle" and other.type == "circle":
-            return globals.dist(self.pos, other.pos) < (self.radius + other.radius)
-        return self.is_hitbox_within(other.min_pos(), other.max_pos())
+            return dist(self.pos, other.pos) < (self.radius + other.radius)
+        return self.is_hitbox_within(other.min_xy(), other.max_xy())
         
     def is_hitbox_within(self, min_coords: pygame.Vector2, max_coords: pygame.Vector2) -> bool:
-        return  self.min_pos().x >= min_coords.x and \
-                self.max_pos().x < max_coords.pos.x and \
-                self.min_pos().y >= min_coords.y and \
-                self.max_pos().y < max_coords.y
+        return  self.max_xy().x >= min_coords.x and \
+                self.min_xy().x < max_coords.x and \
+                self.max_xy().y >= min_coords.y and \
+                self.min_xy().y < max_coords.y
                 

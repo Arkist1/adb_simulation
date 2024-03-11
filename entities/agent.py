@@ -1,10 +1,11 @@
+from .gun import Gun
+from .vision_cone import VisionCone
+from utils import Globals, Object
+
 import pygame
-import globals
-import object
-import gun
 
 
-class Agent(object.Object):
+class Agent(Object):
     """An agent instance"""
 
     def __init__(
@@ -25,7 +26,8 @@ class Agent(object.Object):
         self.hitbox = size
         self.colour = colour
         self.screen = screen
-        self.weapon = gun.Gun(screen=self.screen, owner=self)
+        self.weapon = Gun(screen=self.screen, owner=self)
+        self.vision_cone = VisionCone(screen=self.screen, owner=self)
 
         self.health = health
         self.max_health = health
@@ -33,10 +35,12 @@ class Agent(object.Object):
         self.max_food = food
         self.stamina = stamina
         self.max_stamina = stamina
+        self.is_crouching = False
+        self.is_running = False
 
         self.is_moving = False
 
-    def get_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
+    def get_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         """
         Returns the move for the agent based on the given inputs.
 
@@ -47,12 +51,12 @@ class Agent(object.Object):
             pygame.Vector2: The move for the agent.
         """
         if self.controltype == "human":
-            return self.get_human_move(inputs)
+            return self.get_human_move(inputs, entities)
 
         if self.controltype == "random":
             return self.get_random_move()
 
-    def get_human_move(self, inputs: dict[str, bool]) -> pygame.Vector2:
+    def get_human_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         """
         Calculates the movement vector based on the user inputs.
 
@@ -77,12 +81,14 @@ class Agent(object.Object):
             vec.x += s
 
         if vec.x != 0 and vec.y != 0:
-            vec.x /= globals.SQR2
-            vec.y /= globals.SQR2
+            vec.x /= Globals().SQR2
+            vec.y /= Globals().SQR2
 
-        self.pos = self.pos + vec
+        #self.pos = self.pos + vec
+        self.move(vec, entities)
 
         self.weapon.get_move(inputs)
+        self.vision_cone.get_move(inputs)
 
     def shoot(self, location):
         if self.weapon:
@@ -95,11 +101,20 @@ class Agent(object.Object):
         This method draws a circle representing the agent on the screen using the specified colour and position.
         If the agent has a weapon, it also calls the `draw` method of the weapon to draw it on the screen.
         """
-        pygame.draw.circle(
-            self.screen,
-            self.colour,
-            self.pos * cam.zoom - cam.position,
-            self.hitbox * cam.zoom,
-        )  # circle
+        pygame.draw.circle(self.screen, self.colour, self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom)  # circle (player)
+
+        if self.controltype == "human":
+            if self.is_crouching:
+                pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom + 100, 1) # crouching detection circle
+                self.is_crouching = False
+            elif self.is_running:
+                pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom + 400, 1) # running detection circle
+                self.is_running = False
+            else:
+                pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom + 200, 1 ) # base detection circle
+        
         if self.weapon:
             self.weapon.draw(cam)
+
+        if self.vision_cone:
+            self.vision_cone.draw(cam)
