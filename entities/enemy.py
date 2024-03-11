@@ -29,6 +29,7 @@ class Enemy(Agent):
 
         self.moving = False
         self.move_timer = 0
+        self.blocked_timer = 0
         self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
         self.vision_cone.vision_range = 400
 
@@ -65,6 +66,8 @@ class Enemy(Agent):
             self.move_timer -= inputs["dt"]
 
         elif self.state == "wandering":
+            self.blocked_timer -= inputs["dt"]
+            
             neg_x = 1
             neg_y = 1
 
@@ -78,9 +81,10 @@ class Enemy(Agent):
 
             sdelta = sum([abs(dx), abs(dy)])
 
-            if sdelta < self.wanderspeed:  # detect if poi position is within reach
+            if sdelta < self.wanderspeed or self.blocked_timer <= 0:  # detect if poi position is within reach
                 self.moving = False
                 self.move_timer = random.random() * 2 + 2
+                self.blocked_timer = random.random() * 2 + 2
 
             if not sdelta == 0:
                 ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
