@@ -178,7 +178,7 @@ def main():
 
         ###### Perceptions #####
         for en in entities.enemies:
-            en.percept(current_player)
+            en.percept(entities.players)
 
         ###### Movement #####
         for en in entities.enemies:

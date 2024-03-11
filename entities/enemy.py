@@ -24,7 +24,7 @@ class Enemy(Agent):
     ) -> None:
         super().__init__(screen, start_pos, type=type, colour=colour)
         self.weapon = None
-        self.poi = self.pos
+        self.poi = self.pos  # Point Of Interest (POI)
 
         self.speed = self.speed / 2
         self.wanderspeed = self.speed / 4
@@ -62,46 +62,31 @@ class Enemy(Agent):
         Returns:
             None
         """
-
         self.vision_cone.get_rotate_vision_cone(self.poi)
-        if self.state == "chasing":
-            self.poi = self.detected_agent
-            
+
+        # if self.state == "chasing":
+        #     self.poi = self.detected_agent
 
         if self.move_timer > 0:
             self.move_timer -= inputs["dt"]
 
         elif self.state == "wandering":
             self.blocked_timer -= inputs["dt"]
-            
-            neg_x = 1
-            neg_y = 1
 
-            dx = self.poi[0] - self.pos[0]
-            dy = self.poi[1] - self.pos[1]
+            sdelta = self.distance_to(self.poi)
+            # print(sdelta)
 
-            if dx < 0:
-                neg_x = -1
-            if dy < 0:
-                neg_y = -1
-
-            sdelta = sum([abs(dx), abs(dy)])
-
-            if sdelta < self.wanderspeed or self.blocked_timer <= 0:  # detect if poi position is within reach
+            if (
+                sdelta < self.wanderspeed or self.blocked_timer <= 0
+            ):  # detect if poi position is within reach
                 self.moving = False
                 self.move_timer = random.random() * 2 + 2
                 self.blocked_timer = random.random() * 2 + 2
 
             if not sdelta == 0:
-                ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
-
-                delta = (
-                    pygame.Vector2(
-                        self.wanderspeed * ratio[0] * neg_x,
-                        self.wanderspeed * ratio[1] * neg_y,
-                    )
-                    * inputs["dt"]
-                )
+                # calculate delta
+                angle = self.angle_to(self.poi)
+                delta = self.angle_to_direction(angle) * self.wanderspeed * inputs["dt"]
 
                 self.move(delta, entities)
                 return
@@ -113,7 +98,7 @@ class Enemy(Agent):
 
         self.move(pygame.Vector2(0, 0), entities)
 
-    def percept(self, entity):
+    def percept(self, entities):
         """
         Checks if the given agent is within the vision cone of this enemy.
 
@@ -123,18 +108,34 @@ class Enemy(Agent):
         Returns:
             bool: True if the agent is within the vision cone, False otherwise.
         """
-        if self.state == "wandering" and not self.moving and self.move_timer <= 0:
-            self.poi = pygame.Vector2(
-                random.randrange(round(self.pos[0]) - 100, round(self.pos[0]) + 100),
-                random.randrange(round(self.pos[1]) - 100, round(self.pos[1]) + 100),
-            )
-            self.moving = True
-        
-        if (self.vision_cone.get_vision_cone_info() is None):
-            return False
-        
-        dot_product, distance, self.state = self.detect(entity)
-        self.detected_agent = [dot_product, distance]
+        detections = []
+        for entity in entities:
+            if self.detect(entity):
+                detections.append(entity)
+
+        if detections:
+            print("detection has been made")
+            print(detections[0].pos)
+            self.state = "chasing"
+            self.poi = detections[0].pos
+
+        else:
+            self.state = "wandering"
+
+            if (
+                not self.moving and self.move_timer <= 0
+            ):  # Only get new poi if old one has been reached
+                self.poi = pygame.Vector2(
+                    random.randrange(
+                        round(self.pos[0]) - 100, round(self.pos[0]) + 100
+                    ),
+                    random.randrange(
+                        round(self.pos[1]) - 100, round(self.pos[1]) + 100
+                    ),
+                )
+                self.moving = True
+
+        self.detected_agents = detections
 
     def get_debug_info(self):
         return {
@@ -143,6 +144,8 @@ class Enemy(Agent):
             "Rotation": self.vision_cone.rotation,
             "Speed": self.speed,
             "POI": self.poi,
+            "Blocked_timer": self.blocked_timer,
+            "move_timer": self.move_timer,
             "State": self.state,
             "Pushable": self.is_pushable,
         }

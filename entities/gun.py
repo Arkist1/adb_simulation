@@ -114,8 +114,8 @@ class Gun:
         Args:
             inputs (dict): The input dictionary containing the mouse position.
         """
-        v1 = center_pos - pygame.math.Vector2(inputs["mouse_pos"])
-        v2 = pygame.math.Vector2([-100, 0])
+        v1 = pygame.math.Vector2(inputs["mouse_pos"]) - center_pos
+        v2 = pygame.math.Vector2([0, 0])
 
         angle = v1.angle_to(v2)
 

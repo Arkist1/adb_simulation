@@ -1,4 +1,5 @@
 from utils import Object
+import math
 
 import pygame
 
@@ -21,14 +22,21 @@ class VisionCone:
         """
 
         pos = self.owner.pos * cam.zoom - cam.position
-        angle = self.rotation
         vision_range = self.vision_range * cam.zoom
         vision_angle = self.vision_angle
 
         vertices = [
-            pygame.math.Vector2(pos[0], pos[1]),
-            pygame.math.Vector2(pos[0], pos[1]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle - vision_angle / 2),
-            pygame.math.Vector2(pos[0], pos[1]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle + vision_angle / 2),
+            pos,
+            pos
+            + vision_range
+            * self.owner.angle_to_direction(
+                math.radians(self.rotation - vision_angle / 2)
+            ),
+            pos
+            + vision_range
+            * self.owner.angle_to_direction(
+                math.radians(self.rotation + vision_angle / 2)
+            ),
         ]
 
         pygame.draw.polygon(self.screen, (0, 0, 0), vertices, 1)
@@ -44,9 +52,7 @@ class VisionCone:
         v1 = pygame.math.Vector2(target) - self.owner.pos
         v2 = pygame.math.Vector2([0, 0])
 
-        angle = v2.angle_to(v1)
-
-        self.rotation = angle
+        self.rotation = v1.angle_to(v2)
 
     def get_vision_cone_info(self):
-        return (self.vision_range, self.rotation)
+        return (self.vision_range, self.rotation, self.vision_angle)

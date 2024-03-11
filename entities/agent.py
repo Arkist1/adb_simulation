@@ -2,7 +2,9 @@ from .gun import Gun
 from .vision_cone import VisionCone
 from utils import Globals, Object
 from math import sqrt, cos, radians
+import math
 import pygame
+
 
 class Agent(Object):
     """An agent instance"""
@@ -167,13 +169,13 @@ class Agent(Object):
 
         if self.controltype == "human":
             if self.is_crouching:
-                self.update_sound_circle(cam, size=100) # crouching detection circle
+                self.update_sound_circle(cam, size=100)  # crouching detection circle
                 self.is_crouching = False
             elif self.is_running:
-                self.update_sound_circle(cam, size=400) # running detection circle
+                self.update_sound_circle(cam, size=400)  # running detection circle
                 self.is_running = False
             else:
-                self.update_sound_circle(cam, size=200) # base detection circle
+                self.update_sound_circle(cam, size=200)  # base detection circle
 
         if self.weapon:
             self.weapon.draw(cam, self.pos)
@@ -181,37 +183,53 @@ class Agent(Object):
         if self.vision_cone:
             self.vision_cone.draw(cam)
 
+    def angle_to(self, other):
+        v1 = pygame.math.Vector2(other) - self.pos
+        v2 = pygame.math.Vector2([0, 0])
+
+        return v1.angle_to(v2)
+
+    def angle_to_direction(self, angle):
+        return pygame.math.Vector2(math.cos(angle), -math.sin(angle))
+
+    def distance_to(self, other):
+        dx = other[0] - self.pos[0]
+        dy = other[1] - self.pos[1]
+
+        sdelta = sum([abs(dx), abs(dy)])
+
+        return sdelta
+
     def detect(self, entity):
-        if entity.sound_detection_circle is None:
-            return 0, 0, "wandering"
-        
-        vision_range, rotation = self.vision_cone.get_vision_cone_info()
-        # Calculate the dot product between the agent direction and the vision cone direction (returns between -1 and 1)
-        agent_direction = pygame.Vector2(entity.pos[0] - self.pos[0], entity.pos[1] - self.pos[1]).normalize()
-        vision_cone_direction = pygame.Vector2(1, 0).rotate(rotation)
-        dot_product = agent_direction.dot(vision_cone_direction)
+        agent_direction = self.angle_to(entity.pos)
+        agent_distance = self.distance_to(entity.pos)
 
-        # calculates the distance between self and detected entity
-        distance = self.pos.distance_to(entity.pos)
+        vision_range, rotation, vision_angle = self.vision_cone.get_vision_cone_info()
 
-        if distance <= entity.sound_detection_circle[1]:
-            # print("chasing because of sound")
-            # print(dot_product, self.pos.distance_to(entity.pos))
-            return dot_product, distance, "chasing"
-        
-        # Check if the dot product is greater than or equal to the cosine of half the vision angle
-        if dot_product >= entity.cos_half_vision_angle:
-            # Check if the distance between the agent and the enemy is within the vision range
-            if distance <= vision_range:
-                # print("chasing because of vision")
-                # print(dot_product, distance)
-                return dot_product, distance, "chasing"
+        print(
+            f"{rotation + vision_angle / 2} > {agent_direction} > {rotation - vision_angle / 2}"
+        )
 
-        return 0, 0, "wandering"
+        if (
+            rotation + vision_angle / 2 > agent_direction > rotation - vision_angle / 2
+            and agent_distance <= vision_range
+        ):
+            return True
+
+        return False
 
     def update_sound_circle(self, cam, size):
-        pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom, 1)
-        self.sound_detection_circle = (self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom)
+        pygame.draw.circle(
+            self.screen,
+            (0, 0, 0),
+            self.pos * cam.zoom - cam.position,
+            (self.hitbox + size) * cam.zoom,
+            1,
+        )
+        self.sound_detection_circle = (
+            self.pos * cam.zoom - cam.position,
+            (self.hitbox + size) * cam.zoom,
+        )
 
     def get_sound_circle(self):
         return self.sound_detection_circle
