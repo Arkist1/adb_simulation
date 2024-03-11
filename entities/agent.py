@@ -28,7 +28,7 @@ class Agent(Object):
         self.hitbox = size
         self.colour = colour
         self.screen = screen
-        self.weapon = Gun(screen=self.screen, owner=self)
+        self.weapon = Gun(pos=self.pos, screen=self.screen)
         self.vision_cone = VisionCone(vision_range=700, screen=self.screen, owner=self)
         self.sound_detection_circle = None
         self.cos_half_vision_angle = cos(radians(self.vision_cone.vision_angle / 2))
@@ -82,7 +82,7 @@ class Agent(Object):
 
         elif inputs["crouch"] and self.stamina > 0:
             self.stamina -= 0.5
-            self.speed = self.speeds["croucing"]
+            self.speed = self.speeds["crouching"]
             self.hunger_rate = self.hunger_rates["low"]
 
             self.cd["stamina_regen"] = self.stamina_cooldown
@@ -149,7 +149,7 @@ class Agent(Object):
 
     def shoot(self, location):
         if self.weapon:
-            return self.weapon.fire(location)
+            return self.weapon.fire(from_pos=self.pos, to_pos=location)
 
     def draw(self, cam):
         """
@@ -176,7 +176,7 @@ class Agent(Object):
                 self.update_sound_circle(cam, size=200) # base detection circle
 
         if self.weapon:
-            self.weapon.draw(cam)
+            self.weapon.draw(cam, self.pos)
 
         if self.vision_cone:
             self.vision_cone.draw(cam)
