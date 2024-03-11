@@ -6,7 +6,7 @@ import pygame
 class Globals:
     def __init__(self) -> None:
         pass
-    
+
     SCREEN_WIDTH = 1000
     SCREEN_HEIGHT = 700
     SCREEN_SIZE = pygame.Vector2(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -17,6 +17,7 @@ class Globals:
     MAP_HEIGHT = 7_000
     MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
     FREECAM_SPEED = 1000
+    DEBUG = True
 
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
@@ -31,6 +32,7 @@ def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
         float: The Euclidean distance between p1 and p2.
     """
     return math.sqrt(dist_sqr(p1, p2))
+
 
 def dist_sqr(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
     """

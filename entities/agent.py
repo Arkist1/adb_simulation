@@ -84,11 +84,11 @@ class Agent(Object):
             vec.x /= Globals().SQR2
             vec.y /= Globals().SQR2
 
-        #self.pos = self.pos + vec
+        # self.pos = self.pos + vec
         self.move(vec, entities)
 
         self.weapon.get_move(inputs)
-        self.vision_cone.get_move(inputs)
+        self.vision_cone.get_move(inputs["mouse_pos"])
 
     def shoot(self, location):
         if self.weapon:
@@ -101,20 +101,57 @@ class Agent(Object):
         This method draws a circle representing the agent on the screen using the specified colour and position.
         If the agent has a weapon, it also calls the `draw` method of the weapon to draw it on the screen.
         """
-        pygame.draw.circle(self.screen, self.colour, self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom)  # circle (player)
+        pygame.draw.circle(
+            self.screen,
+            self.colour,
+            self.pos * cam.zoom - cam.position,
+            self.hitbox * cam.zoom,
+        )  # circle (player)
 
         if self.controltype == "human":
             if self.is_crouching:
-                pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom + 100, 1) # crouching detection circle
+                pygame.draw.circle(
+                    self.screen,
+                    (0, 0, 0),
+                    self.pos * cam.zoom - cam.position,
+                    (self.hitbox + 100) * cam.zoom,
+                    1,
+                )  # crouching detection circle
                 self.is_crouching = False
             elif self.is_running:
-                pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom + 400, 1) # running detection circle
+                pygame.draw.circle(
+                    self.screen,
+                    (0, 0, 0),
+                    self.pos * cam.zoom - cam.position,
+                    (self.hitbox + 400) * cam.zoom,
+                    1,
+                )  # running detection circle
                 self.is_running = False
             else:
-                pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, self.hitbox * cam.zoom + 200, 1 ) # base detection circle
-        
+                pygame.draw.circle(
+                    self.screen,
+                    (0, 0, 0),
+                    self.pos * cam.zoom - cam.position,
+                    (self.hitbox + 200) * cam.zoom,
+                    1,
+                )  # base detection circle
+
         if self.weapon:
             self.weapon.draw(cam)
 
         if self.vision_cone:
             self.vision_cone.draw(cam)
+
+    def get_debug_info(self):
+        return {
+            "Type": type(self).__name__,
+            "Position": self.pos,
+            "Rotation": self.vision_cone.rotation,
+            "Speed": self.speed,
+            "Crouching": self.is_crouching,
+            "Running": self.is_running,
+            "Food": self.food,
+            "Health": self.health,
+            "Stamina": self.stamina,
+            "Pushable": self.is_pushable,
+        }

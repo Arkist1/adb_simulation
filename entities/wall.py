@@ -4,11 +4,16 @@ import pygame
 
 
 class Wall(Object):
-    def __init__(self, screen: pygame.Surface, pos: pygame.Vector2, colour: tuple[int] = (255, 0, 255),) -> None:
+    def __init__(
+        self,
+        screen: pygame.Surface,
+        pos: pygame.Vector2,
+        colour: tuple[int] = (255, 0, 255),
+    ) -> None:
         super().__init__("rectangle", pos, is_pushable=False, width=300, height=30)
         self.screen = screen
         self.colour = colour
-        
+
     def draw(self, cam):
         pygame.draw.rect(
             self.screen,
@@ -16,8 +21,16 @@ class Wall(Object):
             pygame.Rect(
                 (self.min_xy() * cam.zoom - cam.position).x,
                 (self.min_xy() * cam.zoom - cam.position).y,
-                self.width,
-                self.height
+                self.width * cam.zoom,
+                self.height * cam.zoom,
             ),
         )
-        
+
+    def get_debug_info(self):
+        return {
+            "Type": type(self).__name__,
+            "Position": self.pos,
+            "Width": self.width,
+            "Height": self.height,
+            "Pushable": self.is_pushable,
+        }

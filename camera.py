@@ -17,10 +17,13 @@ class Camera:
 
     def apply_zoom(self, amt):
         newzoom = self.zoom * amt
+        old_size = self.size
+
         self.size = (self.size / self.zoom) * newzoom
+        self.position += (self.size - old_size) / 2
         self.zoom = newzoom
 
-        print(newzoom)
+        # print(newzoom)
 
     def get_view(self):
         return [self.position, self.position + self.size]
