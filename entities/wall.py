@@ -8,9 +8,11 @@ class Wall(Object):
         self,
         screen: pygame.Surface,
         pos: pygame.Vector2,
+        width: int = 300,
+        height: int = 30,
         colour: tuple[int] = (255, 0, 255),
     ) -> None:
-        super().__init__("rectangle", pos, is_pushable=False, width=300, height=30)
+        super().__init__("rectangle", pos, is_pushable=False, width=width, height=height)
         self.screen = screen
         self.colour = colour
 

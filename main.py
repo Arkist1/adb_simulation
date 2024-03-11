@@ -1,7 +1,7 @@
 from camera import Camera, Camera_controller
 
 from entities import Bullet, Agent, Wall, Pickup, Enemy
-from utils import Object, Hitbox, Globals, EntityHolder
+from utils import Object, Hitbox, Globals, EntityHolder, generate_houses
 
 import random
 import pygame
@@ -53,8 +53,8 @@ def main():
 
     camera_target = entities.players[0]
     vectors = []
-
-    entities.walls.append(Wall(screen, pygame.Vector2(200, 200)))
+    
+    generate_houses(screen, entities)
 
     while running:
         dt = clock.tick(Globals.FPS) / 1000
