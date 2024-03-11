@@ -182,18 +182,29 @@ class Agent(Object):
             self.vision_cone.draw(cam)
 
     def detect(self, entity):
+        if entity.sound_detection_circle is None:
+            return 0, 0, "wandering"
+        
         vision_range, rotation = self.vision_cone.get_vision_cone_info()
-
         # Calculate the dot product between the agent direction and the vision cone direction (returns between -1 and 1)
         agent_direction = pygame.Vector2(entity.pos[0] - self.pos[0], entity.pos[1] - self.pos[1]).normalize()
         vision_cone_direction = pygame.Vector2(1, 0).rotate(rotation)
         dot_product = agent_direction.dot(vision_cone_direction)
 
+        # calculates the distance between self and detected entity
+        distance = self.pos.distance_to(entity.pos)
+
+        if distance <= entity.sound_detection_circle[1]:
+            # print("chasing because of sound")
+            # print(dot_product, self.pos.distance_to(entity.pos))
+            return dot_product, distance, "chasing"
+        
         # Check if the dot product is greater than or equal to the cosine of half the vision angle
         if dot_product >= entity.cos_half_vision_angle:
             # Check if the distance between the agent and the enemy is within the vision range
-            distance = sqrt((entity.pos[0] - self.pos[0])**2 + (entity.pos[1] - self.pos[1])**2)
             if distance <= vision_range:
+                # print("chasing because of vision")
+                # print(dot_product, distance)
                 return dot_product, distance, "chasing"
 
         return 0, 0, "wandering"
