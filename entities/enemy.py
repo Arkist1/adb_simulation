@@ -30,6 +30,7 @@ class Enemy(Agent):
         self.moving = False
         self.move_timer = 0
         self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
+        self.vision_cone.vision_range = 400
 
     def get_move(self, inputs, entities):
         """
@@ -57,6 +58,9 @@ class Enemy(Agent):
         Returns:
             None
         """
+
+        self.vision_cone.get_move(self.poi)
+
         if self.move_timer > 0:
             self.move_timer -= inputs["dt"]
 
@@ -74,7 +78,7 @@ class Enemy(Agent):
 
             sdelta = sum([abs(dx), abs(dy)])
 
-            if sdelta < self.wanderspeed:
+            if sdelta < self.wanderspeed:  # detect if poi position is within reach
                 self.moving = False
                 self.move_timer = random.random() * 2 + 2
 
@@ -96,9 +100,51 @@ class Enemy(Agent):
         # if self.state == "alert":
 
         # if self.state == "chasing":
-        
-        
-        self.move(pygame.Vector2(0,0), entities)
+
+        self.move(pygame.Vector2(0, 0), entities)
+
+    def detect_vision_cone_collision(self, agent):
+        """
+        Checks if the given agent is within the vision cone of this enemy.
+
+        Args:
+            agent (Agent): The agent to check for collision.
+
+        Returns:
+            bool: True if the agent is within the vision cone, False otherwise.
+        """
+        if (
+            self.vision_cone.get_vision_cone_vertices() is None
+            or agent.vision_cone.get_vision_cone_vertices() is None
+        ):
+            return False
+        own_vertices = self.vision_cone.get_vision_cone_vertices()
+        agent_vertices = agent.vision_cone.get_vision_cone_vertices()
+        # print(own_vertices)
+        # print(agent_vertices)
+
+        for vertex in own_vertices:
+            if self.is_point_inside_polygon(vertex, agent_vertices):
+                # print("collision 1 ")
+                return True
+        for vertex in agent_vertices:
+            if self.is_point_inside_polygon(vertex, own_vertices):
+                # print("collision 2 ")
+                return True
+        return False
+
+    def is_point_inside_polygon(self, point, vertices):
+        # Ray casting algorithm
+        x, y = point
+        count = 0
+        for i in range(len(vertices)):
+            p1 = vertices[i]
+            p2 = vertices[(i + 1) % len(vertices)]
+            if (p1[1] > y) != (p2[1] > y) and x < (p2[0] - p1[0]) * (y - p1[1]) / (
+                p2[1] - p1[1]
+            ) + p1[0]:
+                count += 1
+        return count % 2 == 1
 
     def percept(self):
         if self.state == "wandering" and not self.moving and self.move_timer <= 0:
@@ -107,3 +153,14 @@ class Enemy(Agent):
                 random.randrange(round(self.pos[1]) - 100, round(self.pos[1]) + 100),
             )
             self.moving = True
+
+    def get_debug_info(self):
+        return {
+            "Type": type(self).__name__,
+            "Position": self.pos,
+            "Rotation": self.vision_cone.rotation,
+            "Speed": self.speed,
+            "POI": self.poi,
+            "State": self.state,
+            "Pushable": self.is_pushable,
+        }

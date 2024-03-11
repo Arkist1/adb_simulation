@@ -35,7 +35,6 @@ class Bullet(Object):
         bullet_speed=50,
         bullet_damage=50,
         bullet_size=5,
-        owner_delta=None,
         screen=None,
         owner=None,
     ) -> None:
@@ -123,3 +122,13 @@ class Bullet(Object):
         return pygame.Vector2(
             self.speed * ratio[0] * neg_x, self.speed * ratio[1] * neg_y
         )
+
+    def get_debug_info(self):
+        return {
+            "Type": type(self).__name__,
+            "Position": self.pos,
+            "Rotation": self.rotation,
+            "Speed": self.speed,
+            "Velocity": self.velocity,
+            "Damage": self.bullet_damage,
+        }

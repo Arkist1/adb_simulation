@@ -1,5 +1,5 @@
 from .gun import Gun
-
+from .vision_cone import VisionCone
 from utils import Globals, Object
 
 import pygame
@@ -27,6 +27,7 @@ class Agent(Object):
         self.colour = colour
         self.screen = screen
         self.weapon = Gun(screen=self.screen, owner=self)
+        self.vision_cone = VisionCone(vision_range=700, screen=self.screen, owner=self)
 
         self.health = health
         self.max_health = health
@@ -34,6 +35,8 @@ class Agent(Object):
         self.max_food = food
         self.stamina = stamina
         self.max_stamina = stamina
+        self.is_crouching = False
+        self.is_running = False
 
         self.is_moving = False
 
@@ -81,10 +84,11 @@ class Agent(Object):
             vec.x /= Globals().SQR2
             vec.y /= Globals().SQR2
 
-        #self.pos = self.pos + vec
+        # self.pos = self.pos + vec
         self.move(vec, entities)
 
         self.weapon.get_move(inputs)
+        self.vision_cone.get_move(inputs["mouse_pos"])
 
     def shoot(self, location):
         if self.weapon:
@@ -102,6 +106,52 @@ class Agent(Object):
             self.colour,
             self.pos * cam.zoom - cam.position,
             self.hitbox * cam.zoom,
-        )  # circle
+        )  # circle (player)
+
+        if self.controltype == "human":
+            if self.is_crouching:
+                pygame.draw.circle(
+                    self.screen,
+                    (0, 0, 0),
+                    self.pos * cam.zoom - cam.position,
+                    (self.hitbox + 100) * cam.zoom,
+                    1,
+                )  # crouching detection circle
+                self.is_crouching = False
+            elif self.is_running:
+                pygame.draw.circle(
+                    self.screen,
+                    (0, 0, 0),
+                    self.pos * cam.zoom - cam.position,
+                    (self.hitbox + 400) * cam.zoom,
+                    1,
+                )  # running detection circle
+                self.is_running = False
+            else:
+                pygame.draw.circle(
+                    self.screen,
+                    (0, 0, 0),
+                    self.pos * cam.zoom - cam.position,
+                    (self.hitbox + 200) * cam.zoom,
+                    1,
+                )  # base detection circle
+
         if self.weapon:
             self.weapon.draw(cam)
+
+        if self.vision_cone:
+            self.vision_cone.draw(cam)
+
+    def get_debug_info(self):
+        return {
+            "Type": type(self).__name__,
+            "Position": self.pos,
+            "Rotation": self.vision_cone.rotation,
+            "Speed": self.speed,
+            "Crouching": self.is_crouching,
+            "Running": self.is_running,
+            "Food": self.food,
+            "Health": self.health,
+            "Stamina": self.stamina,
+            "Pushable": self.is_pushable,
+        }
