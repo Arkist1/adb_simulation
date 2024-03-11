@@ -82,7 +82,7 @@ class Agent(Object):
 
         elif inputs["crouch"] and self.stamina > 0:
             self.stamina -= 0.5
-            self.speed = self.speeds["croucing"]
+            self.speed = self.speeds["crouching"]
             self.hunger_rate = self.hunger_rates["low"]
 
             self.cd["stamina_regen"] = self.stamina_cooldown
@@ -167,13 +167,15 @@ class Agent(Object):
 
         if self.controltype == "human":
             if self.is_crouching:
-                self.update_detection_circle(cam, size=100) # crouching detection circle
+                self.update_detection_circle(
+                    cam, size=100
+                )  # crouching detection circle
                 self.is_crouching = False
             elif self.is_running:
-                self.update_detection_circle(cam, size=400) # running detection circle
+                self.update_detection_circle(cam, size=400)  # running detection circle
                 self.is_running = False
             else:
-                self.update_detection_circle(cam, size=200) # base detection circle
+                self.update_detection_circle(cam, size=200)  # base detection circle
 
         if self.weapon:
             self.weapon.draw(cam)
@@ -182,9 +184,17 @@ class Agent(Object):
             self.vision_cone.draw(cam)
 
     def update_detection_circle(self, cam, size):
-        pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom, 1)
-        self.detection_circle = (self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom)
-
+        pygame.draw.circle(
+            self.screen,
+            (0, 0, 0),
+            self.pos * cam.zoom - cam.position,
+            (self.hitbox + size) * cam.zoom,
+            1,
+        )
+        self.detection_circle = (
+            self.pos * cam.zoom - cam.position,
+            (self.hitbox + size) * cam.zoom,
+        )
 
     def get_deteciton_circle(self):
         return self.detection_circle

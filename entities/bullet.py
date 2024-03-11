@@ -118,7 +118,11 @@ class Bullet(Object):
         if dy < 0:
             neg_y = -1
         sdelta = sum([abs(dx), abs(dy)])
-        ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
+
+        if sdelta == 0:
+            ratio = [-1, 0]
+        else:
+            ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
         return pygame.Vector2(
             self.speed * ratio[0] * neg_x, self.speed * ratio[1] * neg_y
         )
