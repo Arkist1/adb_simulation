@@ -210,11 +210,18 @@ class Agent(Object):
             f"{rotation + vision_angle / 2} > {agent_direction} > {rotation - vision_angle / 2}"
         )
 
-        if (
-            rotation + vision_angle / 2 > agent_direction > rotation - vision_angle / 2
-            and agent_distance <= vision_range
-        ):
-            return True
+        if agent_distance <= vision_range:
+            left_rotation = rotation + vision_angle / 2
+            right_rotation = rotation - vision_angle / 2
+
+            if (
+                left_rotation > agent_direction > right_rotation
+                or right_rotation > agent_direction
+                and left_rotation > 180
+                or left_rotation < agent_direction
+                and right_rotation < -180
+            ):
+                return True
 
         return False
 
