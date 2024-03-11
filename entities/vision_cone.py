@@ -1,7 +1,6 @@
 from utils import Object
 
 import pygame
-import math
 
 
 class VisionCone:
@@ -28,16 +27,14 @@ class VisionCone:
 
         vertices = [
             pygame.math.Vector2(pos[0], pos[1]),
-            pygame.math.Vector2(pos[0], pos[1])
-            + vision_range * pygame.math.Vector2(1, 0).rotate(angle - vision_angle / 2),
-            pygame.math.Vector2(pos[0], pos[1])
-            + vision_range * pygame.math.Vector2(1, 0).rotate(angle + vision_angle / 2),
+            pygame.math.Vector2(pos[0], pos[1]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle - vision_angle / 2),
+            pygame.math.Vector2(pos[0], pos[1]) + vision_range * pygame.math.Vector2(1, 0).rotate(angle + vision_angle / 2),
         ]
 
         pygame.draw.polygon(self.screen, (0, 0, 0), vertices, 1)
         self.vision_cone_vertices = vertices
 
-    def get_move(self, target: pygame.Vector2):
+    def get_rotate_vision_cone(self, target: pygame.Vector2):
         """
         Calculates the rotation angle based on the mouse position.
 
@@ -51,20 +48,5 @@ class VisionCone:
 
         self.rotation = angle
 
-    def get_offset(self, offsetmulti: int = None):
-        """
-        Calculates the offset vector based on the rotation angle.
-
-        Args:
-            offsetmulti (int): The multiplier for the offset. Defaults to None.
-
-        Returns:
-            pygame.math.Vector2: The offset vector.
-        """
-        rads = math.radians(self.rotation)
-        newvec = pygame.math.Vector2(math.cos(rads), math.sin(rads)) * offsetmulti
-
-        return newvec
-
-    def get_vision_cone_vertices(self):
-        return self.vision_cone_vertices
+    def get_vision_cone_info(self):
+        return (self.vision_range, self.rotation)
