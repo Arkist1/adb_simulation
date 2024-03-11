@@ -20,7 +20,8 @@ class Camera:
         old_size = self.size
 
         self.size = (self.size / self.zoom) * newzoom
-        self.position += (self.size - old_size) / 2
+        self.position += (self.size - old_size) / 2  # Adjust position to center
+
         self.zoom = newzoom
 
         # print(newzoom)

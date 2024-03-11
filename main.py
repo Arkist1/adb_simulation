@@ -210,9 +210,9 @@ def main():
         if cd["zoom"] <= 0:
             cd["zoom"] = 100
             if keys[pygame.K_o]:
-                freecam.apply_zoom(1 / 0.5)
+                freecam.apply_zoom(1 / 0.8)
             elif keys[pygame.K_p]:
-                freecam.apply_zoom(1 * 0.5)
+                freecam.apply_zoom(1 * 0.8)
             else:
                 cd["zoom"] = 0
 
@@ -285,29 +285,36 @@ def main():
         pygame.draw.line(screen, boundry_rgb, bottom, rightbottom)
 
         ####### Status bars ######
-        stamina_bar2 = pygame.Rect(20, 600, 258, 23)
-        pygame.draw.rect(screen, bar_grey, stamina_bar2)
-        stamina_bar = pygame.Rect(
-            24, 604, int(current_player.stamina / current_player.max_stamina * 250), 15
-        )
-        pygame.draw.rect(screen, stamina_yellow, stamina_bar)
+        if cam == playercam:
+            stamina_bar2 = pygame.Rect(20, 600, 258, 23)
+            pygame.draw.rect(screen, bar_grey, stamina_bar2)
+            stamina_bar = pygame.Rect(
+                24,
+                604,
+                int(current_player.stamina / current_player.max_stamina * 250),
+                15,
+            )
+            pygame.draw.rect(screen, stamina_yellow, stamina_bar)
 
-        food_bar2 = pygame.Rect(20, 630, 258, 23)
-        pygame.draw.rect(screen, bar_grey, food_bar2)
-        food_bar = pygame.Rect(
-            24, 634, int(current_player.food / current_player.max_food * 250), 15
-        )
-        pygame.draw.rect(screen, food_green, food_bar)
+            food_bar2 = pygame.Rect(20, 630, 258, 23)
+            pygame.draw.rect(screen, bar_grey, food_bar2)
+            food_bar = pygame.Rect(
+                24, 634, int(current_player.food / current_player.max_food * 250), 15
+            )
+            pygame.draw.rect(screen, food_green, food_bar)
 
-        health_bar2 = pygame.Rect(20, 660, 258, 23)
-        pygame.draw.rect(screen, bar_grey, health_bar2)
-        health_bar = pygame.Rect(
-            24, 664, int(current_player.health / current_player.max_health * 250), 15
-        )
-        pygame.draw.rect(screen, health_red, health_bar)
+            health_bar2 = pygame.Rect(20, 660, 258, 23)
+            pygame.draw.rect(screen, bar_grey, health_bar2)
+            health_bar = pygame.Rect(
+                24,
+                664,
+                int(current_player.health / current_player.max_health * 250),
+                15,
+            )
+            pygame.draw.rect(screen, health_red, health_bar)
 
         # debug mode for cam
-        if Globals.DEBUG and camera_target:
+        if Globals.DEBUG and cam == followcam and camera_target:
             debug_info = camera_target.get_debug_info()
 
             txt = FONT.render("DEBUG: ", False, (0, 0, 0))
