@@ -5,16 +5,15 @@ import math
 
 
 class VisionCone:
-    def __init__(self, screen: pygame.Surface = None, owner: any = None):
+    def __init__(self, vision_range, screen: pygame.Surface = None, owner: any = None):
         self.position = None  # inherit from the player location
         self.owner = owner
         self.screen = screen
         self.vision_cone_vertices = None
 
-        self.vision_range = 400
+        self.vision_range = vision_range
         self.vision_angle = 60
         self.rotation = 0
-        self.offset = 1
 
     def draw(self, cam):
         """

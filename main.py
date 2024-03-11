@@ -59,6 +59,8 @@ def main():
     camera_target = entities.players[0]
     vectors = []
 
+    entities.walls.append(Wall(screen, pygame.Vector2(200, 200)))
+
     while running:
         dt = clock.tick(Globals.FPS) / 1000
         dt_mili = clock.get_time()
@@ -139,7 +141,9 @@ def main():
             and current_player.stamina < current_player.max_stamina
         ):
             hunger_rate = 1000
-            current_player.stamina += 0.75
+            current_player.stamina = min(
+                0.75 + current_player.stamina, current_player.max_stamina
+            )
         else:
             hunger_rate = 2500
 
@@ -213,8 +217,6 @@ def main():
                 )
             )
 
-        entities.walls.append(Wall(screen, pygame.Vector2(200, 200)))
-
         if keys[pygame.K_f] and dt_mili - cd["cam_switch"] >= 0:
             cd["cam_switch"] = 10
             current_player.health -= 25
@@ -235,7 +237,6 @@ def main():
             player.get_move(inputs, entities.get_objects())
 
             playercam.position = player.pos - playercam.size / 2
-            # cam2.position = player.pos - cam2.size / 2
 
         if camera_target:
             followcam.position = camera_target.pos - followcam.size / 2

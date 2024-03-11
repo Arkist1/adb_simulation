@@ -27,7 +27,7 @@ class Agent(Object):
         self.colour = colour
         self.screen = screen
         self.weapon = Gun(screen=self.screen, owner=self)
-        self.vision_cone = VisionCone(screen=self.screen, owner=self)
+        self.vision_cone = VisionCone(vision_range=700, screen=self.screen, owner=self)
 
         self.health = health
         self.max_health = health

@@ -30,6 +30,7 @@ class Enemy(Agent):
         self.moving = False
         self.move_timer = 0
         self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
+        self.vision_cone.vision_range = 400
 
     def get_move(self, inputs, entities):
         """
