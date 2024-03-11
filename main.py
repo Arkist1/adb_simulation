@@ -30,14 +30,9 @@ def main():
     health_red = (255, 30, 70)
     bar_grey = (75, 75, 75)
 
-    hunger_rate = 2500
-    stamina_cooldown = 1000
-
     cd = {
         "spawn": 0,
         "bullet": 0,
-        "food": 0,
-        "stamina_regen": 0,
         "cam_switch": 0,
         "target_cd": 0,
         "zoom": 0,
@@ -90,16 +85,13 @@ def main():
             "mouse_pos": mouse_pos / cameracontroller.curr_cam.zoom
             + cameracontroller.curr_cam.position / cameracontroller.curr_cam.zoom,
             "dt": dt,
+            "dt_mili": dt_mili,
         }
-
-        # print(
-        #     f"{players[0].pos=}, {inputs['mouse_pos']=}, {cameracontroller.curr_cam.position=}"
-        # )
 
         ### cooldowns ###
         for key, item in cd.items():
             if cd[key] >= 0:
-                cd[key] = item - dt_mili
+                cd[key] = max(0, item - dt_mili)
 
         ### kill player ###
         for pl in entities.players:
@@ -120,40 +112,6 @@ def main():
                     current_player.food = min(
                         (current_player.food + pu.picked_up()), current_player.max_food
                     )
-
-        ### sprint and crouch ###
-        if inputs["sprint"] and current_player.stamina > 0:
-            current_player.stamina -= 1
-            current_player.speed = 450
-            cd["stamina_regen"] = stamina_cooldown
-            current_player.is_running = True
-        elif inputs["crouch"] and current_player.stamina > 0:
-            current_player.stamina -= 0.5
-            current_player.speed = 150
-            current_player.is_crouching = True
-            cd["stamina_regen"] = stamina_cooldown
-        else:
-            current_player.speed = 300
-
-        ### stamina regen ###
-        if (
-            cd["stamina_regen"] <= 0
-            and current_player.stamina < current_player.max_stamina
-        ):
-            hunger_rate = 1000
-            current_player.stamina = min(
-                0.75 + current_player.stamina, current_player.max_stamina
-            )
-        else:
-            hunger_rate = 2500
-
-        ### hunger depletion ###
-        if cd["food"] >= hunger_rate:
-            cd["food"] = 0
-            current_player.food -= 1
-            if current_player.food <= 0:
-                current_player.food = 0
-                current_player.health -= 0.5
 
         ### cam switch ###
         if mouse_keys[2] and dt_mili - cd["cam_switch"] >= 0:

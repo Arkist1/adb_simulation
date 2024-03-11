@@ -29,14 +29,25 @@ class Agent(Object):
         self.weapon = Gun(screen=self.screen, owner=self)
         self.vision_cone = VisionCone(vision_range=700, screen=self.screen, owner=self)
 
+        # hp
         self.health = health
         self.max_health = health
+
+        # food/hunger
         self.food = food
         self.max_food = food
+        self.hunger_rate = 2500
+
+        # staminda
         self.stamina = stamina
         self.max_stamina = stamina
+        self.stamina_cooldown = 1000
+
+        # is moving flags
         self.is_crouching = False
         self.is_running = False
+
+        self.cd = {"stamina_regen": 0, "food": 0}
 
         self.is_moving = False
 
@@ -50,6 +61,44 @@ class Agent(Object):
         Returns:
             pygame.Vector2: The move for the agent.
         """
+        # generic move code
+        for key, value in self.cd.items():
+            if self.cd[key] >= 0:
+                self.cd[key] = max(0, value - inputs["dt_mili"])
+
+        print(self.cd["stamina_regen"])
+
+        ### sprint and crouch ###
+        if inputs["sprint"] and self.stamina > 0:
+            self.stamina -= 1
+            self.speed = 450
+            self.cd["stamina_regen"] = self.stamina_cooldown
+            self.is_running = True
+
+        elif inputs["crouch"] and self.stamina > 0:
+            self.stamina -= 0.5
+            self.speed = 150
+            self.is_crouching = True
+            self.cd["stamina_regen"] = self.stamina_cooldown
+        else:
+            self.speed = 300
+
+        ### stamina regen ###
+        if self.cd["stamina_regen"] <= 0 and self.stamina < self.max_stamina:
+            self.hunger_rate = 1000
+            self.stamina = min(0.75 + self.stamina, self.max_stamina)
+
+        else:
+            self.hunger_rate = 2500
+
+        ### hunger depletion ###
+        if self.cd["food"] <= 0:
+            self.cd["food"] = self.hunger_rate
+            self.food -= 1
+            if self.food <= 0:
+                self.food = 0
+                self.health -= 0.5
+
         if self.controltype == "human":
             return self.get_human_move(inputs, entities)
 
@@ -154,4 +203,5 @@ class Agent(Object):
             "Health": self.health,
             "Stamina": self.stamina,
             "Pushable": self.is_pushable,
+            "Hunger rate": self.hunger_rate,
         }
