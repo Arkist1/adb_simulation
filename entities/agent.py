@@ -31,6 +31,7 @@ class Agent(Object):
         self.screen = screen
         self.weapon = Gun(screen=self.screen, owner=self)
         self.vision_cone = VisionCone(vision_range=700, screen=self.screen, owner=self)
+        self.detection_circle = None
 
         # hp
         self.health = health
@@ -166,37 +167,27 @@ class Agent(Object):
 
         if self.controltype == "human":
             if self.is_crouching:
-                pygame.draw.circle(
-                    self.screen,
-                    (0, 0, 0),
-                    self.pos * cam.zoom - cam.position,
-                    (self.hitbox + 100) * cam.zoom,
-                    1,
-                )  # crouching detection circle
+                self.update_detection_circle(cam, size=100) # crouching detection circle
                 self.is_crouching = False
             elif self.is_running:
-                pygame.draw.circle(
-                    self.screen,
-                    (0, 0, 0),
-                    self.pos * cam.zoom - cam.position,
-                    (self.hitbox + 400) * cam.zoom,
-                    1,
-                )  # running detection circle
+                self.update_detection_circle(cam, size=400) # running detection circle
                 self.is_running = False
             else:
-                pygame.draw.circle(
-                    self.screen,
-                    (0, 0, 0),
-                    self.pos * cam.zoom - cam.position,
-                    (self.hitbox + 200) * cam.zoom,
-                    1,
-                )  # base detection circle
+                self.update_detection_circle(cam, size=200) # base detection circle
 
         if self.weapon:
             self.weapon.draw(cam)
 
         if self.vision_cone:
             self.vision_cone.draw(cam)
+
+    def update_detection_circle(self, cam, size):
+        pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom, 1)
+        self.detection_circle = (self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom)
+
+
+    def get_deteciton_circle(self):
+        return self.detection_circle
 
     def get_debug_info(self):
         return {

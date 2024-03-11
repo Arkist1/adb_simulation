@@ -1,3 +1,4 @@
+from math import sqrt
 from .agent import Agent
 
 import random
@@ -29,6 +30,7 @@ class Enemy(Agent):
 
         self.moving = False
         self.move_timer = 0
+        self.blocked_timer = 0
         self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
         self.vision_cone.vision_range = 400
 
@@ -65,6 +67,8 @@ class Enemy(Agent):
             self.move_timer -= inputs["dt"]
 
         elif self.state == "wandering":
+            self.blocked_timer -= inputs["dt"]
+            
             neg_x = 1
             neg_y = 1
 
@@ -78,9 +82,10 @@ class Enemy(Agent):
 
             sdelta = sum([abs(dx), abs(dy)])
 
-            if sdelta < self.wanderspeed:  # detect if poi position is within reach
+            if sdelta < self.wanderspeed or self.blocked_timer <= 0:  # detect if poi position is within reach
                 self.moving = False
                 self.move_timer = random.random() * 2 + 2
+                self.blocked_timer = random.random() * 2 + 2
 
             if not sdelta == 0:
                 ratio = [abs(dx) / sdelta, abs(dy) / sdelta]
@@ -115,36 +120,19 @@ class Enemy(Agent):
         """
         if (
             self.vision_cone.get_vision_cone_vertices() is None
-            or agent.vision_cone.get_vision_cone_vertices() is None
+            or agent.get_deteciton_circle() is None
         ):
             return False
         own_vertices = self.vision_cone.get_vision_cone_vertices()
-        agent_vertices = agent.vision_cone.get_vision_cone_vertices()
-        # print(own_vertices)
-        # print(agent_vertices)
+        agent_center, agent_radius = agent.get_deteciton_circle()
 
         for vertex in own_vertices:
-            if self.is_point_inside_polygon(vertex, agent_vertices):
-                # print("collision 1 ")
-                return True
-        for vertex in agent_vertices:
-            if self.is_point_inside_polygon(vertex, own_vertices):
-                # print("collision 2 ")
+            if self.is_point_inside_circle(vertex, agent_center, agent_radius):
                 return True
         return False
 
-    def is_point_inside_polygon(self, point, vertices):
-        # Ray casting algorithm
-        x, y = point
-        count = 0
-        for i in range(len(vertices)):
-            p1 = vertices[i]
-            p2 = vertices[(i + 1) % len(vertices)]
-            if (p1[1] > y) != (p2[1] > y) and x < (p2[0] - p1[0]) * (y - p1[1]) / (
-                p2[1] - p1[1]
-            ) + p1[0]:
-                count += 1
-        return count % 2 == 1
+    def is_point_inside_circle(self, point, center, radius):
+        return sqrt((point[0] - center[0])**2 + (point[1] - center[1])**2) <= radius
 
     def percept(self):
         if self.state == "wandering" and not self.moving and self.move_timer <= 0:
