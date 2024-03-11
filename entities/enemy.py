@@ -34,6 +34,7 @@ class Enemy(Agent):
         self.blocked_timer = 0
         self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
         self.vision_cone.vision_range = 400
+        self.detected_agent = []
 
     def get_move(self, inputs, entities):
         """
@@ -63,6 +64,9 @@ class Enemy(Agent):
         """
 
         self.vision_cone.get_rotate_vision_cone(self.poi)
+        if self.state == "chasing":
+            self.poi = self.detected_agent
+            
 
         if self.move_timer > 0:
             self.move_timer -= inputs["dt"]
@@ -109,7 +113,7 @@ class Enemy(Agent):
 
         self.move(pygame.Vector2(0, 0), entities)
 
-    def percept(self, agent):
+    def percept(self, entity):
         """
         Checks if the given agent is within the vision cone of this enemy.
 
@@ -129,22 +133,8 @@ class Enemy(Agent):
         if (self.vision_cone.get_vision_cone_info() is None):
             return False
         
-        vision_range, rotation = self.vision_cone.get_vision_cone_info()
-
-        # Calculate the dot product between the agent direction and the vision cone direction (returns between -1 and 1)
-        agent_direction = pygame.Vector2(agent.pos[0] - self.pos[0], agent.pos[1] - self.pos[1]).normalize()
-        vision_cone_direction = pygame.Vector2(1, 0).rotate(rotation)
-        dot_product = agent_direction.dot(vision_cone_direction)
-
-        # Check if the dot product is greater than or equal to the cosine of half the vision angle
-        if dot_product >= agent.cos_half_vision_angle:
-            # Check if the distance between the agent and the enemy is within the vision range
-            distance = math.sqrt((agent.pos[0] - self.pos[0])**2 + (agent.pos[1] - self.pos[1])**2)
-            if distance <= vision_range:
-                print("detected 2")
-                return True
-
-        return False
+        dot_product, distance, self.state = self.detect(entity)
+        self.detected_agent = [dot_product, distance]
 
     def get_debug_info(self):
         return {

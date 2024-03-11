@@ -1,7 +1,7 @@
 from .gun import Gun
 from .vision_cone import VisionCone
 from utils import Globals, Object
-from math import cos, radians
+from math import sqrt, cos, radians
 import pygame
 
 class Agent(Object):
@@ -181,10 +181,26 @@ class Agent(Object):
         if self.vision_cone:
             self.vision_cone.draw(cam)
 
+    def detect(self, entity):
+        vision_range, rotation = self.vision_cone.get_vision_cone_info()
+
+        # Calculate the dot product between the agent direction and the vision cone direction (returns between -1 and 1)
+        agent_direction = pygame.Vector2(entity.pos[0] - self.pos[0], entity.pos[1] - self.pos[1]).normalize()
+        vision_cone_direction = pygame.Vector2(1, 0).rotate(rotation)
+        dot_product = agent_direction.dot(vision_cone_direction)
+
+        # Check if the dot product is greater than or equal to the cosine of half the vision angle
+        if dot_product >= entity.cos_half_vision_angle:
+            # Check if the distance between the agent and the enemy is within the vision range
+            distance = sqrt((entity.pos[0] - self.pos[0])**2 + (entity.pos[1] - self.pos[1])**2)
+            if distance <= vision_range:
+                return dot_product, distance, "chasing"
+
+        return 0, 0, "wandering"
+
     def update_sound_circle(self, cam, size):
         pygame.draw.circle(self.screen, (0, 0, 0), self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom, 1)
         self.sound_detection_circle = (self.pos * cam.zoom - cam.position, (self.hitbox + size) * cam.zoom)
-
 
     def get_sound_circle(self):
         return self.sound_detection_circle
