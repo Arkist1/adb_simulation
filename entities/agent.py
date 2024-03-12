@@ -194,9 +194,9 @@ class Agent(Object):
 
         vision_range, rotation, vision_angle = self.vision_cone.get_vision_cone_info()
 
-        print(
-            f"{rotation + vision_angle / 2} > {agent_direction} > {rotation - vision_angle / 2}"
-        )
+        # print(
+        #     f"{rotation + vision_angle / 2} > {agent_direction} > {rotation - vision_angle / 2}"
+        # )
 
         if agent_distance <= vision_range:
             left_rotation = rotation + vision_angle / 2

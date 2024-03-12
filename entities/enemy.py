@@ -96,10 +96,9 @@ class Enemy(Agent):
                 self.move(delta, entities)
                 return
 
-        
         elif self.state == "alert":
-            angle = self.angle_to(self.poi)
-            delta = self.angle_to_direction(angle) * self.speed * inputs["dt"]
+            angle = utils.angle_to(self.pos, self.poi)
+            delta = utils.angle_to_direction(angle) * self.speed * inputs["dt"]
 
             self.move(delta, entities)
         # TODO: inplement
@@ -154,7 +153,8 @@ class Enemy(Agent):
             "Speed": self.speed,
             "POI": self.poi,
             "Blocked_timer": self.blocked_timer,
-            "move_timer": self.move_timer,
+            "Move_timer": self.move_timer,
+            "Detections": self.detected_agents,
             "State": self.state,
             "Pushable": self.is_pushable,
         }
