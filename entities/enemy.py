@@ -29,13 +29,14 @@ class Enemy(Agent):
         self.poi = self.pos  # Point Of Interest (POI)
 
         self.speed = self.speed / 2
+        self.alertspeed = self.speed / 3
         self.wanderspeed = self.speed / 4
 
         self.moving = False
         self.move_timer = 0
         self.blocked_timer = 0
         self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
-        self.vision_cone.vision_range = 400
+        self.vision_cone.vision_range = 600
         self.detected_agent = []
 
     def get_move(self, inputs, entities):
@@ -95,9 +96,13 @@ class Enemy(Agent):
                 self.move(delta, entities)
                 return
 
-        # TODO: inplement
-        # if self.state == "alert":
+        
+        elif self.state == "alert":
+            angle = self.angle_to(self.poi)
+            delta = self.angle_to_direction(angle) * self.speed * inputs["dt"]
 
+            self.move(delta, entities)
+        # TODO: inplement
         # if self.state == "chasing":
 
         self.move(pygame.Vector2(0, 0), entities)
@@ -120,7 +125,7 @@ class Enemy(Agent):
         if detections:
             print("detection has been made")
             print(detections[0].pos)
-            self.state = "chasing"
+            self.state = "alert"
             self.poi = detections[0].pos
 
         else:
