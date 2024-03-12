@@ -106,7 +106,7 @@ class Agent(Object):
 
             self.cd["stamina_regen"] = self.stamina_cooldown
             self.is_crouching = True
-            self.sound_circle.sound_range = self.base_sound_range / 2
+            self.sound_circle.sound_range = self.base_sound_range / 3
 
         elif moving:
             self.speed = self.speeds["walking"]
