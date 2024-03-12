@@ -12,7 +12,7 @@ class VisionCone:
         self.vision_cone_vertices = None
 
         self.vision_range = vision_range
-        self.vision_angle = 60
+        self.vision_angle = 50
         self.rotation = 0
 
     def draw(self, cam):
