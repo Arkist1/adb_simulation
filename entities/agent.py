@@ -1,5 +1,6 @@
 from .gun import Gun
 from .vision_cone import VisionCone
+from .sound_circle import SoundCircle
 from utils import Globals, Object
 import utils
 from math import sqrt, cos, radians
@@ -21,6 +22,7 @@ class Agent(Object):
         crouchspeed: int = 150,
         walkspeed: int = 300,
         sprintspeed: int = 450,
+        base_sound_range: int = 200,
         stamina: int = 250,
         food: int = 250,
         health: int = 250,
@@ -36,10 +38,14 @@ class Agent(Object):
         self.hitbox = size
         self.colour = colour
         self.screen = screen
+
+        self.base_sound_range = base_sound_range
+
         self.weapon = Gun(pos=self.pos, screen=self.screen)
         self.vision_cone = VisionCone(vision_range=700, screen=self.screen, owner=self)
-        self.noise_circle = None
-        self.cos_half_vision_angle = cos(radians(self.vision_cone.vision_angle / 2))
+        self.sound_circle = SoundCircle(
+            sound_range=self.base_sound_range, screen=self.screen, owner=self
+        )
 
         # hp
         self.health = health
@@ -80,6 +86,9 @@ class Agent(Object):
                 self.cd[key] = max(0, value - inputs["dt_mili"])
 
         ### sprint and crouch ###
+        self.is_crouching = False
+        self.is_running = False
+
         if inputs["sprint"] and self.stamina > 0:
             self.stamina -= 1
             self.speed = self.speeds["sprinting"]
@@ -173,21 +182,27 @@ class Agent(Object):
             self.hitbox * cam.zoom,
         )  # circle (player)
 
-        if self.controltype == "human":
-            if self.is_crouching:
-                self.update_sound_circle(cam, size=100)  # crouching detection circle
-                self.is_crouching = False
-            elif self.is_running:
-                self.update_sound_circle(cam, size=400)  # running detection circle
-                self.is_running = False
-            else:
-                self.update_sound_circle(cam, size=200)  # base detection circle
+        if self.is_crouching:
+            self.sound_circle.sound_range = (
+                self.base_sound_range / 2
+            )  # crouching detection circle
+        elif self.is_running:
+            self.sound_circle.sound_range = (
+                self.base_sound_range * 2
+            )  # running detection circle
+        else:
+            self.sound_circle.sound_range = (
+                self.base_sound_range
+            )  # base detection circle
 
         if self.weapon:
             self.weapon.draw(cam, self.pos)
 
         if self.vision_cone:
             self.vision_cone.draw(cam)
+
+        if self.sound_circle:
+            self.sound_circle.draw(cam)
 
     def angle_to(self, other):
         v1 = pygame.math.Vector2(other) - self.pos
@@ -232,23 +247,7 @@ class Agent(Object):
         return False
 
     def hear(self, entity):
-        return entity.noise_circle[1] > utils.dist(self.pos, entity.pos)
-
-    def update_sound_circle(self, cam, size):
-        pygame.draw.circle(
-            self.screen,
-            (0, 0, 0),
-            self.pos * cam.zoom - cam.position,
-            (self.hitbox + size) * cam.zoom,
-            1,
-        )
-        self.noise_circle = (
-            self.pos * cam.zoom - cam.position,
-            (self.hitbox + size) * cam.zoom,
-        )
-
-    def get_sound_circle(self):
-        return self.noise_circle
+        return entity.sound_circle.sound_range > utils.dist(self.pos, entity.pos)
 
     def get_debug_info(self):
         return {
