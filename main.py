@@ -168,7 +168,7 @@ def main():
 
         ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
-            cd["spawn"] = 1
+            cd["spawn"] = 100
             entities.enemies.append(
                 Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
             )

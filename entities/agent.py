@@ -90,7 +90,6 @@ class Agent(Object):
         self.is_running = False
         moving = inputs["up"] or inputs["down"] or inputs["left"] or inputs["right"]
 
-
         if inputs["sprint"] and self.stamina > 0 and moving:
             self.stamina -= 1
             self.speed = self.speeds["sprinting"]
@@ -203,23 +202,6 @@ class Agent(Object):
 
         if self.sound_circle:
             self.sound_circle.draw(cam)
-
-    def angle_to(self, other):
-        v1 = pygame.math.Vector2(other) - self.pos
-        v2 = pygame.math.Vector2([0, 0])
-
-        return v1.angle_to(v2)
-
-    def angle_to_direction(self, angle):
-        return pygame.math.Vector2(math.cos(angle), -math.sin(angle))
-
-    def distance_to(self, other):
-        dx = other[0] - self.pos[0]
-        dy = other[1] - self.pos[1]
-
-        sdelta = sum([abs(dx), abs(dy)])
-
-        return sdelta
 
     def detect(self, entity):
         agent_direction = utils.angle_to(entity.pos, self.pos)

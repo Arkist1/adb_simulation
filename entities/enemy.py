@@ -139,7 +139,7 @@ class Enemy(Agent):
             self.moving = True
 
         elif sounds:
-            print("sound detection has been made")
+            # print("sound detection has been made")
             self.state = "alert"
             self.poi = sounds[0].pos.copy()
 
