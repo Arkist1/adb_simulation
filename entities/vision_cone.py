@@ -10,7 +10,6 @@ class VisionCone:
         self.position = None  # inherit from the player location
         self.owner = owner
         self.screen = screen
-        self.vision_cone_vertices = None
 
         self.vision_range = vision_range
         self.vision_angle = 50
@@ -37,7 +36,6 @@ class VisionCone:
         ]
 
         pygame.draw.polygon(self.screen, (0, 0, 0), vertices, 1)
-        self.vision_cone_vertices = vertices
 
     def get_vision_cone_info(self):
         return (self.vision_range, self.rotation, self.vision_angle)
