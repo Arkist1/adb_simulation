@@ -48,3 +48,24 @@ def dist_sqr(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
     dx = p1.x - p2.x
     dy = p1.y - p2.y
     return dx * dx + dy * dy
+
+
+def angle_to(left: pygame.Vector2, right: pygame.Vector2):
+    v1 = left - right
+    v2 = pygame.Vector2([0, 0])
+
+    return v1.angle_to(v2)
+
+
+def abs_distance_to(left, right):
+    delta = left - right
+
+    sdelta = sum([abs(delta[0]), abs(delta[1])])
+
+    return sdelta
+
+
+def angle_to_direction(angle: float):
+    return pygame.math.Vector2(
+        math.cos(angle), -math.sin(angle)
+    )  # angle has to be in degrees

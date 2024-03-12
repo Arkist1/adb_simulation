@@ -1,6 +1,8 @@
 from math import sqrt, atan2, degrees
 import math
 from .agent import Agent
+from utils import Globals
+import utils
 
 import random
 import pygame
@@ -62,7 +64,7 @@ class Enemy(Agent):
         Returns:
             None
         """
-        self.vision_cone.get_rotate_vision_cone(self.poi)
+        self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
         # if self.state == "chasing":
         #     self.poi = self.detected_agent
@@ -73,7 +75,7 @@ class Enemy(Agent):
         elif self.state == "wandering":
             self.blocked_timer -= inputs["dt"]
 
-            sdelta = self.distance_to(self.poi)
+            sdelta = utils.abs_distance_to(self.pos, self.poi)
             # print(sdelta)
 
             if (
@@ -85,8 +87,10 @@ class Enemy(Agent):
 
             if not sdelta == 0:
                 # calculate delta
-                angle = self.angle_to(self.poi)
-                delta = self.angle_to_direction(angle) * self.wanderspeed * inputs["dt"]
+                angle = utils.angle_to(self.pos, self.poi)
+                delta = (
+                    utils.angle_to_direction(angle) * self.wanderspeed * inputs["dt"]
+                )
 
                 self.move(delta, entities)
                 return

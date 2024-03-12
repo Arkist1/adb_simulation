@@ -1,6 +1,7 @@
 from .gun import Gun
 from .vision_cone import VisionCone
 from utils import Globals, Object
+import utils
 from math import sqrt, cos, radians
 import math
 import pygame
@@ -151,7 +152,7 @@ class Agent(Object):
         self.move(vec, entities)
 
         self.weapon.get_move(inputs, center_pos=self.pos)
-        self.vision_cone.get_rotate_vision_cone(inputs["mouse_pos"])
+        self.vision_cone.rotation = utils.angle_to(inputs["mouse_pos"], self.pos)
 
     def shoot(self, location):
         if self.weapon:
@@ -187,26 +188,9 @@ class Agent(Object):
         if self.vision_cone:
             self.vision_cone.draw(cam)
 
-    def angle_to(self, other):
-        v1 = pygame.math.Vector2(other) - self.pos
-        v2 = pygame.math.Vector2([0, 0])
-
-        return v1.angle_to(v2)
-
-    def angle_to_direction(self, angle):
-        return pygame.math.Vector2(math.cos(angle), -math.sin(angle))
-
-    def distance_to(self, other):
-        dx = other[0] - self.pos[0]
-        dy = other[1] - self.pos[1]
-
-        sdelta = sum([abs(dx), abs(dy)])
-
-        return sdelta
-
     def detect(self, entity):
-        agent_direction = self.angle_to(entity.pos)
-        agent_distance = self.distance_to(entity.pos)
+        agent_direction = utils.angle_to(entity.pos, self.pos)
+        agent_distance = utils.abs_distance_to(self.pos, entity.pos)
 
         vision_range, rotation, vision_angle = self.vision_cone.get_vision_cone_info()
 

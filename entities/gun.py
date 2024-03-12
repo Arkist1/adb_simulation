@@ -1,5 +1,6 @@
 from .bullet import Bullet
 
+import utils
 from utils import Globals
 
 import math
@@ -114,12 +115,7 @@ class Gun:
         Args:
             inputs (dict): The input dictionary containing the mouse position.
         """
-        v1 = pygame.math.Vector2(inputs["mouse_pos"]) - center_pos
-        v2 = pygame.math.Vector2([0, 0])
-
-        angle = v1.angle_to(v2)
-
-        self.rotation = angle
+        self.rotation = utils.angle_to(inputs["mouse_pos"], center_pos)
 
     def get_offset(self, offsetmulti: int = 1):
         """
