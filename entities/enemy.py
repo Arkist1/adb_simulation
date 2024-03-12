@@ -86,7 +86,7 @@ class Enemy(Agent):
 
             if not sdelta == 0:
                 # calculate delta
-                angle = self.angle_to(self.poi)
+                angle = self.agent_angle_to(self.poi)
                 delta = self.angle_to_direction(angle) * self.wanderspeed * inputs["dt"]
 
                 self.move(delta, entities)
@@ -94,7 +94,7 @@ class Enemy(Agent):
 
         
         elif self.state == "alert":
-            angle = self.angle_to(self.poi)
+            angle = self.agent_angle_to(self.poi)
             delta = self.angle_to_direction(angle) * self.speed * inputs["dt"]
 
             self.move(delta, entities)
@@ -114,9 +114,13 @@ class Enemy(Agent):
             bool: True if the agent is within the vision cone, False otherwise.
         """
         detections = []
+        sounds = []
         for entity in entities:
             if self.detect(entity):
                 detections.append(entity)
+            if self.hear(entity):
+                sounds.append(entity.pos)
+                print("sound")
 
         if detections:
             print("detection has been made")
