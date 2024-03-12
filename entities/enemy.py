@@ -26,9 +26,10 @@ class Enemy(Agent):
     ) -> None:
         super().__init__(screen, start_pos, type=type, colour=colour)
         self.weapon = None
+        self.sound_circle = None
         self.poi = self.pos  # Point Of Interest (POI)
 
-        self.speed = self.speed / 2
+        self.speed = self.speed
         self.alertspeed = self.speed / 3
         self.wanderspeed = self.speed / 4
 
@@ -76,7 +77,7 @@ class Enemy(Agent):
         elif self.state == "chasing":
             delta = self.get_move_delta(self.poi) * inputs["dt"]
 
-            print("DELTA", delta)
+            # print("DELTA", delta)
 
             self.move(delta, entities)
             return

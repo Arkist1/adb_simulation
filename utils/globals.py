@@ -13,11 +13,12 @@ class Globals:
     SQR2 = 2 ** (1 / 2)
     FPS = 60
     root = os.getcwd()
-    MAP_WIDTH = 10_000
-    MAP_HEIGHT = 7_000
+    MAP_WIDTH = 3000
+    MAP_HEIGHT = 2100
     MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
     FREECAM_SPEED = 1000
     DEBUG = True
+    DRAW = True
 
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:

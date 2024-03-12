@@ -34,6 +34,8 @@ def main():
         "cam_switch": 0,
         "target_cd": 0,
         "zoom": 0,
+        "draw_switch": 0,
+        "fps": 0,
     }
 
     playercam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
@@ -89,6 +91,10 @@ def main():
         for key, item in cd.items():
             if cd[key] >= 0:
                 cd[key] = max(0, item - dt_mili)
+
+        if cd["fps"] <= 0:
+            cd["fps"] = 1000
+            print(len(entities.enemies), "FPS:", fps)
 
         ### kill player ###
         for pl in entities.players:
@@ -154,9 +160,15 @@ def main():
         if keys[pygame.K_g]:
             camera_target = None
 
+        ###    Draw call switch   ###
+        if keys[pygame.K_BACKSPACE] and cd["draw_switch"] <= 0:
+            cd["draw_switch"] = 500
+            Globals.DRAW = False if Globals.DRAW else True
+            print(Globals.DRAW)
+
         ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
-            cd["spawn"] = 100
+            cd["spawn"] = 1
             entities.enemies.append(
                 Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
             )
@@ -229,6 +241,9 @@ def main():
         ##############################################
         ##              Drawing cycle               ##
         ##############################################
+
+        if not Globals.DRAW:
+            continue
 
         screen.fill((255, 255, 255))  # white background
 
