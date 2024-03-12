@@ -25,7 +25,11 @@ class Agent(Object):
     ) -> None:
         super().__init__(pos=pygame.Vector2(start_pos[0], start_pos[1]), radius=size)
         self.controltype = type
-        self.speeds = {"sprinting": 450, "walking": 300, "crouching": 150}
+        self.speeds = {
+            "sprinting": sprintspeed,
+            "walking": walkspeed,
+            "crouching": crouchspeed,
+        }
         self.speed = self.speeds["walking"]
         self.hitbox = size
         self.colour = colour
