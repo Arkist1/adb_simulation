@@ -96,6 +96,7 @@ class Agent(Object):
 
             self.hunger_rate = self.hunger_rates["low"]
             self.is_running = True
+            self.sound_circle.sound_range = self.base_sound_range * 2
 
         elif inputs["crouch"] and self.stamina > 0:
             self.stamina -= 0.5
@@ -104,9 +105,13 @@ class Agent(Object):
 
             self.cd["stamina_regen"] = self.stamina_cooldown
             self.is_crouching = True
+            self.sound_circle.sound_range = self.base_sound_range / 2
 
         else:
             self.speed = self.speeds["walking"]
+            self.sound_circle.sound_range = self.base_sound_range
+
+        # base detection circle
 
         ### stamina regen ###
         if self.cd["stamina_regen"] <= 0 and self.stamina < self.max_stamina:
@@ -181,19 +186,6 @@ class Agent(Object):
             self.pos * cam.zoom - cam.position,
             self.hitbox * cam.zoom,
         )  # circle (player)
-
-        if self.is_crouching:
-            self.sound_circle.sound_range = (
-                self.base_sound_range / 2
-            )  # crouching detection circle
-        elif self.is_running:
-            self.sound_circle.sound_range = (
-                self.base_sound_range * 2
-            )  # running detection circle
-        else:
-            self.sound_circle.sound_range = (
-                self.base_sound_range
-            )  # base detection circle
 
         if self.weapon:
             self.weapon.draw(cam, self.pos)

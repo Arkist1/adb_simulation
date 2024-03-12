@@ -88,10 +88,10 @@ class Enemy(Agent):
             self.blocked_timer -= inputs["dt"]
 
             sdelta = utils.abs_distance_to(self.pos, self.poi)
-            print("max delta", sdelta, self.wanderspeed)
+            # print("max delta", sdelta, self.wanderspeed)
 
             if (
-                sdelta < self.wanderspeed or self.blocked_timer <= 0
+                sdelta < self.speed * inputs["dt"] * 3 or self.blocked_timer <= 0
             ):  # detect if poi position is within reach
                 self.moving = False
                 self.move_timer = random.random() * 2 + 2
@@ -135,6 +135,7 @@ class Enemy(Agent):
             # print(detections[0].pos)
             self.state = "chasing"
             self.poi = visions[0].pos.copy()
+            self.moving = True
 
         elif sounds:
             print("sound detection has been made")
@@ -146,7 +147,10 @@ class Enemy(Agent):
             self.blocked_timer = 3
 
         else:
-            if (
+            if self.state == "chasing":
+                self.state = "alert"
+
+            elif (
                 not self.moving and self.move_timer <= 0
             ):  # Only get new poi if old one has been reached
                 self.state = "wandering"
