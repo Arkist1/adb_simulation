@@ -117,9 +117,13 @@ class Enemy(Agent):
             bool: True if the agent is within the vision cone, False otherwise.
         """
         detections = []
+        sounds = []
         for entity in entities:
             if self.detect(entity):
                 detections.append(entity)
+            if self.hear(entity):
+                sounds.append(entity.pos)
+                print("sound")
 
         if detections:
             print("detection has been made")

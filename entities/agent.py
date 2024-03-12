@@ -5,6 +5,7 @@ import utils
 from math import sqrt, cos, radians
 import math
 import pygame
+import utils
 
 
 class Agent(Object):
@@ -37,7 +38,7 @@ class Agent(Object):
         self.screen = screen
         self.weapon = Gun(pos=self.pos, screen=self.screen)
         self.vision_cone = VisionCone(vision_range=700, screen=self.screen, owner=self)
-        self.sound_detection_circle = None
+        self.noise_circle = None
         self.cos_half_vision_angle = cos(radians(self.vision_cone.vision_angle / 2))
 
         # hp
@@ -188,6 +189,23 @@ class Agent(Object):
         if self.vision_cone:
             self.vision_cone.draw(cam)
 
+    def angle_to(self, other):
+        v1 = pygame.math.Vector2(other) - self.pos
+        v2 = pygame.math.Vector2([0, 0])
+
+        return v1.angle_to(v2)
+
+    def angle_to_direction(self, angle):
+        return pygame.math.Vector2(math.cos(angle), -math.sin(angle))
+
+    def distance_to(self, other):
+        dx = other[0] - self.pos[0]
+        dy = other[1] - self.pos[1]
+
+        sdelta = sum([abs(dx), abs(dy)])
+
+        return sdelta
+
     def detect(self, entity):
         agent_direction = utils.angle_to(entity.pos, self.pos)
         agent_distance = utils.abs_distance_to(self.pos, entity.pos)
@@ -213,6 +231,9 @@ class Agent(Object):
 
         return False
 
+    def hear(self, entity):
+        return entity.noise_circle[1] > utils.dist(self.pos, entity.pos)
+
     def update_sound_circle(self, cam, size):
         pygame.draw.circle(
             self.screen,
@@ -221,13 +242,13 @@ class Agent(Object):
             (self.hitbox + size) * cam.zoom,
             1,
         )
-        self.sound_detection_circle = (
+        self.noise_circle = (
             self.pos * cam.zoom - cam.position,
             (self.hitbox + size) * cam.zoom,
         )
 
     def get_sound_circle(self):
-        return self.sound_detection_circle
+        return self.noise_circle
 
     def get_debug_info(self):
         return {
