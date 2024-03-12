@@ -88,8 +88,10 @@ class Agent(Object):
         ### sprint and crouch ###
         self.is_crouching = False
         self.is_running = False
+        moving = inputs["up"] or inputs["down"] or inputs["left"] or inputs["right"]
 
-        if inputs["sprint"] and self.stamina > 0:
+
+        if inputs["sprint"] and self.stamina > 0 and moving:
             self.stamina -= 1
             self.speed = self.speeds["sprinting"]
             self.cd["stamina_regen"] = self.stamina_cooldown
@@ -98,7 +100,7 @@ class Agent(Object):
             self.is_running = True
             self.sound_circle.sound_range = self.base_sound_range * 2
 
-        elif inputs["crouch"] and self.stamina > 0:
+        elif inputs["crouch"] and self.stamina > 0 and moving:
             self.stamina -= 0.5
             self.speed = self.speeds["crouching"]
             self.hunger_rate = self.hunger_rates["low"]
@@ -107,10 +109,16 @@ class Agent(Object):
             self.is_crouching = True
             self.sound_circle.sound_range = self.base_sound_range / 2
 
-        else:
+        elif moving:
             self.speed = self.speeds["walking"]
             self.sound_circle.sound_range = self.base_sound_range
 
+        else:
+            self.speed = self.speeds["walking"]
+            self.sound_circle.sound_range = 0
+
+        if inputs["shoot"]:
+            self.sound_circle.sound_range = 4000
         # base detection circle
 
         ### stamina regen ###

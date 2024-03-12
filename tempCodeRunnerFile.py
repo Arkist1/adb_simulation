@@ -1,0 +1,1 @@
+"shoot": mouse_keys[0]
