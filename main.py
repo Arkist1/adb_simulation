@@ -1,7 +1,7 @@
 from camera import Camera, Camera_controller
 
 from entities import Bullet, Agent, Wall, Pickup, Enemy
-from utils import Object, Hitbox, Globals, EntityHolder, House
+from utils import Object, Hitbox, Globals, EntityHolder, House, TileManager
 
 import random
 import pygame
@@ -20,8 +20,10 @@ def main():
     clock = pygame.time.Clock()
 
     running = True
-    entities = EntityHolder()
-    entities.players.append(Agent(screen=screen))
+
+    # tilemanager init
+    tilemanager = TileManager(Globals.TILE_SIZE, Globals.MAP_SIZE)
+    tilemanager.players.append(Agent(screen=screen))
 
     # Colors
     stamina_yellow = (255, 255, 10)
@@ -52,31 +54,12 @@ def main():
     }
     cameracontroller = Camera_controller(cams=cams, window=Window.from_display_module())
 
-    camera_target = entities.players[0]
+    camera_target = tilemanager.players[0]
     vectors = []
 
     # MAP GEN
     templates = json.load(open("templates.json", "r"))
-    houses = []
-
-    for xtile in range(0, Globals.MAP_WIDTH, Globals.TILE_WIDTH):
-        for ytile in range(0, Globals.MAP_HEIGHT, Globals.TILE_HEIGHT):
-            xpos = xtile + Globals.TILE_WIDTH / 2
-            ypos = ytile + Globals.TILE_HEIGHT / 2
-
-            if random.random() < Globals.HOUSE_CHANCE:
-                houses.append(
-                    House(
-                        pygame.Vector2([xpos, ypos]),
-                        template=templates["simple_house"],
-                        screen=screen,
-                    )
-                )
-
-    for house in houses:
-        entities.walls += house.walls
-        entities.pickups += house.pickups
-        entities.enemies += house.enemies
+    tilemanager.generate_terrain(templates, screen=screen)
 
     while running:
         dt = clock.tick(Globals.FPS) / 1000
@@ -92,7 +75,7 @@ def main():
         keys = pygame.key.get_pressed()
         mouse_keys = pygame.mouse.get_pressed()
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
-        current_player = entities.players[0]
+        current_player = tilemanager.players[0]
 
         inputs = {
             "up": keys[pygame.K_w],
@@ -116,21 +99,26 @@ def main():
 
         if cd["fps"] <= 0:
             cd["fps"] = 1000
-            print(len(entities.enemies), "FPS:", fps)
+            print(len(tilemanager.enemies), "FPS:", fps)
 
-        for player in entities.players:
+        for player in tilemanager.players:
             if player.health <= 0:
-                entities.players.remove(player)
-                entities.players.append(Agent(screen=screen))
+                tilemanager.players.remove(player)
+                tilemanager.players.append(Agent(screen=screen))
                 continue
-            player.get_move(inputs, entities.get_objects(), entities.bullets, entities.get_mortal())
+            player.get_move(
+                inputs,
+                tilemanager.get_tiled_items(player.pos),
+                tilemanager.bullets,
+                tilemanager.get_mortal(),
+            )
 
             playercam.position = player.pos - playercam.size / 2
 
         ### pickup collision detection ###
-        for pu in entities.pickups:
+        for pu in tilemanager(current_player.pos).pickups:
             if current_player.is_colliding(pu):
-                entities.pickups.remove(pu)
+                tilemanager(current_player.pos).pickups.remove(pu)
                 if pu.pickup_type == 0 or pu.pickup_type == 1:
                     current_player.health = min(
                         (current_player.health + pu.picked_up()),
@@ -168,7 +156,7 @@ def main():
             vectors = []
             closest_obj = None
             closest_dist = None
-            for item in entities.get_items():
+            for item in tilemanager.get_items():
                 dist = abs(sum(inputs["mouse_pos"] - item.pos))
                 vectors.append([inputs["mouse_pos"], item.pos.copy()])
                 if not closest_dist:
@@ -194,7 +182,7 @@ def main():
         ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 100
-            entities.enemies.append(
+            tilemanager.enemies.append(
                 Enemy(
                     screen=screen, control_type="enemy", start_pos=inputs["mouse_pos"]
                 )
@@ -203,7 +191,7 @@ def main():
         ### manual pickup spawning ###
         if keys[pygame.K_n] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 500
-            entities.pickups.append(
+            tilemanager.pickups.append(
                 Pickup(
                     pickup_type=random.randint(0, 3),
                     start_pos=[random.randint(200, 600), random.randint(200, 600)],
@@ -216,19 +204,18 @@ def main():
             current_player.health -= 25
 
         ###### Perceptions #####
-        for en in entities.enemies:
-            en.percept(entities.players)
+        for en in tilemanager.enemies:
+            en.percept(tilemanager.players)
 
         ###### Movement #####
-        for en in entities.enemies:
+        for en in tilemanager.enemies:
             if en.health <= 0:
-                entities.enemies.remove(en)
+                tilemanager.enemies.remove(en)
+
             en.get_move(
                 inputs={"nearest_player": current_player, "dt": dt},
-                entities=entities.get_objects(),
+                entities=tilemanager.get_tiled_items(en.pos),
             )
-
-        
 
         if camera_target:
             followcam.position = camera_target.pos - followcam.size / 2
@@ -254,7 +241,7 @@ def main():
             else:
                 cd["zoom"] = 0
 
-        for bl in entities.bullets:
+        for bl in tilemanager.bullets:
             bl.move(inputs)
 
         ##############################################
@@ -278,28 +265,28 @@ def main():
             )
             screen.blit(txt, (Globals.SCREEN_WIDTH - txt.get_rect().width, 0))
 
-        for bl in entities.bullets:
+        for bl in tilemanager.bullets:
             if bl.pos[0] >= Globals.MAP_WIDTH:
-                entities.bullets.remove(bl)
+                tilemanager.bullets.remove(bl)
             elif bl.pos[0] < 0:
-                entities.bullets.remove(bl)
+                tilemanager.bullets.remove(bl)
             elif bl.pos[1] >= Globals.MAP_HEIGHT:
-                entities.bullets.remove(bl)
+                tilemanager.bullets.remove(bl)
             elif bl.pos[1] < 0:
-                entities.bullets.remove(bl)
+                tilemanager.bullets.remove(bl)
 
             bl.draw(cam=cam)
 
-        for pu in entities.pickups:
+        for pu in tilemanager.allpickups:
             pu.draw(cam=cam)
 
-        for en in entities.enemies:
+        for en in tilemanager.enemies:
             en.draw(cam=cam)
 
-        for player in entities.players:
+        for player in tilemanager.players:
             player.draw(cam=cam)
 
-        for wall in entities.walls:
+        for wall in tilemanager.allwalls:
             wall.draw(cam=cam)
 
         ######## Map boundary drawing ########
@@ -358,14 +345,14 @@ def main():
                 screen.blit(txt, (0, index * 18 + 40))
 
         # debug, draw vectors from mouse to every entity when targetting for target cam
-        # for vector in vectors:
-        #     if cd["target_cd"] != 0:
-        #         pygame.draw.line(
-        #             screen,
-        #             (100, 200, 200),
-        #             vector[0] * cam.zoom - cam.position,
-        #             vector[1] * cam.zoom - cam.position,
-        #         )
+        for vector in vectors:
+            if cd["target_cd"] != 0:
+                pygame.draw.line(
+                    screen,
+                    (100, 200, 200),
+                    vector[0] * cam.zoom - cam.position,
+                    vector[1] * cam.zoom - cam.position,
+                )
 
         # Flip (draw) the display
         pygame.display.flip()

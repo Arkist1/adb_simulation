@@ -10,18 +10,23 @@ class Globals:
     SCREEN_WIDTH = 1000
     SCREEN_HEIGHT = 700
     SCREEN_SIZE = pygame.Vector2(SCREEN_WIDTH, SCREEN_HEIGHT)
+
+    MAP_WIDTH = 10_000
+    MAP_HEIGHT = 7000
+    MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
+
+    TILE_WIDTH = 1000
+    TILE_HEIGHT = 700
+    TILE_SIZE = pygame.Vector2(TILE_WIDTH, TILE_HEIGHT)
+
     SQR2 = 2 ** (1 / 2)
     FPS = 60
     root = os.getcwd()
-    MAP_WIDTH = 3000
-    MAP_HEIGHT = 2100
-    MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
+
     FREECAM_SPEED = 1000
     DEBUG = True
     DRAW = True
 
-    TILE_WIDTH = 1000
-    TILE_HEIGHT = 700
     HOUSE_CHANCE = 0.6
 
 

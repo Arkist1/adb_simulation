@@ -6,7 +6,7 @@ from .hitbox import Hitbox
 class EntityHolder:
     def __init__(self) -> None:
         self.players: list[entities.Agent] = []
-        self.boxes: list[entities.Hitbox] = []
+        self.boxes: list[Hitbox] = []
         self.bullets: list[entities.Bullet] = []
         self.pickups: list[entities.Pickup] = []
         self.enemies: list[entities.Enemy] = []
@@ -14,7 +14,7 @@ class EntityHolder:
 
     def get_objects(self) -> list[Object]:
         return self.players + self.enemies + self.walls
-    
+
     def get_mortal(self) -> list[Object]:
         return self.enemies
 

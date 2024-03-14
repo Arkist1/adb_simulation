@@ -71,7 +71,9 @@ class Agent(Object):
 
         self.is_moving = False
 
-    def get_move(self, inputs: dict[str, bool], entities, bullets, mortals) -> pygame.Vector2:
+    def get_move(
+        self, inputs: dict[str, bool], entities, bullets, mortals
+    ) -> pygame.Vector2:
         """
         Returns the move for the agent based on the given inputs.
 
@@ -121,19 +123,17 @@ class Agent(Object):
             if type(self.weapon) == Gun:
                 self.shoot(inputs["mouse_pos"], bullets)
             elif type(self.weapon) == Sword:
-                self.swing(inputs["mouse_pos"])   
+                self.swing(inputs["mouse_pos"])
                 for entity in mortals:
                     if self.weapon.hit(entity) and not self.weapon.did_damage:
                         entity.health -= self.weapon.damage
                 self.weapon.did_damage = True
-                    
+
         if type(self.weapon) == Sword and self.weapon.duration_cd >= 0:
             self.weapon.duration_cd -= inputs["dt_mili"]
         else:
             self.weapon.size = 0
             self.weapon.did_damage = False
-
-        
 
         ### stamina regen ###
         if self.cd["stamina_regen"] <= 0 and self.stamina < self.max_stamina:
@@ -189,6 +189,7 @@ class Agent(Object):
             vec.y /= Globals().SQR2
 
         # self.pos = self.pos + vec
+
         self.move(vec, entities)
         if type(self.weapon) == Gun:
             self.weapon.get_move(inputs, center_pos=self.pos)
@@ -207,7 +208,6 @@ class Agent(Object):
             self.weapon.cd = self.weapon.fire_rate
             self.weapon.size = self.weapon.sword_size
             self.weapon.duration_cd = self.weapon.duration
-            
 
     def draw(self, cam):
         """
@@ -259,7 +259,7 @@ class Agent(Object):
 
     def hear(self, entity):
         return entity.sound_circle.sound_range > utils.dist(self.pos, entity.pos)
-    
+
     def get_debug_info(self):
         return {
             "Type": type(self).__name__,

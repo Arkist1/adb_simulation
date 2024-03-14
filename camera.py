@@ -16,7 +16,6 @@ class Camera:
         self.position += delta_pos
 
     def apply_zoom(self, amt):
-        print(self.position, self.size)
         newzoom = self.zoom * amt
         old_size = self.size.copy()
 
