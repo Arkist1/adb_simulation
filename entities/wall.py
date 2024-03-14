@@ -6,13 +6,15 @@ import pygame
 class Wall(Object):
     def __init__(
         self,
-        screen: pygame.Surface,
         pos: pygame.Vector2,
         width: int = 300,
         height: int = 30,
         colour: tuple[int] = (255, 0, 255),
+        screen: pygame.Surface = None,
     ) -> None:
-        super().__init__("rectangle", pos, is_pushable=False, width=width, height=height)
+        super().__init__(
+            "rectangle", pos, is_pushable=False, width=width, height=height
+        )
         self.screen = screen
         self.colour = colour
 

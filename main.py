@@ -1,10 +1,11 @@
 from camera import Camera, Camera_controller
 
 from entities import Bullet, Agent, Wall, Pickup, Enemy
-from utils import Object, Hitbox, Globals, EntityHolder, generate_houses
+from utils import Object, Hitbox, Globals, EntityHolder, House
 
 import random
 import pygame
+import json
 
 from pygame._sdl2.video import Window
 
@@ -54,7 +55,28 @@ def main():
     camera_target = entities.players[0]
     vectors = []
 
-    generate_houses(screen, entities)
+    # MAP GEN
+    templates = json.load(open("templates.json", "r"))
+    houses = []
+
+    for xtile in range(0, Globals.MAP_WIDTH, Globals.TILE_WIDTH):
+        for ytile in range(0, Globals.MAP_HEIGHT, Globals.TILE_HEIGHT):
+            xpos = xtile + Globals.TILE_WIDTH / 2
+            ypos = ytile + Globals.TILE_HEIGHT / 2
+
+            if random.random() < Globals.HOUSE_CHANCE:
+                houses.append(
+                    House(
+                        pygame.Vector2([xpos, ypos]),
+                        template=templates["simple_house"],
+                        screen=screen,
+                    )
+                )
+
+    for house in houses:
+        entities.walls += house.walls
+        entities.pickups += house.pickups
+        entities.enemies += house.enemies
 
     while running:
         dt = clock.tick(Globals.FPS) / 1000
@@ -170,7 +192,9 @@ def main():
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:
             cd["spawn"] = 100
             entities.enemies.append(
-                Enemy(screen=screen, type="enemy", start_pos=inputs["mouse_pos"])
+                Enemy(
+                    screen=screen, control_type="enemy", start_pos=inputs["mouse_pos"]
+                )
             )
 
         ### manual pickup spawning ###

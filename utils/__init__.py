@@ -9,4 +9,4 @@ from .globals import (
 from .hitbox import Hitbox
 from .object import Object
 from .entityholder import EntityHolder
-from .house import generate_houses, generate_house
+from .house import House

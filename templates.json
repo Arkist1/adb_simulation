@@ -1,0 +1,32 @@
+{
+    "spawn_chances": [0.6, 0.3, 0.1],
+    "simple_house":{"walls":[{"pos": [-150, 0], "width": 30, "height": 300, "door_chance": 0.3, "door_width": 100},
+                             {"pos": [0, -150], "width": 300, "height": 30, "door_chance": 0.3, "door_width": 100},
+                             {"pos": [150, 0], "width": 30, "height": 300, "door_chance": 0.3, "door_width": 100},
+                             {"pos": [0, 150], "width": 300, "height": 30, "door_chance": 0.3, "door_width": 100},
+
+                             {"pos": [150, 150], "width": 30, "height": 30, "door_chance": 0, "door_width": 100},
+                             {"pos": [-150, 150], "width": 30, "height": 30, "door_chance": 0, "door_width": 100},
+                             {"pos": [150, -150], "width": 30, "height": 30, "door_chance": 0, "door_width": 100},
+                             {"pos": [-150, -150], "width": 30, "height": 30, "door_chance": 0, "door_width": 100}
+                            ],
+                             "pickups": [
+                                {"pos": [-100, -100], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}},
+                                {"pos": [0, -100], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}},
+                                {"pos": [100, -100], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}},
+                                {"pos": [-100, 0], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}},
+                                {"pos": [0, 0], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}},
+                                {"pos": [100, 0], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}},
+                                {"pos": [-100, 100], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}},
+                                {"pos": [0, 100], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}},
+                                {"pos": [100, 100], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}}
+                             ]
+                             , 
+                             "enemies": [
+                                {"pos": [0, 0], "chance": 0.2}
+                             ],
+                             "max_doors": 1,
+                                "min_doors": 1},
+    "farm_house" :{"walls":[], "pickup_spots": []},
+    "warehouse": {"walls": [], "pickup_spots": []}
+                        }

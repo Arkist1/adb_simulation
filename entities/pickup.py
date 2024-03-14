@@ -7,9 +7,8 @@ class Pickup(Object):
     def __init__(
         self,
         pickup_type,
-        screen,
         start_pos=[400, 400],
-        type=None,
+        screen=None,
     ) -> None:
         self.size = [15, 25, 15, 25][pickup_type]
         super().__init__(
@@ -33,3 +32,10 @@ class Pickup(Object):
             self.pos * cam.zoom - cam.position,
             self.size * cam.zoom,
         )
+
+    def get_debug_info(self):
+        return {
+            "Type": type(self).__name__,
+            "Position": self.pos,
+            "pickup_type": self.pickup_type,
+        }
