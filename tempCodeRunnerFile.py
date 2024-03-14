@@ -1,1 +1,1 @@
-"shoot": mouse_keys[0]
+* cam.zoom - cam.position

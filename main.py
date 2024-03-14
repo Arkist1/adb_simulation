@@ -123,7 +123,9 @@ def main():
                 entities.players.remove(player)
                 entities.players.append(Agent(screen=screen))
                 continue
+            player.percept(entities)
             player.get_move(inputs, entities.get_objects(), entities.bullets, entities.get_mortal())
+            
 
             playercam.position = player.pos - playercam.size / 2
 
@@ -215,14 +217,11 @@ def main():
             cd["cam_switch"] = 10
             current_player.health -= 25
 
-        ###### Perceptions #####
-        for en in entities.enemies:
-            en.percept(entities.players)
-
         ###### Movement #####
         for en in entities.enemies:
             if en.health <= 0:
                 entities.enemies.remove(en)
+            en.percept(entities)
             en.get_move(
                 inputs={"nearest_player": current_player, "dt": dt},
                 entities=entities.get_objects(),
@@ -358,14 +357,14 @@ def main():
                 screen.blit(txt, (0, index * 18 + 40))
 
         # debug, draw vectors from mouse to every entity when targetting for target cam
-        # for vector in vectors:
-        #     if cd["target_cd"] != 0:
-        #         pygame.draw.line(
-        #             screen,
-        #             (100, 200, 200),
-        #             vector[0] * cam.zoom - cam.position,
-        #             vector[1] * cam.zoom - cam.position,
-        #         )
+        for en in entities.get_mortal():
+            if cd["target_cd"] != 0:
+                pygame.draw.line(
+                    screen,
+                    (100, 200, 200),
+                    entities.players[0].pos * cam.zoom - cam.position,
+                    en.pos * cam.zoom - cam.position,
+                )
 
         # Flip (draw) the display
         pygame.display.flip()
