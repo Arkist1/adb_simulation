@@ -30,6 +30,14 @@ class Wall(Object):
             ),
         )
 
+    def get_rect(self):
+        return pygame.Rect(
+                self.min_xy().x,
+                self.min_xy().y,
+                self.width,
+                self.height,
+            )
+
     def get_debug_info(self):
         return {
             "Type": type(self).__name__,

@@ -5,7 +5,7 @@ from .sound_circle import SoundCircle
 from utils import Globals, Object
 import utils
 from math import sqrt, cos, radians
-import math
+import numpy
 import pygame
 
 
@@ -70,6 +70,9 @@ class Agent(Object):
         self.cd = {"stamina_regen": 0, "food": 0}
 
         self.is_moving = False
+
+        self.vision_detections = []
+        self.poi = None
 
     def get_move(
         self, inputs: dict[str, bool], entities, bullets, mortals
@@ -232,7 +235,29 @@ class Agent(Object):
         if self.sound_circle:
             self.sound_circle.draw(cam)
 
-    def detect(self, entity):
+        if self.poi:
+            pygame.draw.line(
+                self.screen,
+                (255, 100, 100),
+                self.pos * cam.zoom - cam.position,
+                self.poi * cam.zoom - cam.position,
+            )
+
+        for en in self.vision_detections:
+            pygame.draw.line(
+                self.screen,
+                (100, 200, 200),
+                self.pos * cam.zoom - cam.position,
+                en.pos * cam.zoom - cam.position,
+            )
+
+    def percept(self, entities):
+        self.vision_detections = []
+        for entity in entities.get_mortal():
+            if self.detect(entity, entities.walls):
+                self.vision_detections.append(entity)
+
+    def detect(self, entity, objects):
         agent_direction = utils.angle_to(entity.pos, self.pos)
         agent_distance = utils.abs_distance_to(self.pos, entity.pos)
 
@@ -253,6 +278,12 @@ class Agent(Object):
                 or left_rotation < agent_direction
                 and right_rotation < -180
             ):
+                vision_line = (self.pos, entity.pos)
+                for object in objects:
+                    wall = object.get_rect()
+                    if wall.clipline(vision_line):
+                        return False
+
                 return True
 
         return False
@@ -273,4 +304,5 @@ class Agent(Object):
             "Stamina": self.stamina,
             "Pushable": self.is_pushable,
             "Hunger rate": self.hunger_rate,
+            "Visions": self.vision_detections,
         }

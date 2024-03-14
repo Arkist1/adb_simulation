@@ -106,6 +106,7 @@ def main():
                 tilemanager.players.remove(player)
                 tilemanager.players.append(Agent(screen=screen))
                 continue
+            player.percept(entities)
             player.get_move(
                 inputs,
                 tilemanager.get_tiled_items(player.pos),
@@ -211,7 +212,7 @@ def main():
         for en in tilemanager.enemies:
             if en.health <= 0:
                 tilemanager.enemies.remove(en)
-
+            en.percept(tilemanager.players)
             en.get_move(
                 inputs={"nearest_player": current_player, "dt": dt},
                 entities=tilemanager.get_tiled_items(en.pos),
@@ -345,13 +346,13 @@ def main():
                 screen.blit(txt, (0, index * 18 + 40))
 
         # debug, draw vectors from mouse to every entity when targetting for target cam
-        for vector in vectors:
+        for en in tilemanager.get_mortal():
             if cd["target_cd"] != 0:
                 pygame.draw.line(
                     screen,
                     (100, 200, 200),
-                    vector[0] * cam.zoom - cam.position,
-                    vector[1] * cam.zoom - cam.position,
+                    tilemanager.players[0].pos * cam.zoom - cam.position,
+                    en.pos * cam.zoom - cam.position,
                 )
 
         # Flip (draw) the display

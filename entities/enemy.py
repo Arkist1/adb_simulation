@@ -126,8 +126,8 @@ class Enemy(Agent):
         """
         visions = []
         sounds = []
-        for entity in entities:
-            if self.detect(entity):
+        for entity in entities.players:
+            if self.detect(entity, entities.walls):
                 visions.append(entity)
             if self.hear(entity):
                 sounds.append(entity)
