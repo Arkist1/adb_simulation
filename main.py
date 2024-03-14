@@ -79,7 +79,7 @@ def main():
             "right": keys[pygame.K_d],
             "sprint": keys[pygame.K_LSHIFT],
             "crouch": keys[pygame.K_LCTRL],
-            "shoot": mouse_keys[0],
+            "attack": mouse_keys[0],
             "block": mouse_keys[2],
             "mouse_pos": mouse_pos / cameracontroller.curr_cam.zoom
             + cameracontroller.curr_cam.position / cameracontroller.curr_cam.zoom,
@@ -96,11 +96,14 @@ def main():
             cd["fps"] = 1000
             print(len(entities.enemies), "FPS:", fps)
 
-        ### kill player ###
-        for pl in entities.players:
-            if pl.health <= 0:
-                entities.players.remove(pl)
+        for player in entities.players:
+            if player.health <= 0:
+                entities.players.remove(player)
                 entities.players.append(Agent(screen=screen))
+                continue
+            player.get_move(inputs, entities.get_objects(), entities.bullets, entities.get_mortal())
+
+            playercam.position = player.pos - playercam.size / 2
 
         ### pickup collision detection ###
         for pu in entities.pickups:
@@ -194,15 +197,14 @@ def main():
 
         ###### Movement #####
         for en in entities.enemies:
+            if en.health <= 0:
+                entities.enemies.remove(en)
             en.get_move(
                 inputs={"nearest_player": current_player, "dt": dt},
                 entities=entities.get_objects(),
             )
 
-        for player in entities.players:
-            player.get_move(inputs, entities.get_objects())
-
-            playercam.position = player.pos - playercam.size / 2
+        
 
         if camera_target:
             followcam.position = camera_target.pos - followcam.size / 2
@@ -230,13 +232,6 @@ def main():
 
         for bl in entities.bullets:
             bl.move(inputs)
-
-        ### bullet fire ###
-        if mouse_keys[0] and dt_mili - cd["bullet"] > 0:
-            # current_player.food += 1
-            cd["bullet"] = 100
-
-            entities.bullets.append(current_player.shoot(inputs["mouse_pos"]))
 
         ##############################################
         ##              Drawing cycle               ##
