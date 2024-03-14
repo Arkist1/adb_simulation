@@ -42,10 +42,11 @@ class Gun:
             owner (Player, optional): The owner of the gun. Defaults to None.
         """
         self.position = None  # inherit from the player location
-        self.fire_rate = 1000  # in miliseconds, 1000 = once every second
+        self.fire_rate = 100  # in miliseconds, 1000 = once every second
         self.bullet_damage = 50
         self.bullet_speed = 750
         self.bullet_size = 5
+        self.cd = 0
 
         # self.hitbox = 10 # not used
         self.img_size = pygame.Vector2(70, 70)

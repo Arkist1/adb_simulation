@@ -36,6 +36,7 @@ class Enemy(Agent):
         self.moving = False
         self.move_timer = 0
         self.blocked_timer = 0
+        self.attack_cd = 1
         self.state = "wandering"  # states are ["wandering", "alert", "chasing"]
         self.vision_cone.vision_range = 300
         self.detected_agent = []
@@ -77,6 +78,7 @@ class Enemy(Agent):
         elif self.state == "chasing":
             delta = self.get_move_delta(self.poi) * inputs["dt"]
 
+            self.attack_cd -= inputs["dt"]
             # print("DELTA", delta)
 
             self.move(delta, entities)
@@ -95,7 +97,7 @@ class Enemy(Agent):
                 sdelta < self.speed * inputs["dt"] * 3 or self.blocked_timer <= 0
             ):  # detect if poi position is within reach
                 self.moving = False
-                self.move_timer = random.random() * 2 + 2
+                self.move_timer = random.random() * 4 + 2
 
             if not sdelta == 0:
                 # calculate delta
@@ -130,6 +132,9 @@ class Enemy(Agent):
             if self.hear(entity):
                 sounds.append(entity)
                 # print("sound")
+            if (entity.radius + self.radius + 10) > utils.dist(self.pos, entity.pos) and self.attack_cd <= 0:
+                entity.health -= 25
+                self.attack_cd = 1
 
         if visions:
             # print("vision detection has been made")
@@ -158,10 +163,10 @@ class Enemy(Agent):
 
                 self.poi = pygame.Vector2(
                     random.randrange(
-                        round(self.pos[0]) - 100, round(self.pos[0]) + 100
+                        round(self.pos[0]) - 400, round(self.pos[0]) + 400
                     ),
                     random.randrange(
-                        round(self.pos[1]) - 100, round(self.pos[1]) + 100
+                        round(self.pos[1]) - 400, round(self.pos[1]) + 400
                     ),
                 )
                 self.moving = True
@@ -169,6 +174,7 @@ class Enemy(Agent):
 
         self.vision_detections = visions
         self.sound_detections = sounds
+       
 
     def get_debug_info(self):
         return {
@@ -182,5 +188,6 @@ class Enemy(Agent):
             "Visions": self.vision_detections,
             "Sounds": self.sound_detections,
             "State": self.state,
+            "Health": self.health,
             "Pushable": self.is_pushable,
         }
