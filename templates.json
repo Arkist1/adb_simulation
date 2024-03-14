@@ -23,7 +23,11 @@
                              ]
                              , 
                              "enemies": [
-                                {"pos": [0, 0], "chance": 0.2}
+                                {"pos": [0, 0], "chance": 0.2},
+                                {"pos": [300, 300], "chance": 0.2},
+                                {"pos": [-300, 300], "chance": 0.2},
+                                {"pos": [300, -300], "chance": 0.2},
+                                {"pos": [-300, -300], "chance": 0.2}
                              ],
                              "max_doors": 1,
                                 "min_doors": 1},
