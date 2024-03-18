@@ -16,7 +16,7 @@ class Agent(Object):
         self,
         screen: pygame.Surface,
         start_pos: list[int] = [300, 300],
-        control_type: str = "human",
+        control_type: str = None,
         colour: tuple[int] = (0, 0, 255),
         size: int = 30,
         crouchspeed: int = 150,
@@ -28,7 +28,10 @@ class Agent(Object):
         health: int = 250,
     ) -> None:
         super().__init__(pos=pygame.Vector2(start_pos[0], start_pos[1]), radius=size)
-        self.controltype = control_type
+        if control_type:
+            self.controltype = control_type
+        else:
+            self.controltype = Globals.CONTROL_TYPE
         self.speeds = {
             "sprinting": sprintspeed,
             "walking": walkspeed,

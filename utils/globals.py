@@ -27,9 +27,9 @@ class Globals:
     DEBUG = True
     DRAW = True
 
-    TILE_WIDTH = 1000
-    TILE_HEIGHT = 700
-    HOUSE_CHANCE = 0.3
+    HOUSE_CHANCE = 0.6
+    
+    CONTROL_TYPE = "human"
 
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
