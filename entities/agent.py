@@ -24,9 +24,9 @@ class Agent(Object):
         walkspeed: int = 300,
         sprintspeed: int = 450,
         base_sound_range: int = 200,
-        stamina: int = 250,
-        food: int = 250,
-        health: int = 250,
+        stamina: int = 100,
+        food: int = 100,
+        health: int = 100,
     ) -> None:
         super().__init__(pos=start_pos, radius=size)
         if control_type:
@@ -198,17 +198,31 @@ class Agent(Object):
 
     def get_agent_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
 
-        if True:
-            self.state = "explore"
-        elif True:
-            self.state = "fight"
-        elif True:
-            self.state = "flee"
-        elif True:
-            self.state = "low_health"
-        elif True:
-            self.state = "low_food"
+        if self.chasing_enemies:
+            closest_enemy = None
+            closest_dist = 0
 
+            for en in self.chasing_enemies:
+                if (
+                    dist_ := utils.dist_sqr(self.pos, en.pos) > closest_dist
+                    or not closest_dist
+                ):
+                    closest_dist = dist_
+                    closest_enemy = en
+        
+            if self.health >= (self.max_health * 0.5) and closest_dist < 10:
+                self.state = "fight"
+            elif self.health < (self.max_health * 0.5):
+                self.state = "flee"
+        else:
+            if self.health <= (self.max_health * 0.5):
+                self.state = "low_health"
+            elif self.food < (self.max_food * 0.3):
+                self.state = "low_food"
+            else:
+                self.state = "explore"
+
+        # made by Xander
         if self.state == "explore":
             if self.current_tile not in self.searched_tiles:
                 tx = (self.pos.x // 1000) * 1000 + 500
