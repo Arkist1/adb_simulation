@@ -16,6 +16,7 @@ class Hitbox:
             Globals().MAP_WIDTH, Globals().MAP_HEIGHT
         ),
         is_pushable: bool = True,
+        enabled: bool = True,
         **kwargs: float,
     ) -> None:
         if type_ not in ["circle", "rectangle"]:
@@ -28,6 +29,7 @@ class Hitbox:
         self.min_pos = min_pos
         self.max_pos = max_pos
         self.is_pushable = is_pushable
+        self.enabled = enabled
 
         if type_ == "circle":
             if "radius" not in kwargs:

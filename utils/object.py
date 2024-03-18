@@ -23,6 +23,9 @@ class Object(Hitbox):
     def move(
         self, velocity: pygame.Vector2, objects: list[Object], is_chain: bool = False
     ) -> bool:
+        if not self.enabled:
+            return False
+        
         self.pos += velocity
 
         w_off = self.radius if self.type == "circle" else self.width / 2
@@ -40,7 +43,7 @@ class Object(Hitbox):
         colliding = []
 
         for other in objects:
-            if other == self:
+            if other == self or not other.enabled:
                 continue
             # if dist_sqr(self.pos, other.pos) > (self.max_xy().x - self.min_xy().x) ** 2:
             #    continue
