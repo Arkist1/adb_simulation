@@ -77,7 +77,24 @@ class Agent(Object):
         self.vision_detections = []
         self.pickup_detections = []
         self.poi = None
+        self.visited_tiles = set()
+        self.tile_dict = {}
+        self.tile_pickups = set()
+        self.current_tile = None
+    
 
+    def memory(self, tilemanager, pickups):
+        if tilemanager(self.pos) in self.visited_tiles and self.current_tile != tilemanager(self.pos):
+            self.tile_pickups = self.tile_dict[tilemanager(self.pos)]
+        if self.current_tile == tilemanager(self.pos):
+            for p in pickups:
+                self.tile_pickups.add(p)
+            self.tile_dict[tilemanager(self.pos)] = self.tile_pickups
+        else:
+            self.tile_pickups = set()
+        self.current_tile = tilemanager(self.pos)
+        self.visited_tiles.add(self.current_tile)
+        
     def get_move(
         self, inputs: dict[str, bool], entities, bullets, mortals
     ) -> pygame.Vector2:
@@ -272,6 +289,7 @@ class Agent(Object):
         for entity in tilemanager.allpickups:
             if self.detect(entity, tilemanager(self.pos).walls):
                 self.pickup_detections.append(entity)
+        self.memory(tilemanager, self.pickup_detections)
         # print(self.pickup_detections)
 
     def detect(self, entity, objects):
