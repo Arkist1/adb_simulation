@@ -302,7 +302,6 @@ class Agent(Object):
                     and -180 > right_rotation
                 )
             ):
-                print(left_rotation, right_rotation, rotation, agent_direction)
                 vision_line = (self.pos, entity.pos)
                 for object in objects:
                     wall = object.get_rect()
