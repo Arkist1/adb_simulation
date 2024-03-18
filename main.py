@@ -58,7 +58,7 @@ def main():
     vectors = []
 
     # MAP GEN
-    templates = json.load(open("no_houses_templates.json", "r"))
+    templates = json.load(open("templates.json", "r"))
     tilemanager.generate_terrain(templates, screen=screen)
 
     while running:
