@@ -90,18 +90,21 @@ class Agent(Object):
         self.target_pickup = None
 
     def memory(self, tilemanager, pickups):
-        if tilemanager(
-            self.pos
-        ) in self.visited_tiles and self.current_tile != tilemanager(self.pos):
-            self.tile_pickups = self.tile_dict[tilemanager(self.pos)]
-        if self.current_tile == tilemanager(self.pos):
+        curr_tile = tilemanager(self.pos)
+        if curr_tile in self.visited_tiles and self.current_tile != curr_tile:
+            self.tile_pickups = self.tile_dict[curr_tile]
+        if self.current_tile == curr_tile:
             for p in pickups:
                 self.tile_pickups.add(p)
-            self.tile_dict[tilemanager(self.pos)] = self.tile_pickups
+            self.tile_dict[curr_tile] = self.tile_pickups
         else:
             self.tile_pickups = set()
-        self.current_tile = tilemanager(self.pos)
-        self.visited_tiles.add(self.current_tile)
+
+        if curr_tile not in self.visited_tiles:
+            self.visited_tiles.add(self.current_tile)
+            self.tile_dict[curr_tile] = []
+
+        self.current_tile = curr_tile
 
     def remove_pickup_from_memory(self, tilemanager, pu):
         self.tile_pickups = self.tile_dict[tilemanager(self.pos)]

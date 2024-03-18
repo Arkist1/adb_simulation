@@ -28,7 +28,7 @@ class Globals:
 
     CONTROL_TYPE = "agent"
 
-    SIM_SPEED = 4
+    SIM_SPEED = 1
     FPS = 60 * SIM_SPEED
 
 
