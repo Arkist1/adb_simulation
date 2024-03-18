@@ -310,6 +310,7 @@ class Agent(Object):
             self.vision_cone.rotation = angle.angle_to([0, 0])
             print(angle)
             self.move((angle * self.speed * inputs["dt"]), entities)
+            self.poi = None
 
         elif self.state == "low_health":
             pass
