@@ -254,15 +254,17 @@ class Agent(Object):
 
     def percept(self, tilemanager):
         self.vision_detections = []
+        self.pickup_detections = []
         for entity in tilemanager.get_mortal():
             if self.detect(entity, tilemanager(self.pos).walls):
                 self.vision_detections.append(entity)
-        for entity in tilemanager.get_pickups():
+        for entity in tilemanager.allpickups:
             if self.detect(entity, tilemanager(self.pos).walls):
                 self.pickup_detections.append(entity)
-        print(self.pickup_detections)
+        # print(self.pickup_detections)
 
     def detect(self, entity, objects):
+        
         agent_direction = utils.angle_to(entity.pos, self.pos)
         agent_distance = utils.abs_distance_to(self.pos, entity.pos)
 
