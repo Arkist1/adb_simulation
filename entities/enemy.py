@@ -160,7 +160,8 @@ class Enemy(Agent):
 
         else:
             if self.state == "chasing":
-                self.last_agent.chasing_enemies.remove(self)
+                if self in self.last_agent.chasing_enemies:
+                    self.last_agent.chasing_enemies.remove(self)
                 self.state = "alert"
 
             elif (

@@ -4,7 +4,7 @@ from .vision_cone import VisionCone
 from .sound_circle import SoundCircle
 from utils import Globals, Object, Hitbox, dist
 import utils
-from math import sqrt, cos, radians
+import math
 import numpy
 import pygame
 import random
@@ -214,7 +214,7 @@ class Agent(Object):
 
             if self.health >= (self.max_health * 0.5) and closest_dist < 130:
                 self.state = "fight"
-            elif self.health < (self.max_health * 0.5):
+            else:
                 self.state = "flee"
         else:
             if self.health <= (self.max_health * 0.5):
@@ -302,11 +302,14 @@ class Agent(Object):
             # calculating best angle to flee at
             angle = pygame.Vector2([0, 0])
             for en in self.chasing_enemies:
-                angle += utils.angle_to_direction(utils.angle_to(self.pos, en.pos))
+                angle += utils.angle_to_direction(
+                    math.radians(utils.angle_to(self.pos, en.pos))
+                )
 
             angle = angle / len(self.chasing_enemies)
             self.vision_cone.rotation = angle.angle_to([0, 0])
-            self.move(angle * self.speed * inputs["dt"], entities)
+            print(angle)
+            self.move((angle * self.speed * inputs["dt"]), entities)
 
         elif self.state == "low_health":
             pass
@@ -314,6 +317,7 @@ class Agent(Object):
         elif self.state == "low_food":
             pass
 
+        self.chasing_enemies = set()
         # self.get_random_move(inputs, entities)
 
     def get_random_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
