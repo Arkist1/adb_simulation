@@ -60,7 +60,7 @@ def dist_sqr(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
     return dx * dx + dy * dy
 
 
-def angle_to(left: pygame.Vector2, right: pygame.Vector2):
+def angle_to(left: pygame.Vector2, right: pygame.Vector2) -> pygame.Vector2:
     v1 = left - right
     v2 = pygame.Vector2([0, 0])
 

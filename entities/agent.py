@@ -270,12 +270,27 @@ class Agent(Object):
 
                 else:
                     self.poi = None
-        
+
         elif self.state == "fight":
-            pass
+            self.poi = closest_enemy.pos.copy()
+            self.swing(self.poi)
+
+            s = self.speed * inputs["dt"]
+            vec = self.poi - self.pos
+            vec = vec.normalize() * s
+            self.move(vec, entities)
+            self.vision_cone.rotation = vec.angle_to([0, 0])
+            self.sound_circle.sound_range = self.base_sound_range
 
         elif self.state == "flee":
-            pass
+            # calculating best angle to flee at
+            angle = pygame.Vector2([0, 0])
+            for en in self.chasing_enemies:
+                angle += utils.angle_to_direction(utils.angle_to(self.pos, en.pos))
+
+            angle = angle / len(self.chasing_enemies)
+            self.vision_cone.rotation = angle.angle_to([0, 0])
+            self.move(angle * self.speed * inputs["dt"], entities)
 
         elif self.state == "low_health":
             pass
