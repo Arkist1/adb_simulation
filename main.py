@@ -23,7 +23,12 @@ def main():
 
     # tilemanager init
     tilemanager = TileManager(Globals.TILE_SIZE, Globals.MAP_SIZE)
-    tilemanager.players.append(Agent(screen=screen))
+    middle_tile = tilemanager.tiles[round(len(tilemanager.tiles) / 2) - 1][
+        round(len(tilemanager.tiles[0]) / 2) - 1
+    ]
+    middle_pos = middle_tile.pos + middle_tile.size / 2
+    print(middle_pos)
+    tilemanager.players.append(Agent(screen=screen, start_pos=middle_pos))
 
     # Colors
     stamina_yellow = (255, 255, 10)
@@ -104,7 +109,7 @@ def main():
         for player in tilemanager.players:
             if player.health <= 0:
                 tilemanager.players.remove(player)
-                tilemanager.players.append(Agent(screen=screen))
+                tilemanager.players.append(Agent(screen=screen, start_pos=middle_pos))
                 continue
             player.percept(tilemanager)
             player.get_move(

@@ -15,7 +15,7 @@ class Agent(Object):
     def __init__(
         self,
         screen: pygame.Surface,
-        start_pos: list[int] = [300, 300],
+        start_pos: pygame.Vector2 = pygame.Vector2(200, 200),
         control_type: str = None,
         colour: tuple[int] = (0, 0, 255),
         size: int = 30,
@@ -27,7 +27,7 @@ class Agent(Object):
         food: int = 250,
         health: int = 250,
     ) -> None:
-        super().__init__(pos=pygame.Vector2(start_pos[0], start_pos[1]), radius=size)
+        super().__init__(pos=start_pos, radius=size)
         if control_type:
             self.controltype = control_type
         else:
@@ -81,10 +81,11 @@ class Agent(Object):
         self.tile_dict = {}
         self.tile_pickups = set()
         self.current_tile = None
-    
 
     def memory(self, tilemanager, pickups):
-        if tilemanager(self.pos) in self.visited_tiles and self.current_tile != tilemanager(self.pos):
+        if tilemanager(
+            self.pos
+        ) in self.visited_tiles and self.current_tile != tilemanager(self.pos):
             self.tile_pickups = self.tile_dict[tilemanager(self.pos)]
         if self.current_tile == tilemanager(self.pos):
             for p in pickups:
@@ -94,7 +95,7 @@ class Agent(Object):
             self.tile_pickups = set()
         self.current_tile = tilemanager(self.pos)
         self.visited_tiles.add(self.current_tile)
-        
+
     def get_move(
         self, inputs: dict[str, bool], entities, bullets, mortals
     ) -> pygame.Vector2:
@@ -286,9 +287,12 @@ class Agent(Object):
         for entity in tilemanager.get_mortal():
             if self.detect(entity, tilemanager(self.pos).walls):
                 self.vision_detections.append(entity)
-        for entity in tilemanager.allpickups:
+
+        tile = tilemanager(self.pos)
+        for entity in tilemanager(self.pos).pickups:
             if self.detect(entity, tilemanager(self.pos).walls):
                 self.pickup_detections.append(entity)
+
         self.memory(tilemanager, self.pickup_detections)
         # print(self.pickup_detections)
 
@@ -307,6 +311,8 @@ class Agent(Object):
             left_rotation = rotation + vision_angle / 2
             right_rotation = rotation - vision_angle / 2
 
+            # print(f"{left_rotation=}, {right_rotation=}, {agent_direction=}")
+
             if (
                 left_rotation > agent_direction > right_rotation
                 or (
@@ -316,7 +322,7 @@ class Agent(Object):
                 )
                 or (
                     (left_rotation < agent_direction < -180)
-                    or (180 > agent_direction > 180 + (right_rotation % 180))
+                    or (180 > agent_direction > 180 + (right_rotation % -180))
                     and -180 > right_rotation
                 )
             ):

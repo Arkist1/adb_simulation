@@ -7,4 +7,5 @@ class Tile(EntityHolder):
         super().__init__()
         self.pos = position
         self.width = width
-        self.heigh = height
+        self.height = height
+        self.size = pygame.Vector2(self.width, self.height)

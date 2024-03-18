@@ -43,8 +43,6 @@ class TileManager(EntityHolder):
                     ):
                         return self.tiles[xindex][yindex]
 
-                break
-
     @property
     def allwalls(self):
         res = []
