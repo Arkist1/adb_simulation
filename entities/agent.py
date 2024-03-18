@@ -306,7 +306,9 @@ class Agent(Object):
                     math.radians(utils.angle_to(self.pos, en.pos))
                 )
 
-            angle = angle / len(self.chasing_enemies)
+            angle = angle / len(self.chasing_enemies) + pygame.Vector2(
+                random.random() / 5, random.random() / 5
+            )
             self.vision_cone.rotation = angle.angle_to([0, 0])
             print(angle)
             self.move((angle * self.speed * inputs["dt"]), entities)
