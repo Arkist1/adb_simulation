@@ -84,6 +84,7 @@ class Agent(Object):
         self.tile_dict = {}
         self.tile_pickups = set()
         self.current_tile = None
+        self.state = "explore"
 
         self.chasing_enemies = set()
 
@@ -197,66 +198,90 @@ class Agent(Object):
 
     def get_agent_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
 
-        if self.current_tile not in self.searched_tiles:
-            tx = (self.pos.x // 1000) * 1000 + 500
-            ty = (self.pos.y // 700) * 700 + 350
-            center = pygame.Vector2(tx, ty)
-            self.vision_cone.rotation = utils.angle_to(center, self.pos)
-            if dist(self.pos, center) > 5:
-                s = self.speed * inputs["dt"]
-                vec = center - self.pos
-                vec = vec.normalize() * s
-                self.move(vec, entities)
-                self.sound_circle.sound_range = self.base_sound_range
+        if True:
+            self.state = "explore"
+        elif True:
+            self.state = "fight"
+        elif True:
+            self.state = "flee"
+        elif True:
+            self.state = "low_health"
+        elif True:
+            self.state = "low_food"
 
-            else:
-                self.poi = None
-                if self.search_angle < 180:
-                    self.search_angle += 3
-
-                else:
-                    self.search_angle = -180
-                    self.searched_tiles.add(self.current_tile)
-                self.sound_circle.sound_range = 0
-                self.vision_cone.rotation = self.search_angle
-        else:
-            if not self.poi:
+        if self.state == "explore":
+            if self.current_tile not in self.searched_tiles:
                 tx = (self.pos.x // 1000) * 1000 + 500
                 ty = (self.pos.y // 700) * 700 + 350
-
-                r = random.randint(0, 3)
-                if r == 0:
-                    tx += 1000
-                if r == 1:
-                    tx -= 1000
-                if r == 2:
-                    ty += 700
-                if r == 3:
-                    ty -= 700
-
-                if tx <= 0.0:
-                    tx += 1000
-                if tx >= Globals.MAP_WIDTH:
-                    tx -= 1000
-                if ty <= 0.0:
-                    ty += 700
-                if ty >= Globals.MAP_HEIGHT:
-                    ty -= 700
-
                 center = pygame.Vector2(tx, ty)
-                self.poi = center
-                self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
+                self.vision_cone.rotation = utils.angle_to(center, self.pos)
+                if dist(self.pos, center) > 5:
+                    s = self.speed * inputs["dt"]
+                    vec = center - self.pos
+                    vec = vec.normalize() * s
+                    self.move(vec, entities)
+                    self.sound_circle.sound_range = self.base_sound_range
 
-            if dist(self.pos, self.poi) > 5:
+                else:
+                    self.poi = None
+                    if self.search_angle < 180:
+                        self.search_angle += 3
 
-                s = self.speed * inputs["dt"]
-                vec = self.poi - self.pos
-                vec = vec.normalize() * s
-                self.move(vec, entities)
-                self.sound_circle.sound_range = self.base_sound_range
-
+                    else:
+                        self.search_angle = -180
+                        self.searched_tiles.add(self.current_tile)
+                    self.sound_circle.sound_range = 0
+                    self.vision_cone.rotation = self.search_angle
             else:
-                self.poi = None
+                if not self.poi:
+                    tx = (self.pos.x // 1000) * 1000 + 500
+                    ty = (self.pos.y // 700) * 700 + 350
+
+                    r = random.randint(0, 3)
+                    if r == 0:
+                        tx += 1000
+                    if r == 1:
+                        tx -= 1000
+                    if r == 2:
+                        ty += 700
+                    if r == 3:
+                        ty -= 700
+
+                    if tx <= 0.0:
+                        tx += 1000
+                    if tx >= Globals.MAP_WIDTH:
+                        tx -= 1000
+                    if ty <= 0.0:
+                        ty += 700
+                    if ty >= Globals.MAP_HEIGHT:
+                        ty -= 700
+
+                    center = pygame.Vector2(tx, ty)
+                    self.poi = center
+                    self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
+
+                if dist(self.pos, self.poi) > 5:
+
+                    s = self.speed * inputs["dt"]
+                    vec = self.poi - self.pos
+                    vec = vec.normalize() * s
+                    self.move(vec, entities)
+                    self.sound_circle.sound_range = self.base_sound_range
+
+                else:
+                    self.poi = None
+        
+        elif self.state == "fight":
+            pass
+
+        elif self.state == "flee":
+            pass
+
+        elif self.state == "low_health":
+            pass
+
+        elif self.state == "low_food":
+            pass
 
         # self.get_random_move(inputs, entities)
 
