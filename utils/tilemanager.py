@@ -68,7 +68,7 @@ class TileManager(EntityHolder):
     def generate_terrain(self, templates, screen):
         for yindex in range(0, len(self.tiles[0]) - 1):
             for xindex in range(0, len(self.tiles) - 1):
-                if random.random() < Globals.HOUSE_CHANCE:
+                if random.random() < templates["house_chance"]:
                     h = House(
                         self.tiles[xindex][yindex].pos + pygame.Vector2(500, 500),
                         template=templates["simple_house"],

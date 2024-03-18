@@ -1,5 +1,6 @@
 {
     "spawn_chances": [0.6, 0.3, 0.1],
+    "house_chance": 0.8,
     "simple_house":{"walls":[],
                              "pickups": [
                                 {"pos": [-100, -100], "chance": 0.5, "type": {"0": 0.25, "1":0.25,  "2":0.25, "3":0.25}},
@@ -14,11 +15,11 @@
                              ]
                              , 
                              "enemies": [
-                                {"pos": [0, 0], "chance": 0.2},
-                                {"pos": [300, 300], "chance": 0.2},
-                                {"pos": [-300, 300], "chance": 0.2},
-                                {"pos": [300, -300], "chance": 0.2},
-                                {"pos": [-300, -300], "chance": 0.2}
+                                {"pos": [0, 0], "chance": 0.4},
+                                {"pos": [300, 300], "chance": 0.4},
+                                {"pos": [-300, 300], "chance": 0.4},
+                                {"pos": [300, -300], "chance": 0.4},
+                                {"pos": [-300, -300], "chance": 0.4}
                              ],
                              "max_doors": 1,
                                 "min_doors": 1},

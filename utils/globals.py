@@ -11,8 +11,8 @@ class Globals:
     SCREEN_HEIGHT = 700
     SCREEN_SIZE = pygame.Vector2(SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    MAP_WIDTH = 10_000
-    MAP_HEIGHT = 7000
+    MAP_WIDTH = SCREEN_WIDTH * 3
+    MAP_HEIGHT = SCREEN_HEIGHT * 3
     MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
 
     TILE_WIDTH = 1000
@@ -27,8 +27,6 @@ class Globals:
     DEBUG = True
     DRAW = True
 
-    HOUSE_CHANCE = 0.6
-    
     CONTROL_TYPE = "human"
 
 
