@@ -17,6 +17,9 @@ class EntityHolder:
 
     def get_mortal(self) -> list[Object]:
         return self.enemies
+    
+    def get_pickup(self) -> list[Object]:
+        return self.pickups
 
     def get_items(self) -> list[Hitbox]:
         return (

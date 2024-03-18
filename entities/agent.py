@@ -72,6 +72,7 @@ class Agent(Object):
         self.is_moving = False
 
         self.vision_detections = []
+        self.pickup_detections = []
         self.poi = None
 
     def get_move(
@@ -256,6 +257,10 @@ class Agent(Object):
         for entity in tilemanager.get_mortal():
             if self.detect(entity, tilemanager(self.pos).walls):
                 self.vision_detections.append(entity)
+        for entity in tilemanager.get_pickups():
+            if self.detect(entity, tilemanager(self.pos).walls):
+                self.pickup_detections.append(entity)
+        print(self.pickup_detections)
 
     def detect(self, entity, objects):
         agent_direction = utils.angle_to(entity.pos, self.pos)
