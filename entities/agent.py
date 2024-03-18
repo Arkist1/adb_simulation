@@ -103,9 +103,7 @@ class Agent(Object):
         self.tile_pickups = self.tile_dict[tilemanager(self.pos)]
         self.tile_pickups = set(p for p in self.tile_pickups if p != pu)
 
-    def get_move(
-        self, inputs: dict[str, bool], entities, bullets, mortals
-    ) -> pygame.Vector2:
+    def get_move(self, inputs: dict[str, bool], entities, bullets, mortals) -> None:
         """
         Returns the move for the agent based on the given inputs.
 
@@ -201,21 +199,25 @@ class Agent(Object):
             tx = (self.pos.x // 1000) * 1000 + 500
             ty = (self.pos.y // 700) * 700 + 350
             center = pygame.Vector2(tx, ty)
+
             if dist(self.pos, center) > 5:
                 s = self.speed * inputs["dt"]
                 vec = center - self.pos
                 vec = vec.normalize() * s
                 self.move(vec, entities)
                 self.sound_circle.sound_range = self.base_sound_range
+
             else:
                 self.poi = None
                 if self.search_angle < 180:
                     self.search_angle += 3
+
                 else:
                     self.search_angle = -180
                     self.searched_tiles.add(self.current_tile)
                 self.sound_circle.sound_range = 0
-            self.vision_cone.rotation = self.search_angle
+                self.vision_cone.rotation = self.search_angle
+
         else:
             if not self.poi:
                 tx = (self.pos.x // 1000) * 1000 + 500
@@ -250,6 +252,7 @@ class Agent(Object):
                 vec = vec.normalize() * s
                 self.move(vec, entities)
                 self.sound_circle.sound_range = self.base_sound_range
+
             else:
                 self.poi = None
 
