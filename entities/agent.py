@@ -255,6 +255,14 @@ class Agent(Object):
                 en.pos * cam.zoom - cam.position,
             )
 
+        for en in self.pickup_detections:
+            pygame.draw.line(
+                self.screen,
+                (200, 100, 200),
+                self.pos * cam.zoom - cam.position,
+                en.pos * cam.zoom - cam.position,
+            )
+
     def percept(self, tilemanager):
         self.vision_detections = []
         self.pickup_detections = []
