@@ -19,6 +19,7 @@ class Pickup(Object):
         self.screen = screen
         # 0 = health->small, 1 = health->large, 2 = food->small, 3 = food->large
         self.pickup_type = pickup_type
+        
         self.color = [(200, 0, 0), (150, 0, 0), (0, 200, 0), (0, 150, 0)][pickup_type]
 
     def picked_up(self):

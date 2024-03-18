@@ -125,6 +125,7 @@ def main():
         for pu in tilemanager(current_player.pos).pickups:
             if current_player.is_colliding(pu):
                 tilemanager(current_player.pos).pickups.remove(pu)
+                current_player.remove_pickup_from_memory(tilemanager, pu)
                 if pu.pickup_type == 0 or pu.pickup_type == 1:
                     current_player.health = min(
                         (current_player.health + pu.picked_up()),
@@ -210,14 +211,14 @@ def main():
             current_player.health -= 25
 
         ###### Movement #####
-        for en in tilemanager.enemies:
-            if en.health <= 0:
-                tilemanager.enemies.remove(en)
-            en.percept(tilemanager)
-            en.get_move(
-                inputs={"nearest_player": current_player, "dt": dt},
-                entities=tilemanager.get_tiled_items(en.pos),
-            )
+        # for en in tilemanager.enemies:
+        #     if en.health <= 0:
+        #         tilemanager.enemies.remove(en)
+        #     en.percept(tilemanager)
+        #     en.get_move(
+        #         inputs={"nearest_player": current_player, "dt": dt},
+        #         entities=tilemanager.get_tiled_items(en.pos),
+        #     )
 
         if camera_target:
             followcam.position = camera_target.pos - followcam.size / 2
