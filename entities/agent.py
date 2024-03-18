@@ -194,10 +194,13 @@ class Agent(Object):
             return self.get_random_move(inputs, entities)
 
         if self.controltype == "agent":
-            return self.get_agent_move(inputs, entities)
+            self.get_agent_move(inputs, entities)
+            for entity in mortals:
+                if self.weapon.hit(entity) and not self.weapon.did_damage:
+                    entity.health -= self.weapon.damage
+            self.weapon.did_damage = True
 
     def get_agent_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
-
         if self.chasing_enemies:
             closest_enemy = None
             closest_dist = 0
@@ -209,7 +212,7 @@ class Agent(Object):
                 ):
                     closest_dist = dist_
                     closest_enemy = en
-        
+
             if self.health >= (self.max_health * 0.5) and closest_dist < 10:
                 self.state = "fight"
             elif self.health < (self.max_health * 0.5):
