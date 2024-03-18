@@ -315,7 +315,32 @@ class Agent(Object):
             self.poi = None
 
         elif self.state == "low_health":
-            pass
+            closest_health = None
+            closest_dist = 0
+
+            for pickup in entities.get_pickup():
+                if pickup.type < 2:
+                    continue
+                if (
+                    (dist_ := utils.dist(self.pos, pickup.pos)) > closest_dist
+                    or not closest_dist
+                ):
+                    closest_dist = dist_
+                    closest_health = pickup
+                    
+            self.poi = closest_health
+            
+            if dist(self.pos, self.poi) > 5:
+                s = self.speed * inputs["dt"]
+                vec = self.poi - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
+                self.sound_circle.sound_range = self.base_sound_range
+
+            if self.health >= (self.max_health * 0.5) and closest_dist < 130:
+                self.state = "fight"
+            elif self.health < (self.max_health * 0.5):
+                self.state = "flee"
 
         elif self.state == "low_food":
             closest_food = None
@@ -325,7 +350,7 @@ class Agent(Object):
                 if pickup.type < 2:
                     continue
                 if (
-                    (dist_ := utils.dist(self.pos, en.pos)) > closest_dist
+                    (dist_ := utils.dist(self.pos, pickup.pos)) > closest_dist
                     or not closest_dist
                 ):
                     closest_dist = dist_
