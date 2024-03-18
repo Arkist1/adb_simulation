@@ -295,7 +295,32 @@ class Agent(Object):
             pass
 
         elif self.state == "low_food":
-            pass
+            closest_food = None
+            closest_dist = 0
+
+            for pickup in entities.get_pickup():
+                if pickup.type < 2:
+                    continue
+                if (
+                    (dist_ := utils.dist(self.pos, en.pos)) > closest_dist
+                    or not closest_dist
+                ):
+                    closest_dist = dist_
+                    closest_food = pickup
+                    
+            self.poi = closest_food
+            
+            if dist(self.pos, self.poi) > 5:
+                s = self.speed * inputs["dt"]
+                vec = self.poi - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
+                self.sound_circle.sound_range = self.base_sound_range
+
+            if self.health >= (self.max_health * 0.5) and closest_dist < 130:
+                self.state = "fight"
+            elif self.health < (self.max_health * 0.5):
+                self.state = "flee"
 
         # self.get_random_move(inputs, entities)
 
