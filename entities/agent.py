@@ -267,7 +267,7 @@ class Agent(Object):
         # print(self.pickup_detections)
 
     def detect(self, entity, objects):
-        
+
         agent_direction = utils.angle_to(entity.pos, self.pos)
         agent_distance = utils.abs_distance_to(self.pos, entity.pos)
 
@@ -288,6 +288,7 @@ class Agent(Object):
                 or left_rotation < agent_direction
                 and right_rotation < -180
             ):
+                print(left_rotation, right_rotation, rotation, agent_direction)
                 vision_line = (self.pos, entity.pos)
                 for object in objects:
                     wall = object.get_rect()
