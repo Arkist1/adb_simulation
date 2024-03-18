@@ -84,6 +84,8 @@ class Agent(Object):
     
 
     def memory(self, tilemanager, pickups):
+        if tilemanager(self.pos) in self.visited_tiles and self.current_tile != tilemanager(self.pos):
+            self.tile_pickups = self.tile_dict[tilemanager(self.pos)]
         if self.current_tile == tilemanager(self.pos):
             for p in pickups:
                 self.tile_pickups.add(p)
