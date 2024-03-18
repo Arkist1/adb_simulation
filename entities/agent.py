@@ -204,13 +204,13 @@ class Agent(Object):
 
             for en in self.chasing_enemies:
                 if (
-                    dist_ := utils.dist_sqr(self.pos, en.pos) > closest_dist
+                    (dist_ := utils.dist(self.pos, en.pos)) > closest_dist
                     or not closest_dist
                 ):
                     closest_dist = dist_
                     closest_enemy = en
-        
-            if self.health >= (self.max_health * 0.5) and closest_dist < 10:
+
+            if self.health >= (self.max_health * 0.5) and closest_dist < 130:
                 self.state = "fight"
             elif self.health < (self.max_health * 0.5):
                 self.state = "flee"
