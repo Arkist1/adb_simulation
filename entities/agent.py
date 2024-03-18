@@ -87,6 +87,7 @@ class Agent(Object):
         self.state = "explore"
 
         self.chasing_enemies = set()
+        self.target_pickup = None
 
     def memory(self, tilemanager, pickups):
         if tilemanager(
@@ -217,15 +218,16 @@ class Agent(Object):
             else:
                 self.state = "flee"
         else:
-            if self.health <= (self.max_health * 0.5):
+            if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
                 self.state = "low_health"
-            elif self.food < (self.max_food * 0.3):
+            elif self.food < (self.max_food * 0.3) and self.has_food_pickup():
                 self.state = "low_food"
             else:
                 self.state = "explore"
 
         # made by Xander
         if self.state == "explore":
+            self.target_pickup = None
             if self.current_tile not in self.searched_tiles:
                 tx = (self.pos.x // 1000) * 1000 + 500
                 ty = (self.pos.y // 700) * 700 + 350
@@ -288,6 +290,7 @@ class Agent(Object):
                     self.poi = None
 
         elif self.state == "fight":
+            self.target_pickup = None
             self.poi = closest_enemy.pos.copy()
             self.swing(self.poi)
 
@@ -299,6 +302,7 @@ class Agent(Object):
             self.sound_circle.sound_range = self.base_sound_range
 
         elif self.state == "flee":
+            self.target_pickup = None
             # calculating best angle to flee at
             angle = pygame.Vector2([0, 0])
             for en in self.chasing_enemies:
@@ -312,66 +316,82 @@ class Agent(Object):
             self.vision_cone.rotation = angle.angle_to([0, 0])
             print(angle)
             self.move((angle * self.speed * inputs["dt"]), entities)
-            self.poi = None
 
         elif self.state == "low_health":
-            closest_health = None
-            closest_dist = 0
+            if (
+                not self.target_pickup
+                or utils.dist(self.target_pickup.pos, self.pos) < 5
+            ):
+                target_pickup = None
+                closest_dist = 0
 
-            for pickup in entities.get_pickup():
-                if pickup.type < 2:
-                    continue
-                if (
-                    (dist_ := utils.dist(self.pos, pickup.pos)) > closest_dist
-                    or not closest_dist
-                ):
-                    closest_dist = dist_
-                    closest_health = pickup
-                    
-            self.poi = closest_health
-            
+                for tile, pickups in self.tile_dict.items():
+                    for pickup in pickups:
+                        if pickup.pickup_type < 2:
+                            if (
+                                dist_ := utils.dist(self.pos, pickup.pos)
+                            ) > closest_dist or not closest_dist:
+                                closest_dist = dist_
+                                target_pickup = pickup
+
+                # self.poi = target_tile.pos + (target_tile.size / 2)
+                self.poi = target_pickup.pos.copy()
+                self.target_pickup = target_pickup
+
+            print(self.target_pickup, self.poi)
             if dist(self.pos, self.poi) > 5:
                 s = self.speed * inputs["dt"]
                 vec = self.poi - self.pos
                 vec = vec.normalize() * s
                 self.move(vec, entities)
                 self.sound_circle.sound_range = self.base_sound_range
-
-            if self.health >= (self.max_health * 0.5) and closest_dist < 130:
-                self.state = "fight"
-            elif self.health < (self.max_health * 0.5):
-                self.state = "flee"
 
         elif self.state == "low_food":
-            closest_food = None
-            closest_dist = 0
+            if (
+                not self.target_pickup
+                or utils.dist(self.target_pickup.pos, self.pos) < 5
+            ):
+                target_pickup = None
+                closest_dist = 0
 
-            for pickup in entities.get_pickup():
-                if pickup.type < 2:
-                    continue
-                if (
-                    (dist_ := utils.dist(self.pos, pickup.pos)) > closest_dist
-                    or not closest_dist
-                ):
-                    closest_dist = dist_
-                    closest_food = pickup
-                    
-            self.poi = closest_food
-            
+                for tile, pickups in self.tile_dict.items():
+                    for pickup in pickups:
+                        if pickup.pickup_type >= 2:
+                            if (
+                                dist_ := utils.dist(self.pos, pickup.pos)
+                            ) > closest_dist or not closest_dist:
+                                closest_dist = dist_
+                                target_pickup = pickup
+
+                # self.poi = target_tile.pos + (target_tile.size / 2)
+                self.poi = target_pickup.pos.copy()
+                self.target_pickup = target_pickup
+
             if dist(self.pos, self.poi) > 5:
                 s = self.speed * inputs["dt"]
                 vec = self.poi - self.pos
                 vec = vec.normalize() * s
                 self.move(vec, entities)
                 self.sound_circle.sound_range = self.base_sound_range
-
-            if self.health >= (self.max_health * 0.5) and closest_dist < 130:
-                self.state = "fight"
-            elif self.health < (self.max_health * 0.5):
-                self.state = "flee"
 
         self.chasing_enemies = set()
         # self.get_random_move(inputs, entities)
+
+    def has_health_pickup(self):
+        for _, pickups in self.tile_dict.items():
+            for pickup in pickups:
+                if pickup.pickup_type < 2:
+                    return True
+
+        return False
+
+    def has_food_pickup(self):
+        for _, pickups in self.tile_dict.items():
+            for pickup in pickups:
+                if pickup.pickup_type >= 2:
+                    return True
+
+        return False
 
     def get_random_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         s = self.speed * inputs["dt"]
@@ -550,4 +570,5 @@ class Agent(Object):
             "Hunger rate": self.hunger_rate,
             "Visions": self.vision_detections,
             "Chasers": self.chasing_enemies,
+            "pickups": self.pickup_detections,
         }
