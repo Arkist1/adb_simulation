@@ -20,7 +20,6 @@ class Globals:
     TILE_SIZE = pygame.Vector2(TILE_WIDTH, TILE_HEIGHT)
 
     SQR2 = 2 ** (1 / 2)
-    FPS = 60
     root = os.getcwd()
 
     FREECAM_SPEED = 1000
@@ -28,6 +27,9 @@ class Globals:
     DRAW = True
 
     CONTROL_TYPE = "agent"
+
+    SIM_SPEED = 4
+    FPS = 60 * SIM_SPEED
 
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:

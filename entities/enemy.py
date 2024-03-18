@@ -76,9 +76,9 @@ class Enemy(Agent):
             self.move_timer -= inputs["dt"]
 
         elif self.state == "chasing":
-            delta = self.get_move_delta(self.poi) * inputs["dt"]
+            delta = self.get_move_delta(self.poi) * inputs["dt"] * Globals.SIM_SPEED
 
-            self.attack_cd -= inputs["dt"]
+            self.attack_cd -= inputs["dt"] * Globals.SIM_SPEED
             # print("DELTA", delta)
 
             self.move(delta, entities)
@@ -88,20 +88,21 @@ class Enemy(Agent):
         #     pass
 
         elif self.state in ["wandering", "alert"]:
-            self.blocked_timer -= inputs["dt"]
+            self.blocked_timer -= inputs["dt"] * Globals.SIM_SPEED
 
             sdelta = utils.abs_distance_to(self.pos, self.poi)
             # print("max delta", sdelta, self.wanderspeed)
 
             if (
-                sdelta < self.speed * inputs["dt"] * 3 or self.blocked_timer <= 0
+                sdelta < self.speed * inputs["dt"] * 2 * Globals.SIM_SPEED
+                or self.blocked_timer <= 0
             ):  # detect if poi position is within reach
                 self.moving = False
                 self.move_timer = random.random() * 4 + 2
 
             if not sdelta == 0:
                 # calculate delta
-                delta = self.get_move_delta(self.poi) * inputs["dt"]
+                delta = self.get_move_delta(self.poi) * inputs["dt"] * Globals.SIM_SPEED
 
                 self.move(delta, entities)
                 return
@@ -110,7 +111,11 @@ class Enemy(Agent):
 
     def get_move_delta(self, point):
         angle = utils.angle_to(point, self.pos)
-        delta = utils.angle_to_direction(math.radians(angle)) * self.speed
+        delta = (
+            utils.angle_to_direction(math.radians(angle))
+            * self.speed
+            * Globals.SIM_SPEED
+        )
 
         return delta
 
@@ -188,7 +193,7 @@ class Enemy(Agent):
             "Type": type(self).__name__,
             "Position": self.pos,
             "Rotation": self.vision_cone.rotation,
-            "Speed": self.speed,
+            "Speed": self.speed * Globals.SIM_SPEED,
             "POI": self.poi,
             "Blocked_timer": self.blocked_timer,
             "Move_timer": self.move_timer,

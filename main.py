@@ -27,7 +27,6 @@ def main():
         round(len(tilemanager.tiles[0]) / 2) - 1
     ]
     middle_pos = middle_tile.pos + middle_tile.size / 2
-    print(middle_pos)
     tilemanager.players.append(Agent(screen=screen, start_pos=middle_pos.copy()))
 
     # Colors

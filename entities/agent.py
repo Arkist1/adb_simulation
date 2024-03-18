@@ -120,7 +120,7 @@ class Agent(Object):
         # generic move code
         for key, value in self.cd.items():
             if self.cd[key] >= 0:
-                self.cd[key] = max(0, value - inputs["dt_mili"])
+                self.cd[key] = max(0, value - inputs["dt_mili"] * Globals.SIM_SPEED)
 
         ### sprint and crouch ###
         self.is_crouching = False
@@ -164,7 +164,7 @@ class Agent(Object):
                 self.weapon.did_damage = True
 
         if type(self.weapon) == Sword and self.weapon.duration_cd >= 0:
-            self.weapon.duration_cd -= inputs["dt_mili"]
+            self.weapon.duration_cd -= inputs["dt_mili"] * Globals.SIM_SPEED
         else:
             self.weapon.size = 0
             self.weapon.did_damage = False
@@ -186,7 +186,7 @@ class Agent(Object):
                 self.health -= 0.5
 
         if self.weapon and self.weapon.cd > 0:
-            self.weapon.cd -= inputs["dt_mili"]
+            self.weapon.cd -= inputs["dt_mili"] * Globals.SIM_SPEED
 
         if self.controltype == "human":
             return self.get_human_move(inputs, entities)
@@ -234,7 +234,7 @@ class Agent(Object):
                 center = pygame.Vector2(tx, ty)
                 self.vision_cone.rotation = utils.angle_to(center, self.pos)
                 if dist(self.pos, center) > 5:
-                    s = self.speed * inputs["dt"]
+                    s = self.speed * inputs["dt"] * Globals.SIM_SPEED
                     vec = center - self.pos
                     vec = vec.normalize() * s
                     self.move(vec, entities)
@@ -243,7 +243,7 @@ class Agent(Object):
                 else:
                     self.poi = None
                     if self.search_angle < 180:
-                        self.search_angle += 3
+                        self.search_angle += 3 * Globals.SIM_SPEED
 
                     else:
                         self.search_angle = -180
@@ -280,7 +280,7 @@ class Agent(Object):
 
                 if dist(self.pos, self.poi) > 5:
 
-                    s = self.speed * inputs["dt"]
+                    s = self.speed * inputs["dt"] * Globals.SIM_SPEED
                     vec = self.poi - self.pos
                     vec = vec.normalize() * s
                     self.move(vec, entities)
@@ -294,7 +294,7 @@ class Agent(Object):
             self.poi = closest_enemy.pos.copy()
             self.swing(self.poi)
 
-            s = self.speed * inputs["dt"]
+            s = self.speed * inputs["dt"] * Globals.SIM_SPEED
             vec = self.poi - self.pos
             vec = vec.normalize() * s
             self.move(vec, entities)
@@ -314,8 +314,7 @@ class Agent(Object):
                 random.random() / 5, random.random() / 5
             )
             self.vision_cone.rotation = angle.angle_to([0, 0])
-            print(angle)
-            self.move((angle * self.speed * inputs["dt"]), entities)
+            self.move((angle * self.speed * inputs["dt"] * Globals.SIM_SPEED), entities)
 
         elif self.state == "low_health":
             if (
@@ -338,9 +337,9 @@ class Agent(Object):
                 self.poi = target_pickup.pos.copy()
                 self.target_pickup = target_pickup
 
-            print(self.target_pickup, self.poi)
+            # print(self.target_pickup, self.poi)
             if dist(self.pos, self.poi) > 5:
-                s = self.speed * inputs["dt"]
+                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
                 vec = self.poi - self.pos
                 vec = vec.normalize() * s
                 self.move(vec, entities)
@@ -368,7 +367,7 @@ class Agent(Object):
                 self.target_pickup = target_pickup
 
             if dist(self.pos, self.poi) > 5:
-                s = self.speed * inputs["dt"]
+                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
                 vec = self.poi - self.pos
                 vec = vec.normalize() * s
                 self.move(vec, entities)
@@ -394,7 +393,7 @@ class Agent(Object):
         return False
 
     def get_random_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
-        s = self.speed * inputs["dt"]
+        s = self.speed * inputs["dt"] * Globals.SIM_SPEED
         vec = pygame.Vector2(
             random.randint(-100, 100) / 100 * s, random.randint(-100, 100) / 100 * s
         )
@@ -413,7 +412,7 @@ class Agent(Object):
         Returns:
             pygame.Vector2: The movement vector calculated based on the user inputs.
         """
-        s = self.speed * inputs["dt"]
+        s = self.speed * inputs["dt"] * Globals.SIM_SPEED
         vec = pygame.Vector2(0, 0)
 
         if inputs["up"]:
@@ -560,7 +559,7 @@ class Agent(Object):
             "Type": type(self).__name__,
             "Position": self.pos,
             "Rotation": self.vision_cone.rotation,
-            "Speed": self.speed,
+            "Speed": self.speed * Globals.SIM_SPEED,
             "Crouching": self.is_crouching,
             "Running": self.is_running,
             "Food": self.food,
@@ -570,5 +569,8 @@ class Agent(Object):
             "Hunger rate": self.hunger_rate,
             "Visions": self.vision_detections,
             "Chasers": self.chasing_enemies,
-            "pickups": self.pickup_detections,
+            "Pickups": self.pickup_detections,
+            "State": self.state,
+            "Has_hp_pickup": self.has_health_pickup(),
+            "Has_food_pickup": self.has_food_pickup(),
         }
