@@ -199,7 +199,7 @@ class Agent(Object):
             tx = (self.pos.x // 1000) * 1000 + 500
             ty = (self.pos.y // 700) * 700 + 350
             center = pygame.Vector2(tx, ty)
-
+            self.vision_cone.rotation = utils.angle_to(center, self.pos)
             if dist(self.pos, center) > 5:
                 s = self.speed * inputs["dt"]
                 vec = center - self.pos
@@ -217,7 +217,6 @@ class Agent(Object):
                     self.searched_tiles.add(self.current_tile)
                 self.sound_circle.sound_range = 0
                 self.vision_cone.rotation = self.search_angle
-
         else:
             if not self.poi:
                 tx = (self.pos.x // 1000) * 1000 + 500
@@ -244,6 +243,7 @@ class Agent(Object):
 
                 center = pygame.Vector2(tx, ty)
                 self.poi = center
+                self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
             if dist(self.pos, self.poi) > 5:
 
