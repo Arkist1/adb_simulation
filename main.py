@@ -195,7 +195,7 @@ def main():
             tilemanager.pickups.append(
                 Pickup(
                     pickup_type=random.randint(0, 3),
-                    start_pos=[random.randint(200, 600), random.randint(200, 600)],
+                    start_pos=inputs["mouse_pos"],
                     screen=screen,
                 )
             )
