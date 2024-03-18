@@ -120,6 +120,7 @@ def main():
         for pu in tilemanager(current_player.pos).pickups:
             if current_player.is_colliding(pu):
                 tilemanager(current_player.pos).pickups.remove(pu)
+                current_player.remove_pickup_from_memory(tilemanager, pu)
                 if pu.pickup_type == 0 or pu.pickup_type == 1:
                     current_player.health = min(
                         (current_player.health + pu.picked_up()),

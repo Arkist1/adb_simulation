@@ -94,6 +94,10 @@ class Agent(Object):
             self.tile_pickups = set()
         self.current_tile = tilemanager(self.pos)
         self.visited_tiles.add(self.current_tile)
+
+    def remove_pickup_from_memory(self, tilemanager, pu):
+        self.tile_pickups = self.tile_dict[tilemanager(self.pos)]
+        self.tile_pickups = set(p for p in self.tile_pickups if p != pu)
         
     def get_move(
         self, inputs: dict[str, bool], entities, bullets, mortals
