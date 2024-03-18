@@ -145,6 +145,8 @@ class Enemy(Agent):
             # print(detections[0].pos)
             self.state = "chasing"
             self.poi = visions[0].pos.copy()
+            self.last_agent = visions[0]
+            self.last_agent.chasing_enemies.add(self)
             self.moving = True
 
         elif sounds:
@@ -158,6 +160,7 @@ class Enemy(Agent):
 
         else:
             if self.state == "chasing":
+                self.last_agent.chasing_enemies.remove(self)
                 self.state = "alert"
 
             elif (

@@ -85,6 +85,8 @@ class Agent(Object):
         self.tile_pickups = set()
         self.current_tile = None
 
+        self.chasing_enemies = set()
+
     def memory(self, tilemanager, pickups):
         if tilemanager(
             self.pos
@@ -434,4 +436,5 @@ class Agent(Object):
             "Pushable": self.is_pushable,
             "Hunger rate": self.hunger_rate,
             "Visions": self.vision_detections,
+            "Chasers": self.chasing_enemies,
         }

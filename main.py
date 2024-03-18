@@ -28,7 +28,7 @@ def main():
     ]
     middle_pos = middle_tile.pos + middle_tile.size / 2
     print(middle_pos)
-    tilemanager.players.append(Agent(screen=screen, start_pos=middle_pos))
+    tilemanager.players.append(Agent(screen=screen, start_pos=middle_pos.copy()))
 
     # Colors
     stamina_yellow = (255, 255, 10)
@@ -109,7 +109,9 @@ def main():
         for player in tilemanager.players:
             if player.health <= 0:
                 tilemanager.players.remove(player)
-                tilemanager.players.append(Agent(screen=screen, start_pos=middle_pos))
+                tilemanager.players.append(
+                    Agent(screen=screen, start_pos=middle_pos.copy())
+                )
                 continue
             player.percept(tilemanager)
             player.get_move(
@@ -211,14 +213,14 @@ def main():
             current_player.health -= 25
 
         ###### Movement #####
-        # for en in tilemanager.enemies:
-        #     if en.health <= 0:
-        #         tilemanager.enemies.remove(en)
-        #     en.percept(tilemanager)
-        #     en.get_move(
-        #         inputs={"nearest_player": current_player, "dt": dt},
-        #         entities=tilemanager.get_tiled_items(en.pos),
-        #     )
+        for en in tilemanager.enemies:
+            if en.health <= 0:
+                tilemanager.enemies.remove(en)
+            en.percept(tilemanager)
+            en.get_move(
+                inputs={"nearest_player": current_player, "dt": dt},
+                entities=tilemanager.get_tiled_items(en.pos),
+            )
 
         if camera_target:
             followcam.position = camera_target.pos - followcam.size / 2
