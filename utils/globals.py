@@ -11,8 +11,8 @@ class Globals:
     SCREEN_HEIGHT = 700
     SCREEN_SIZE = pygame.Vector2(SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    MAP_WIDTH = 10_000 * 1.5
-    MAP_HEIGHT = 7000 * 1.5
+    MAP_WIDTH = 10_000
+    MAP_HEIGHT = 7000
     MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
 
     TILE_WIDTH = 1000

@@ -106,7 +106,7 @@ def main():
                 tilemanager.players.remove(player)
                 tilemanager.players.append(Agent(screen=screen))
                 continue
-            player.percept(entities)
+            player.percept(tilemanager)
             player.get_move(
                 inputs,
                 tilemanager.get_tiled_items(player.pos),
@@ -204,15 +204,11 @@ def main():
             cd["cam_switch"] = 10
             current_player.health -= 25
 
-        ###### Perceptions #####
-        for en in tilemanager.enemies:
-            en.percept(tilemanager.players)
-
         ###### Movement #####
         for en in tilemanager.enemies:
             if en.health <= 0:
                 tilemanager.enemies.remove(en)
-            en.percept(tilemanager.players)
+            en.percept(tilemanager)
             en.get_move(
                 inputs={"nearest_player": current_player, "dt": dt},
                 entities=tilemanager.get_tiled_items(en.pos),

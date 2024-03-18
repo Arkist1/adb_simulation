@@ -1,1 +1,0 @@
-* cam.zoom - cam.position

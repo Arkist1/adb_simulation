@@ -251,10 +251,10 @@ class Agent(Object):
                 en.pos * cam.zoom - cam.position,
             )
 
-    def percept(self, entities):
+    def percept(self, tilemanager):
         self.vision_detections = []
-        for entity in entities.get_mortal():
-            if self.detect(entity, entities.walls):
+        for entity in tilemanager.get_mortal():
+            if self.detect(entity, tilemanager(self.pos).walls):
                 self.vision_detections.append(entity)
 
     def detect(self, entity, objects):

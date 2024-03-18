@@ -127,12 +127,15 @@ class Enemy(Agent):
         visions = []
         sounds = []
         for entity in entities.players:
-            if self.detect(entity, entities.walls):
+            if self.detect(entity, entities(self.pos).walls):
                 visions.append(entity)
+
             if self.hear(entity):
                 sounds.append(entity)
                 # print("sound")
-            if (entity.radius + self.radius + 10) > utils.dist(self.pos, entity.pos) and self.attack_cd <= 0:
+            if (entity.radius + self.radius + 10) > utils.dist(
+                self.pos, entity.pos
+            ) and self.attack_cd <= 0:
                 entity.health -= 25
                 self.attack_cd = 1
 
@@ -174,7 +177,6 @@ class Enemy(Agent):
 
         self.vision_detections = visions
         self.sound_detections = sounds
-       
 
     def get_debug_info(self):
         return {
