@@ -48,9 +48,9 @@ class TileManager(EntityHolder):
     @property
     def allwalls(self):
         res = []
-        for yindex in range(0, len(self.tiles[0]) - 1):
-            for xindex in range(0, len(self.tiles) - 1):
-                for wall in self.tiles[xindex][yindex].walls:
+        for row in self.tiles:
+            for tile in row:
+                for wall in tile.walls:
                     res.append(wall)
 
         return res
@@ -58,19 +58,20 @@ class TileManager(EntityHolder):
     @property
     def allpickups(self):
         res = []
-        for yindex in range(0, len(self.tiles[0]) - 1):
-            for xindex in range(0, len(self.tiles) - 1):
-                for pickup in self.tiles[xindex][yindex].pickups:
+        for row in self.tiles:
+            for tile in row:
+                for pickup in tile.pickups:
                     res.append(pickup)
 
         return res
 
     def generate_terrain(self, templates, screen):
-        for yindex in range(0, len(self.tiles[0]) - 1):
-            for xindex in range(0, len(self.tiles) - 1):
+        for yindex in range(0, len(self.tiles[0])):
+            for xindex in range(0, len(self.tiles)):
                 if random.random() < templates["house_chance"]:
                     h = House(
-                        self.tiles[xindex][yindex].pos + pygame.Vector2(500, 500),
+                        self.tiles[xindex][yindex].pos
+                        + pygame.Vector2(self.tile_width / 2, self.tile_height / 2),
                         template=templates["simple_house"],
                         screen=screen,
                     )

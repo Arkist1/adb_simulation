@@ -29,7 +29,7 @@ class Enemy(Agent):
         self.sound_circle = None
         self.poi = self.pos  # Point Of Interest (POI)
 
-        self.speed = self.speed
+        self.speed = self.speed / 2
         self.alertspeed = self.speed / 3
         self.wanderspeed = self.speed / 4
 
@@ -127,6 +127,7 @@ class Enemy(Agent):
         visions = []
         sounds = []
         for entity in entities.players:
+            # print(self.pos)
             if self.detect(entity, entities(self.pos).walls):
                 visions.append(entity)
 

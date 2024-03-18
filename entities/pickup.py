@@ -12,7 +12,9 @@ class Pickup(Object):
     ) -> None:
         self.size = [15, 25, 15, 25][pickup_type]
         super().__init__(
-            pos=pygame.Vector2(start_pos[0], start_pos[1]), radius=self.size, enabled=False,
+            pos=pygame.Vector2(start_pos[0], start_pos[1]),
+            radius=self.size,
+            enabled=False,
         )
         self.screen = screen
         # 0 = health->small, 1 = health->large, 2 = food->small, 3 = food->large

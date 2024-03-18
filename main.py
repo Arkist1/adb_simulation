@@ -178,7 +178,7 @@ def main():
         if keys[pygame.K_BACKSPACE] and cd["draw_switch"] <= 0:
             cd["draw_switch"] = 500
             Globals.DRAW = False if Globals.DRAW else True
-            print(Globals.DRAW)
+            print("Drawing state:", Globals.DRAW)
 
         ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - cd["spawn"] > 0:

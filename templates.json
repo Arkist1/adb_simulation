@@ -1,6 +1,6 @@
 {
     "spawn_chances": [0.6, 0.3, 0.1],
-    "house_chance": 0.8,
+    "house_chance": 0.6,
     "simple_house":{"walls":[{"pos": [-150, 0], "width": 30, "height": 300, "door_chance": 0.3, "door_width": 100},
                              {"pos": [0, -150], "width": 300, "height": 30, "door_chance": 0.3, "door_width": 100},
                              {"pos": [150, 0], "width": 30, "height": 300, "door_chance": 0.3, "door_width": 100},
