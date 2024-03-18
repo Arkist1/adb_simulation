@@ -27,7 +27,7 @@ class Globals:
     DEBUG = True
     DRAW = True
 
-    CONTROL_TYPE = "human"
+    CONTROL_TYPE = "agent"
 
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:

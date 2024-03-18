@@ -2,11 +2,12 @@ from .gun import Gun
 from .sword import Sword
 from .vision_cone import VisionCone
 from .sound_circle import SoundCircle
-from utils import Globals, Object
+from utils import Globals, Object, Hitbox, dist
 import utils
 from math import sqrt, cos, radians
 import numpy
 import pygame
+import random
 
 
 class Agent(Object):
@@ -78,6 +79,8 @@ class Agent(Object):
         self.pickup_detections = []
         self.poi = None
         self.visited_tiles = set()
+        self.searched_tiles = set()
+        self.search_angle = -180
         self.tile_dict = {}
         self.tile_pickups = set()
         self.current_tile = None
@@ -186,7 +189,76 @@ class Agent(Object):
             return self.get_human_move(inputs, entities)
 
         if self.controltype == "random":
-            return self.get_random_move()
+            return self.get_random_move(inputs, entities)
+        
+        if self.controltype == "agent":
+            return self.get_agent_move(inputs, entities)
+        
+    def get_agent_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
+        
+        if self.current_tile not in self.searched_tiles:
+            tx = (self.pos.x // 1000) * 1000 + 500
+            ty = (self.pos.y // 700) * 700 + 350
+            center = pygame.Vector2(tx, ty)
+            if dist(self.pos, center) > 5:
+                s = self.speed * inputs["dt"]
+                vec = center - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
+                self.sound_circle.sound_range = self.base_sound_range
+            else:
+                self.poi = None
+                if self.search_angle < 180:
+                    self.search_angle += 3
+                else:
+                    self.search_angle = -180
+                    self.searched_tiles.add(self.current_tile)
+                self.sound_circle.sound_range = 0
+            self.vision_cone.rotation = self.search_angle
+        else:
+            if not self.poi:
+                tx = (self.pos.x // 1000) * 1000 + 500
+                ty = (self.pos.y // 700) * 700 + 350
+                
+                r = random.randint(0, 3)
+                if r == 0:
+                    tx += 1000
+                if r == 1:
+                    tx -= 1000
+                if r == 2:
+                    ty += 700
+                if r == 3:
+                    ty -= 700
+                    
+                if tx <= 0.0:
+                    tx += 1000
+                if tx >= Globals.MAP_WIDTH:
+                    tx -= 1000
+                if ty <= 0.0:
+                    ty += 700
+                if ty >= Globals.MAP_HEIGHT:
+                    ty -= 700
+                    
+                center = pygame.Vector2(tx, ty)
+                self.poi = center
+                
+            if dist(self.pos, self.poi) > 5:
+                
+                s = self.speed * inputs["dt"]
+                vec = self.poi - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
+                self.sound_circle.sound_range = self.base_sound_range
+            else:
+                self.poi = None
+        
+        #self.get_random_move(inputs, entities)
+    
+    def get_random_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
+        s = self.speed * inputs["dt"]
+        vec = pygame.Vector2(random.randint(-100,100)/100*s, random.randint(-100,100)/100*s)
+        self.move(vec, entities)
+        self.vision_cone.rotation += random.randint(-5, 5)
 
     def get_human_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         """
