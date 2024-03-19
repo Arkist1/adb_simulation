@@ -52,6 +52,7 @@ def main():
     mapcam = Camera(pygame.Vector2([0, 0]), Globals.MAP_SIZE)
     freecam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
     simcam = Camera(pygame.Vector2([0, 0]), Globals.MAP_SIZE)
+    memecam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
 
     cams = {
         "playercam": playercam,
@@ -59,6 +60,7 @@ def main():
         "followcam": followcam,
         "freecam": freecam,
         "simcam": simcam,
+        "memecam": memecam,
     }
     cameracontroller = Camera_controller(cams=cams, window=Window.from_display_module())
     cameracontroller.curr_cam = simcam
@@ -127,7 +129,7 @@ def main():
                     and camera_target not in tilemanager.players
                 ):
                     camera_target = tilemanager.players[0]
-                    
+
                 running = False
                 Globals.RESTART = True
                 continue
@@ -140,6 +142,7 @@ def main():
             )
 
             playercam.position = player.pos - playercam.size / 2
+            memecam.position = player.pos - memecam.size / 2
 
         ### pickup collision detection ###
         for pu in tilemanager(current_player.pos).pickups:
@@ -176,6 +179,8 @@ def main():
                 cameracontroller.change_cam("freecam")
             elif keys[pygame.K_5]:
                 cameracontroller.change_cam("simcam")
+            elif keys[pygame.K_6]:
+                cameracontroller.change_cam("memecam")
             else:
                 cd["cam_switch"] = 0
 
@@ -280,11 +285,11 @@ def main():
 
         # FPS
         cam = cameracontroller.curr_cam
-        cols = [(230,230,230), (200,200,200)]
-        cols_searched = [(210,250,210), (180,220,180)]
-        cols_visited = [(230,210,210), (200,180,180)]
+        cols = [(230, 230, 230), (200, 200, 200)]
+        cols_searched = [(210, 250, 210), (180, 220, 180)]
+        cols_visited = [(230, 210, 210), (200, 180, 180)]
         col_idx = 0
-        
+
         for tile_row in tilemanager.tiles:
             for tile in tile_row:
                 if tile in tilemanager.players[0].searched_tiles:
@@ -294,7 +299,7 @@ def main():
                 else:
                     tile.draw(screen, cam, cols[col_idx])
                 col_idx = 1 - col_idx
-        
+
         fps_text = FONT.render(f"FPS: {int(fps)}", False, (0, 0, 0))
         screen.blit(fps_text, fps_position)
 
@@ -328,8 +333,6 @@ def main():
 
         for wall in tilemanager.allwalls:
             wall.draw(cam=cam)
-            
-
 
         ######## Map boundary drawing ########
         boundry_rgb = (100, 0, 255)
@@ -396,6 +399,21 @@ def main():
                     en.pos * cam.zoom - cam.position,
                 )
 
+        if cam == memecam:
+            IMPACT = pygame.font.SysFont("impact", 100)
+            fps_text = IMPACT.render("GET REAL", False, (0, 0, 0))
+            screen.blit(
+                fps_text, (Globals.SCREEN_WIDTH / 2 - fps_text.get_rect().width / 2, 0)
+            )
+
+            fps_text = IMPACT.render("BOTTOM TEXT", False, (0, 0, 0))
+            screen.blit(
+                fps_text,
+                (
+                    (Globals.SCREEN_WIDTH / 2 - fps_text.get_rect().width / 2),
+                    Globals.SCREEN_HEIGHT - fps_text.get_rect().height,
+                ),
+            )
         # Flip (draw) the display
         pygame.display.flip()
     #
