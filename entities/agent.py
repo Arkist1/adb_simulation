@@ -241,7 +241,7 @@ class Agent(Object):
                 ty = (self.pos.y // 700) * 700 + 350
                 center = pygame.Vector2(tx, ty)
                 self.vision_cone.rotation = utils.angle_to(center, self.pos)
-                if dist(self.pos, center) > 5:
+                if dist(self.pos, center) > (5 * Globals.SIM_SPEED):
                     s = self.speed * inputs["dt"] * Globals.SIM_SPEED
                     vec = center - self.pos
                     vec = vec.normalize() * s
@@ -303,7 +303,7 @@ class Agent(Object):
 
                     self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
-                if dist(self.pos, self.poi) > 5:
+                if dist(self.pos, self.poi) > (5 * Globals.SIM_SPEED):
 
                     s = self.speed * inputs["dt"] * Globals.SIM_SPEED
                     vec = self.poi - self.pos
