@@ -9,3 +9,4 @@ class Tile(EntityHolder):
         self.width = width
         self.height = height
         self.size = pygame.Vector2(self.width, self.height)
+        self.rect = pygame.Rect(self.pos, self.size)

@@ -50,12 +50,14 @@ def main():
     followcam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
     mapcam = Camera(pygame.Vector2([0, 0]), Globals.MAP_SIZE)
     freecam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
+    simcam = Camera(pygame.Vector2([0, 0]), Globals.MAP_SIZE)
 
     cams = {
         "playercam": playercam,
         "mapcam": mapcam,
         "followcam": followcam,
         "freecam": freecam,
+        "simcam": simcam,
     }
     cameracontroller = Camera_controller(cams=cams, window=Window.from_display_module())
     # cameracontroller.curr_cam = mapcam
@@ -162,6 +164,8 @@ def main():
                 cameracontroller.change_cam("followcam")
             elif keys[pygame.K_4]:
                 cameracontroller.change_cam("freecam")
+            elif keys[pygame.K_5]:
+                cameracontroller.change_cam("simcam")
             else:
                 cd["cam_switch"] = 0
 
@@ -317,7 +321,7 @@ def main():
         pygame.draw.line(screen, boundry_rgb, bottom, rightbottom)
 
         ####### Status bars ######
-        if cam == playercam:
+        if cam in [playercam, simcam]:
             stamina_bar2 = pygame.Rect(20, 600, 258, 23)
             pygame.draw.rect(screen, bar_grey, stamina_bar2)
             stamina_bar = pygame.Rect(
@@ -346,7 +350,7 @@ def main():
             pygame.draw.rect(screen, health_red, health_bar)
 
         # debug mode for cam
-        if Globals.DEBUG and cam == followcam and camera_target:
+        if Globals.DEBUG and cam in [followcam, simcam] and camera_target:
             debug_info = camera_target.get_debug_info()
 
             txt = FONT.render("DEBUG: ", False, (0, 0, 0))

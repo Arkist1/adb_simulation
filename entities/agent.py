@@ -216,10 +216,13 @@ class Agent(Object):
                     closest_dist = dist_
                     closest_enemy = en
 
-            if self.health >= (self.max_health * 0.5) and closest_dist < 130:
+            if self.health >= (self.max_health * 0.5) and (
+                closest_dist < 130 or self.food <= 30
+            ):
                 self.state = "fight"
             else:
                 self.state = "flee"
+
         else:
             if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
                 self.state = "low_health"
@@ -322,6 +325,7 @@ class Agent(Object):
             )
             self.vision_cone.rotation = angle.angle_to([0, 0])
             self.move((angle * self.speed * inputs["dt"] * Globals.SIM_SPEED), entities)
+            self.sound_circle.sound_range = self.base_sound_range
 
         elif self.state == "low_health":
             if (
