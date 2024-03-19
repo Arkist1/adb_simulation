@@ -24,9 +24,9 @@ class Agent(Object):
         walkspeed: int = 300,
         sprintspeed: int = 450,
         base_sound_range: int = 200,
-        stamina: int = 100,
-        food: int = 100,
-        health: int = 100,
+        stamina: int = 250,
+        food: int = 250,
+        health: int = 250,
     ) -> None:
         super().__init__(pos=start_pos, radius=size)
         if control_type:
@@ -219,7 +219,7 @@ class Agent(Object):
                     closest_enemy = en
 
             if self.health >= (self.max_health * 0.5) and (
-                closest_dist < 130 or self.food <= 30
+                closest_dist < 130 or self.food <= (self.max_food * 0.3)
             ):
                 self.state = "fight"
             else:
