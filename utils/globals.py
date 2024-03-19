@@ -11,8 +11,8 @@ class Globals:
     SCREEN_HEIGHT = 700
     SCREEN_SIZE = pygame.Vector2(SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    MAP_WIDTH = SCREEN_WIDTH * 9
-    MAP_HEIGHT = SCREEN_HEIGHT * 9
+    MAP_WIDTH = SCREEN_WIDTH * 5
+    MAP_HEIGHT = SCREEN_HEIGHT * 5
     MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
 
     TILE_WIDTH = 1000
@@ -28,10 +28,11 @@ class Globals:
 
     CONTROL_TYPE = "agent"
 
-    SIM_SPEED = 25
+    SIM_SPEED = 10
     FPS = 60 * SIM_SPEED
 
     RESTART = True
+    PAUSE = False
 
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:

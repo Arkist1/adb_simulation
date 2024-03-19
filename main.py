@@ -109,6 +109,9 @@ def main():
             Globals.RESTART = True
             break
 
+        # if keys[pygame.K_p]:
+        #     Globals.PAUSE =
+
         ### cooldowns ###
         for key, item in cd.items():
             if cd[key] >= 0:
