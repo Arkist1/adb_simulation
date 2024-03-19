@@ -45,6 +45,7 @@ def main():
         "zoom": 0,
         "draw_switch": 0,
         "fps": 0,
+        "pause_switch": 0,
     }
 
     playercam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
@@ -109,8 +110,15 @@ def main():
             Globals.RESTART = True
             break
 
-        # if keys[pygame.K_p]:
-        #     Globals.PAUSE =
+        cd["pause_switch"] = max(0, cd["pause_switch"] - inputs["dt_mili"])
+
+        if keys[pygame.K_p] and cd["pause_switch"] == 0:
+            Globals.PAUSE = not Globals.PAUSE
+            print("Pause_state:", Globals.PAUSE)
+            cd["pause_switch"] = 500
+
+        if Globals.PAUSE:
+            continue
 
         ### cooldowns ###
         for key, item in cd.items():
