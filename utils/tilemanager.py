@@ -32,14 +32,14 @@ class TileManager(EntityHolder):
         for xindex in range(0, len(self.tiles)):
             if (
                 self.tiles[xindex][0].pos.x
-                < pos.x
-                < self.tiles[xindex][0].pos.x + self.tile_width
+                <= pos.x
+                <= self.tiles[xindex][0].pos.x + self.tile_width
             ):
                 for yindex in range(0, len(self.tiles[0])):
                     if (
                         self.tiles[xindex][yindex].pos.y
-                        < pos.y
-                        < self.tiles[xindex][yindex].pos.y + self.tile_height
+                        <= pos.y
+                        <= self.tiles[xindex][yindex].pos.y + self.tile_height
                     ):
                         return self.tiles[xindex][yindex]
 
