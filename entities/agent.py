@@ -216,10 +216,13 @@ class Agent(Object):
                     closest_dist = dist_
                     closest_enemy = en
 
-            if self.health >= (self.max_health * 0.5) and closest_dist < 130:
+            if self.health >= (self.max_health * 0.5) and (
+                closest_dist < 130 or self.food <= 30
+            ):
                 self.state = "fight"
             else:
                 self.state = "flee"
+
         else:
             if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
                 self.state = "low_health"
