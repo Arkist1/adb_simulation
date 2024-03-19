@@ -262,8 +262,11 @@ class Agent(Object):
                     ty = (self.pos.y // 700) * 700 + 350
                     directions = [0, 1, 2, 3]
                     random.shuffle(directions)
-                    visit = 0
+                    visit = 1
                     for r in directions:
+                        if visit == 0:
+                            print("break")
+                            break
                         direction = [[1000, 0], [-1000, 0], [0, 700], [0, -700]][r]
                         cent_point = [tx + direction[0], ty + direction[1]]
 
@@ -277,20 +280,17 @@ class Agent(Object):
                             cent_point[1] -= 700
 
                         center = pygame.Vector2(cent_point[0], cent_point[1])
+                        self.poi = center
+
                         for tile in self.searched_tiles:
-                            
-                            if tile:
-                                if tile.rect.collidepoint(center):
-                                    print(visit)
-                                    visit = 1
-                                else:
-                                    print(visit)
-                                    visit = 0
-                                    break
-                        if visit == 0:
-                            print("break")
-                            break
-                    self.poi = center
+                            if tile.rect.collidepoint(self.poi):
+                                print(visit)
+                                visit = 1
+                            else:
+                                print(visit)
+                                visit = 0
+                                break
+                        
                     self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
                 if dist(self.pos, self.poi) > 5:
