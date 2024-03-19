@@ -55,7 +55,7 @@ class House:
                     )[0]
                 )
 
-                print(pickup["pos"])
+                # print(pickup["pos"])
                 self.generate_pickup(pickup["pos"], pickup_type)
 
         for index, enemy in enumerate(self.template["enemies"]):
