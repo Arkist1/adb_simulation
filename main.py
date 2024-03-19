@@ -58,6 +58,7 @@ def main():
         "freecam": freecam,
     }
     cameracontroller = Camera_controller(cams=cams, window=Window.from_display_module())
+    # cameracontroller.curr_cam = mapcam
 
     camera_target = tilemanager.players[0]
     vectors = []
@@ -112,7 +113,10 @@ def main():
                 tilemanager.players.append(
                     Agent(screen=screen, start_pos=middle_pos.copy())
                 )
-                if not camera_target:
+                if (
+                    isinstance(camera_target, Agent)
+                    and camera_target not in tilemanager.players
+                ):
                     camera_target = tilemanager.players[0]
                 continue
             player.percept(tilemanager)
