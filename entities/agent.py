@@ -24,9 +24,9 @@ class Agent(Object):
         walkspeed: int = 300,
         sprintspeed: int = 450,
         base_sound_range: int = 200,
-        stamina: int = 100,
-        food: int = 100,
-        health: int = 100,
+        stamina: int = 250,
+        food: int = 250,
+        health: int = 250,
     ) -> None:
         super().__init__(pos=start_pos, radius=size)
         if control_type:
@@ -219,7 +219,7 @@ class Agent(Object):
                     closest_enemy = en
 
             if self.health >= (self.max_health * 0.5) and (
-                closest_dist < 130 or self.food <= 30
+                closest_dist < 130 or self.food <= (self.max_food * 0.3)
             ):
                 self.state = "fight"
             else:
@@ -596,9 +596,9 @@ class Agent(Object):
             "Stamina": self.stamina,
             "Pushable": self.is_pushable,
             "Hunger rate": self.hunger_rate,
-            "Visions": self.vision_detections,
-            "Chasers": self.chasing_enemies,
-            "Pickups": self.pickup_detections,
+            "Visions_amt": len(self.vision_detections),
+            "Chasers_amt": len(self.chasing_enemies),
+            "Pickups_amt": len(self.pickup_detections),
             "State": self.state,
             "Has_hp_pickup": self.has_health_pickup(),
             "Has_food_pickup": self.has_food_pickup(),

@@ -28,6 +28,8 @@ class Enemy(Agent):
         self.weapon = None
         self.sound_circle = None
         self.poi = self.pos  # Point Of Interest (POI)
+        self.health = 100
+        self.max_health = 100
 
         self.speed = self.speed / 2
         self.alertspeed = self.speed / 3
@@ -205,8 +207,8 @@ class Enemy(Agent):
             "POI": self.poi,
             "Blocked_timer": self.blocked_timer,
             "Move_timer": self.move_timer,
-            "Visions": self.vision_detections,
-            "Sounds": self.sound_detections,
+            "Visions_amt": len(self.vision_detections),
+            "Sounds_amt": len(self.sound_detections),
             "State": self.state,
             "Health": self.health,
             "Pushable": self.is_pushable,
