@@ -233,7 +233,7 @@ class Agent(Object):
             else:
                 self.state = "explore"
 
-        # made by Xander
+        # Xanders ballencode
         if self.state == "explore":
             self.target_pickup = None
             if self.current_tile not in self.searched_tiles:
