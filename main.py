@@ -63,7 +63,7 @@ def main():
         "memecam": memecam,
     }
     cameracontroller = Camera_controller(cams=cams, window=Window.from_display_module())
-    cameracontroller.curr_cam = simcam
+    cameracontroller.curr_cam = memecam
 
     camera_target = tilemanager.players[0]
     vectors = []
@@ -148,6 +148,7 @@ def main():
             memecam.position = player.pos - memecam.size / 2
 
         ### pickup collision detection ###
+
         for pu in tilemanager(current_player.pos).pickups:
             if current_player.is_colliding(pu):
                 tilemanager(current_player.pos).pickups.remove(pu)
