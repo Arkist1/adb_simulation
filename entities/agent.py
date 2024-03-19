@@ -233,7 +233,7 @@ class Agent(Object):
             else:
                 self.state = "explore"
 
-        # made by Xander
+        # Xanders ballencode
         if self.state == "explore":
             self.target_pickup = None
             if self.current_tile not in self.searched_tiles:
@@ -266,7 +266,7 @@ class Agent(Object):
                     random.shuffle(directions)
                     visit = 1
                     for r in directions:
-                        if visit == 0:
+                        if visit == 0 or r == directions[3]:
                             # print("break")
                             break
 

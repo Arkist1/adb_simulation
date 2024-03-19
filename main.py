@@ -399,11 +399,10 @@ def main():
     # End of running loop
     # =======================================
 
-    pygame.quit()
-
 
 if __name__ == "__main__":
     while Globals.RESTART:
         print("Starting new simulation")
         Globals.RESTART = False
         main()
+    pygame.quit()
