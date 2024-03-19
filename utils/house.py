@@ -55,6 +55,7 @@ class House:
                     )[0]
                 )
 
+                print(pickup["pos"])
                 self.generate_pickup(pickup["pos"], pickup_type)
 
         for index, enemy in enumerate(self.template["enemies"]):
@@ -105,7 +106,8 @@ class House:
         self.walls += w
 
     def generate_pickup(self, pos, pickup_type):
-        self.pickups.append(Pickup(pickup_type, self.pos + pos, screen=self.screen))
+        rand = pygame.Vector2(random.randint(-150, 150), random.randint(-105, 105))
+        self.pickups.append(Pickup(pickup_type, self.pos + pos + rand, screen=self.screen))
 
     def generate_enemy(self, pos):
         self.enemies.append(
