@@ -281,9 +281,11 @@ class Agent(Object):
                         ty -= 700
 
                     center = pygame.Vector2(tx, ty)
-                    for tile in self.visited_tiles:
-                        if tile.rect.collide_point(center):
-                            continue
+                    if self.visited_tiles:
+                        for tile in self.visited_tiles:
+                            if tile.rect.collidepoint(center):
+                                print("visited")
+                                continue
                     self.poi = center
                     self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
