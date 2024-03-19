@@ -281,8 +281,9 @@ class Agent(Object):
                         ty -= 700
 
                     center = pygame.Vector2(tx, ty)
-                    if self.visited_tiles:
-                        for tile in self.visited_tiles:
+                    
+                    for tile in self.visited_tiles:
+                        if tile:
                             if tile.rect.collidepoint(center):
                                 print("visited")
                                 continue
