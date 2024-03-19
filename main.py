@@ -277,6 +277,21 @@ def main():
 
         # FPS
         cam = cameracontroller.curr_cam
+        cols = [(230,230,230), (200,200,200)]
+        cols_searched = [(210,250,210), (180,220,180)]
+        cols_visited = [(230,210,210), (200,180,180)]
+        col_idx = 0
+        
+        for tile_row in tilemanager.tiles:
+            for tile in tile_row:
+                if tile in tilemanager.players[0].searched_tiles:
+                    tile.draw(screen, cam, cols_searched[col_idx])
+                elif tile in tilemanager.players[0].visited_tiles:
+                    tile.draw(screen, cam, cols_visited[col_idx])
+                else:
+                    tile.draw(screen, cam, cols[col_idx])
+                col_idx = 1 - col_idx
+        
         fps_text = FONT.render(f"FPS: {int(fps)}", False, (0, 0, 0))
         screen.blit(fps_text, fps_position)
 
@@ -310,6 +325,8 @@ def main():
 
         for wall in tilemanager.allwalls:
             wall.draw(cam=cam)
+            
+
 
         ######## Map boundary drawing ########
         boundry_rgb = (100, 0, 255)
