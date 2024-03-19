@@ -322,6 +322,7 @@ class Agent(Object):
             )
             self.vision_cone.rotation = angle.angle_to([0, 0])
             self.move((angle * self.speed * inputs["dt"] * Globals.SIM_SPEED), entities)
+            self.sound_circle.sound_range = self.base_sound_range
 
         elif self.state == "low_health":
             if (
