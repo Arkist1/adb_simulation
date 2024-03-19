@@ -266,7 +266,7 @@ class Agent(Object):
                     random.shuffle(directions)
                     visit = 1
                     for r in directions:
-                        if visit == 0:
+                        if visit == 0 or r == directions[3]:
                             # print("break")
                             break
 
