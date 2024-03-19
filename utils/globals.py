@@ -31,6 +31,8 @@ class Globals:
     SIM_SPEED = 1
     FPS = 60 * SIM_SPEED
 
+    RESTART = True
+
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:
     """

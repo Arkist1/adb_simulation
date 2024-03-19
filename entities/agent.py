@@ -100,7 +100,7 @@ class Agent(Object):
         else:
             self.tile_pickups = set()
 
-        if curr_tile not in self.visited_tiles:
+        if curr_tile not in self.visited_tiles and self.current_tile:
             self.visited_tiles.add(self.current_tile)
             self.tile_dict[curr_tile] = []
 
@@ -281,7 +281,7 @@ class Agent(Object):
                         ty -= 700
 
                     center = pygame.Vector2(tx, ty)
-                    
+
                     for tile in self.visited_tiles:
                         if tile:
                             if tile.rect.collidepoint(center):
@@ -343,7 +343,7 @@ class Agent(Object):
                         if pickup.pickup_type < 2:
                             if (
                                 dist_ := utils.dist(self.pos, pickup.pos)
-                            ) > closest_dist or not closest_dist:
+                            ) < closest_dist or not closest_dist:
                                 closest_dist = dist_
                                 target_pickup = pickup
 
@@ -373,7 +373,7 @@ class Agent(Object):
                         if pickup.pickup_type >= 2:
                             if (
                                 dist_ := utils.dist(self.pos, pickup.pos)
-                            ) > closest_dist or not closest_dist:
+                            ) < closest_dist or not closest_dist:
                                 closest_dist = dist_
                                 target_pickup = pickup
 
@@ -589,4 +589,6 @@ class Agent(Object):
             "State": self.state,
             "Has_hp_pickup": self.has_health_pickup(),
             "Has_food_pickup": self.has_food_pickup(),
+            "Visited_tiles_amt": len(self.visited_tiles),
+            "Searched_tiles_amt": len(self.searched_tiles),
         }
