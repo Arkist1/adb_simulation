@@ -260,33 +260,36 @@ class Agent(Object):
                 if not self.poi:
                     tx = (self.pos.x // 1000) * 1000 + 500
                     ty = (self.pos.y // 700) * 700 + 350
+                    directions = [0, 1, 2, 3]
+                    random.shuffle(directions)
+                    visit = 0
+                    for r in directions:
+                        direction = [[1000, 0], [-1000, 0], [0, 700], [0, -700]][r]
+                        cent_point = [tx + direction[0], ty + direction[1]]
 
-                    r = random.randint(0, 3)
-                    if r == 0:
-                        tx += 1000
-                    if r == 1:
-                        tx -= 1000
-                    if r == 2:
-                        ty += 700
-                    if r == 3:
-                        ty -= 700
+                        if cent_point[0] <= 0.0:
+                            cent_point[0] += 1000
+                        if cent_point[0] >= Globals.MAP_WIDTH:
+                            cent_point[0] -= 1000
+                        if cent_point[1] <= 0.0:
+                            cent_point[1] += 700
+                        if cent_point[1] >= Globals.MAP_HEIGHT:
+                            cent_point[1] -= 700
 
-                    if tx <= 0.0:
-                        tx += 1000
-                    if tx >= Globals.MAP_WIDTH:
-                        tx -= 1000
-                    if ty <= 0.0:
-                        ty += 700
-                    if ty >= Globals.MAP_HEIGHT:
-                        ty -= 700
-
-                    center = pygame.Vector2(tx, ty)
-                    
-                    for tile in self.visited_tiles:
-                        if tile:
-                            if tile.rect.collidepoint(center):
-                                print("visited")
-                                continue
+                        center = pygame.Vector2(cent_point[0], cent_point[1])
+                        for tile in self.searched_tiles:
+                            
+                            if tile:
+                                if tile.rect.collidepoint(center):
+                                    print(visit)
+                                    visit = 1
+                                else:
+                                    print(visit)
+                                    visit = 0
+                                    break
+                        if visit:
+                            print("break")
+                            break
                     self.poi = center
                     self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
