@@ -312,7 +312,7 @@ def main():
                     tile.draw(screen, cam, cols[col_idx])
                 col_idx = 1 - col_idx
 
-        fps_text = FONT.render(f"FPS: {int(fps)}", False, (0, 0, 0))
+        fps_text = FONT.render(f"FPS: {int(min(0, fps))}", False, (0, 0, 0))
         screen.blit(fps_text, fps_position)
 
         # ZOOM
