@@ -143,19 +143,18 @@ def main():
 
         ### pickup collision detection ###
         for pu in tilemanager(current_player.pos).pickups:
-            if pu:
-                if current_player.is_colliding(pu):
-                    tilemanager(current_player.pos).pickups.remove(pu)
-                    current_player.remove_pickup_from_memory(tilemanager, pu)
-                    if pu.pickup_type == 0 or pu.pickup_type == 1:
-                        current_player.health = min(
-                            (current_player.health + pu.picked_up()),
-                            current_player.max_health,
-                        )
-                    elif pu.pickup_type == 2 or pu.pickup_type == 3:
-                        current_player.food = min(
-                            (current_player.food + pu.picked_up()), current_player.max_food
-                        )
+            if current_player.is_colliding(pu):
+                tilemanager(current_player.pos).pickups.remove(pu)
+                current_player.remove_pickup_from_memory(tilemanager, pu)
+                if pu.pickup_type == 0 or pu.pickup_type == 1:
+                    current_player.health = min(
+                        (current_player.health + pu.picked_up()),
+                        current_player.max_health,
+                    )
+                elif pu.pickup_type == 2 or pu.pickup_type == 3:
+                    current_player.food = min(
+                        (current_player.food + pu.picked_up()), current_player.max_food
+                    )
 
         ### cam switch ###
         if mouse_keys[2] and dt_mili - cd["cam_switch"] >= 0:
