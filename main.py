@@ -6,6 +6,7 @@ from utils import Object, Hitbox, Globals, EntityHolder, House, TileManager
 import random
 import pygame
 import json
+import math
 
 from pygame._sdl2.video import Window
 
@@ -23,9 +24,9 @@ def main():
 
     # tilemanager init
     tilemanager = TileManager(Globals.TILE_SIZE, Globals.MAP_SIZE)
-    middle_tile = tilemanager.tiles[round(len(tilemanager.tiles) / 2) - 1][
-        round(len(tilemanager.tiles[0]) / 2) - 1
-    ]
+    middle_x = math.floor(len(tilemanager.tiles) / 2)
+    middle_y = math.floor(len(tilemanager.tiles[0]) / 2)
+    middle_tile = tilemanager.tiles[middle_x][middle_y]
     middle_pos = middle_tile.pos + middle_tile.size / 2
 
     tilemanager.players.append(Agent(screen=screen, start_pos=middle_pos.copy()))
@@ -229,14 +230,14 @@ def main():
             current_player.health -= 25
 
         ###### Movement #####
-        # for en in tilemanager.enemies:
-        #     if en.health <= 0:
-        #         tilemanager.enemies.remove(en)
-        #     en.percept(tilemanager)
-        #     en.get_move(
-        #         inputs={"nearest_player": current_player, "dt": dt},
-        #         entities=tilemanager.get_tiled_items(en.pos),
-        #     )
+        for en in tilemanager.enemies:
+            if en.health <= 0:
+                tilemanager.enemies.remove(en)
+            en.percept(tilemanager)
+            en.get_move(
+                inputs={"nearest_player": current_player, "dt": dt},
+                entities=tilemanager.get_tiled_items(en.pos),
+            )
 
         if camera_target:
             followcam.position = camera_target.pos - followcam.size / 2
@@ -386,5 +387,6 @@ def main():
 
 if __name__ == "__main__":
     while Globals.RESTART:
+        print("Starting new simulation")
         Globals.RESTART = False
         main()

@@ -89,6 +89,8 @@ class Agent(Object):
         self.chasing_enemies = set()
         self.target_pickup = None
 
+        self.lifetime = 0
+
     def memory(self, tilemanager, pickups):
         curr_tile = tilemanager(self.pos)
         if curr_tile in self.visited_tiles and self.current_tile != curr_tile:

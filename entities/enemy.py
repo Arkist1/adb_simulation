@@ -73,7 +73,7 @@ class Enemy(Agent):
         #     self.poi = self.detected_agent
 
         if self.move_timer > 0:
-            self.move_timer -= inputs["dt"]
+            self.move_timer -= inputs["dt"] * Globals.SIM_SPEED
 
         elif self.state == "chasing":
             delta = self.get_move_delta(self.poi) * inputs["dt"] * Globals.SIM_SPEED
@@ -111,11 +111,7 @@ class Enemy(Agent):
 
     def get_move_delta(self, point):
         angle = utils.angle_to(point, self.pos)
-        delta = (
-            utils.angle_to_direction(math.radians(angle))
-            * self.speed
-            * Globals.SIM_SPEED
-        )
+        delta = utils.angle_to_direction(math.radians(angle)) * self.speed
 
         return delta
 
