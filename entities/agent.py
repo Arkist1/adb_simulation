@@ -306,6 +306,7 @@ class Agent(Object):
 
         elif self.state == "flee":
             self.target_pickup = None
+            self.poi = None
             # calculating best angle to flee at
             angle = pygame.Vector2([0, 0])
             for en in self.chasing_enemies:
@@ -339,6 +340,7 @@ class Agent(Object):
                 # self.poi = target_tile.pos + (target_tile.size / 2)
                 self.poi = target_pickup.pos.copy()
                 self.target_pickup = target_pickup
+                self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
             # print(self.target_pickup, self.poi)
             if dist(self.pos, self.poi) > 5:
@@ -368,6 +370,7 @@ class Agent(Object):
                 # self.poi = target_tile.pos + (target_tile.size / 2)
                 self.poi = target_pickup.pos.copy()
                 self.target_pickup = target_pickup
+                self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
             if dist(self.pos, self.poi) > 5:
                 s = self.speed * inputs["dt"] * Globals.SIM_SPEED
