@@ -60,7 +60,7 @@ def main():
         "simcam": simcam,
     }
     cameracontroller = Camera_controller(cams=cams, window=Window.from_display_module())
-    # cameracontroller.curr_cam = mapcam
+    cameracontroller.curr_cam = simcam
 
     camera_target = tilemanager.players[0]
     vectors = []
@@ -99,6 +99,12 @@ def main():
             "dt": dt,
             "dt_mili": dt_mili,
         }
+
+        ### RESTART SIM ###
+        if keys[pygame.K_r]:
+            running = False
+            Globals.RESTART = True
+            break
 
         ### cooldowns ###
         for key, item in cd.items():
@@ -379,4 +385,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    while Globals.RESTART:
+        Globals.RESTART = False
+        main()

@@ -175,11 +175,23 @@ class Enemy(Agent):
                 self.state = "wandering"
 
                 self.poi = pygame.Vector2(
-                    random.randrange(
-                        round(self.pos[0]) - 400, round(self.pos[0]) + 400
+                    max(
+                        min(
+                            random.randrange(
+                                round(self.pos[0]) - 200, round(self.pos[0]) + 200
+                            ),
+                            Globals.MAP_WIDTH - self.hitbox * 1.5,
+                        ),
+                        0 + self.hitbox * 1.5,
                     ),
-                    random.randrange(
-                        round(self.pos[1]) - 400, round(self.pos[1]) + 400
+                    max(
+                        min(
+                            random.randrange(
+                                round(self.pos[1]) - 200, round(self.pos[1]) + 200
+                            ),
+                            Globals.MAP_HEIGHT - self.hitbox * 1.5,
+                        ),
+                        0 + self.hitbox * 1.5,
                     ),
                 )
                 self.moving = True
