@@ -127,6 +127,9 @@ def main():
                     and camera_target not in tilemanager.players
                 ):
                     camera_target = tilemanager.players[0]
+                    
+                running = False
+                Globals.RESTART = True
                 continue
             player.percept(tilemanager)
             player.get_move(
