@@ -287,7 +287,7 @@ class Agent(Object):
                                     print(visit)
                                     visit = 0
                                     break
-                        if visit:
+                        if visit == 0:
                             print("break")
                             break
                     self.poi = center
