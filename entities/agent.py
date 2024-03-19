@@ -265,8 +265,9 @@ class Agent(Object):
                     visit = 1
                     for r in directions:
                         if visit == 0:
-                            print("break")
+                            # print("break")
                             break
+
                         direction = [[1000, 0], [-1000, 0], [0, 700], [0, -700]][r]
                         cent_point = [tx + direction[0], ty + direction[1]]
 
@@ -280,17 +281,24 @@ class Agent(Object):
                             cent_point[1] -= 700
 
                         center = pygame.Vector2(cent_point[0], cent_point[1])
-                        self.poi = center
+                        self.poi = center.copy()
 
                         for tile in self.searched_tiles:
+                            # print(
+                            #     tile.pos,
+                            #     tile.rect.center,
+                            #     self.poi,
+                            #     tile.rect.collidepoint(self.poi),
+                            # )
                             if tile.rect.collidepoint(self.poi):
-                                print(visit)
                                 visit = 1
-                            else:
-                                print(visit)
-                                visit = 0
+                                # print(visit)
                                 break
-                        
+
+                            else:
+                                visit = 0
+                                # print(visit)
+
                     self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
                 if dist(self.pos, self.poi) > 5:
