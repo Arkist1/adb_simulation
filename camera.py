@@ -28,7 +28,7 @@ class Camera:
         return [self.position, self.position + self.size]
 
 
-class Camera_controller:
+class CameraController:
     def __init__(self, cams: dict[str, Camera], window) -> None:
         self.cameras = cams
         self.curr_cam_name = list(cams.keys())[0]
