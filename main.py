@@ -17,12 +17,14 @@ class Main:
         pygame.font.init()
 
         self.font = pygame.font.SysFont("Bahnschrift", 20)
-        self.screen = pygame.display.set_mode([Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT])
+        self.screen = pygame.display.set_mode(
+            [Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT]
+        )
         self.clock = pygame.time.Clock()
-        
+
         self.tile_manager = self.generate_tiles()
         self.camera_controller = self.generate_cameras()
-        
+
         self.camera_target = self.tile_manager.players[0]
         self.cooldowns = {
             "spawn": 0,
@@ -36,22 +38,22 @@ class Main:
         }
 
         self.running = True
-        
+
     def generate_tiles(self) -> TileManager:
         tile_manager = TileManager(Globals.TILE_SIZE, Globals.MAP_SIZE)
-        
+
         middle_x = math.floor(len(tile_manager.tiles) / 2)
         middle_y = math.floor(len(tile_manager.tiles[0]) / 2)
         middle_tile = tile_manager.tiles[middle_x][middle_y]
         self.middle_pos = middle_tile.pos + middle_tile.size / 2
 
-        tile_manager.players.append(Agent(screen=self.screen, start_pos=self.middle_pos.copy()))
-    
+        tile_manager.players.append(
+            Agent(screen=self.screen, start_pos=self.middle_pos.copy())
+        )
 
         templates = json.load(open("no_houses_templates.json", "r"))
         tile_manager.generate_terrain(templates, screen=self.screen)
         return tile_manager
-
 
     def generate_cameras(self) -> CameraController:
         playercam = Camera(pygame.Vector2([0, 0]), Globals.SCREEN_SIZE)
@@ -69,7 +71,9 @@ class Main:
             "simcam": simcam,
             "memecam": memecam,
         }
-        self.camera_controller = CameraController(cams=cams, window=Window.from_display_module())
+        self.camera_controller = CameraController(
+            cams=cams, window=Window.from_display_module()
+        )
         self.camera_controller.curr_cam = memecam
         return self.camera_controller
 
@@ -79,11 +83,11 @@ class Main:
             Globals.RESTART = False
             self.run_simulation()
         pygame.quit()
-        
+
     def run_simulation(self) -> None:
         while self.running:
             self.tick()
-    
+
     def tick(self) -> None:
         dt = self.clock.tick(Globals.FPS) / 1000
         dt_mili = self.clock.get_time()
@@ -93,10 +97,10 @@ class Main:
         for event in pygame.event.get():  # event loop
             if event.type == pygame.QUIT:
                 self.running = False
-                
+
         self.handle_inputs(dt, dt_mili)
         self.handle_cooldowns(dt_mili, fps)
-        
+
         if Globals.DRAW:
             self.draw(fps)
 
@@ -115,15 +119,16 @@ class Main:
             "attack": mouse_keys[0],
             "block": mouse_keys[2],
             "mouse_pos": mouse_pos / self.camera_controller.curr_cam.zoom
-            + self.camera_controller.curr_cam.position / self.camera_controller.curr_cam.zoom,
+            + self.camera_controller.curr_cam.position
+            / self.camera_controller.curr_cam.zoom,
             "dt": dt,
             "dt_mili": dt_mili,
         }
-        
+
         self.handle_sim_state(keys, inputs)
         self.handle_players(inputs)
         self.handle_cams(dt_mili, inputs, keys, mouse_keys)
-        self.handle_debug(dt_mili, keys) # TODO Remove this
+        self.handle_debug(dt_mili, keys)  # TODO Remove this
         self.handle_entity_movement(dt, inputs)
         self.handle_camera_movement(dt, keys)
 
@@ -133,7 +138,9 @@ class Main:
             Globals.RESTART = True
             return
 
-        self.cooldowns["pause_switch"] = max(0, self.cooldowns["pause_switch"] - inputs["dt_mili"])
+        self.cooldowns["pause_switch"] = max(
+            0, self.cooldowns["pause_switch"] - inputs["dt_mili"]
+        )
 
         if keys[pygame.K_p] and self.cooldowns["pause_switch"] == 0:
             Globals.PAUSE = not Globals.PAUSE
@@ -142,12 +149,12 @@ class Main:
 
         if Globals.PAUSE:
             return
-        
+
         if keys[pygame.K_BACKSPACE] and self.cooldowns["draw_switch"] <= 0:
             self.cooldowns["draw_switch"] = 500
             Globals.DRAW = False if Globals.DRAW else True
             print("Drawing state:", Globals.DRAW)
-        
+
     def handle_players(self, inputs):
         for player in self.tile_manager.players:
             if player.health <= 0:
@@ -172,9 +179,13 @@ class Main:
                 self.tile_manager.get_mortal(),
             )
 
-            self.camera_controller.cameras["playercam"].position = player.pos - self.camera_controller.cameras["playercam"].size / 2
-            self.camera_controller.cameras["memecam"].position = player.pos - self.camera_controller.cameras["memecam"].size / 2
-            
+            self.camera_controller.cameras["playercam"].position = (
+                player.pos - self.camera_controller.cameras["playercam"].size / 2
+            )
+            self.camera_controller.cameras["memecam"].position = (
+                player.pos - self.camera_controller.cameras["memecam"].size / 2
+            )
+
     def handle_cams(self, dt_mili, inputs, keys, mouse_keys):
         if mouse_keys[2] and dt_mili - self.cooldowns["cam_switch"] >= 0:
             self.cooldowns["cam_switch"] = 500
@@ -199,15 +210,15 @@ class Main:
                 self.camera_controller.change_cam("memecam")
             else:
                 self.cooldowns["cam_switch"] = 0
-                
-        if (mouse_keys[1] or keys[pygame.K_t]) and dt_mili - self.cooldowns["target_self.cooldowns"] >= 0:
+
+        if (mouse_keys[1] or keys[pygame.K_t]) and dt_mili - self.cooldowns[
+            "target_self.cooldowns"
+        ] >= 0:
             self.cooldowns["target_self.cooldowns"] = 500
-            vectors = []
             closest_obj = None
             closest_dist = None
             for item in self.tile_manager.get_items():
                 dist = abs(sum(inputs["mouse_pos"] - item.pos))
-                vectors.append([inputs["mouse_pos"], item.pos.copy()])
                 if not closest_dist:
                     closest_dist = dist
                     closest_obj = item
@@ -218,7 +229,7 @@ class Main:
                     closest_obj = item
 
             self.camera_target = closest_obj
-            
+
         if keys[pygame.K_g]:
             self.camera_target = None
 
@@ -231,7 +242,7 @@ class Main:
             self.cooldowns["fps"] = 1000
             print(len(self.tile_manager.enemies), "FPS:", fps)
 
-    def handle_pickups(self) -> None: # TODO Handle multiple agents
+    def handle_pickups(self) -> None:  # TODO Handle multiple agents
         current_player = self.tile_manager.players[0]
         for pu in self.tile_manager(current_player.pos).pickups:
             if current_player.is_colliding(pu):
@@ -246,15 +257,17 @@ class Main:
                     current_player.food = min(
                         (current_player.food + pu.picked_up()), current_player.max_food
                     )
-                    
+
     def handle_manual_spawn(self, dt_mili, inputs, keys):
 
-                ### manual enemy spawning ###
+        ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - self.cooldowns["spawn"] > 0:
             self.cooldowns["spawn"] = 100
             self.tile_manager.enemies.append(
                 Enemy(
-                    screen=self.screen, control_type="enemy", start_pos=inputs["mouse_pos"]
+                    screen=self.screen,
+                    control_type="enemy",
+                    start_pos=inputs["mouse_pos"],
                 )
             )
         ### manual pickup spawning ###
@@ -268,7 +281,7 @@ class Main:
                 )
             )
 
-    def handle_debug(self, dt_mili, keys) -> None: # TODO Remove this
+    def handle_debug(self, dt_mili, keys) -> None:  # TODO Remove this
         if keys[pygame.K_f] and dt_mili - self.cooldowns["cam_switch"] >= 0:
             self.cooldowns["cam_switch"] = 10
             self.tile_manager.players[0].health -= 25
@@ -282,23 +295,34 @@ class Main:
                 inputs={"nearest_player": self.tile_manager.players[0], "dt": dt},
                 entities=self.tile_manager.get_tiled_items(en.pos),
             )
-            
+
         for bl in self.tile_manager.bullets:
             bl.move(inputs)
 
     def handle_camera_movement(self, dt, keys):
         if self.camera_target:
-            self.camera_controller.cameras["followcam"].position = self.camera_target.pos - self.camera_controller.cameras["followcam"].size / 2
+            self.camera_controller.cameras["followcam"].position = (
+                self.camera_target.pos
+                - self.camera_controller.cameras["followcam"].size / 2
+            )
 
         ## free cam position movement
         if keys[pygame.K_UP]:
-            self.camera_controller.cameras["freecam"].position.y -= Globals.FREECAM_SPEED * dt
+            self.camera_controller.cameras["freecam"].position.y -= (
+                Globals.FREECAM_SPEED * dt
+            )
         if keys[pygame.K_DOWN]:
-            self.camera_controller.cameras["freecam"].position.y += Globals.FREECAM_SPEED * dt
+            self.camera_controller.cameras["freecam"].position.y += (
+                Globals.FREECAM_SPEED * dt
+            )
         if keys[pygame.K_LEFT]:
-            self.camera_controller.cameras["freecam"].position.x -= Globals.FREECAM_SPEED * dt
+            self.camera_controller.cameras["freecam"].position.x -= (
+                Globals.FREECAM_SPEED * dt
+            )
         if keys[pygame.K_RIGHT]:
-            self.camera_controller.cameras["freecam"].position.x += Globals.FREECAM_SPEED * dt
+            self.camera_controller.cameras["freecam"].position.x += (
+                Globals.FREECAM_SPEED * dt
+            )
 
         ## free cam zoom
 
@@ -311,7 +335,7 @@ class Main:
             else:
                 self.cooldowns["zoom"] = 0
 
-    def draw(self, fps) -> None: # TODO Split up in more functions
+    def draw(self, fps) -> None:  # TODO Split up in more functions
 
         self.screen.fill((255, 255, 255))  # white background
 
@@ -324,9 +348,13 @@ class Main:
 
         for tile_row in self.tile_manager.tiles:
             for tile in tile_row:
-                if tile in self.tile_manager.players[0].searched_tiles: # TODO Multiple agents
+                if (
+                    tile in self.tile_manager.players[0].searched_tiles
+                ):  # TODO Multiple agents
                     tile.draw(self.screen, cam, cols_searched[col_idx])
-                elif tile in self.tile_manager.players[0].visited_tiles: # TODO Multiple agents
+                elif (
+                    tile in self.tile_manager.players[0].visited_tiles
+                ):  # TODO Multiple agents
                     tile.draw(self.screen, cam, cols_visited[col_idx])
                 else:
                     tile.draw(self.screen, cam, cols[col_idx])
@@ -338,7 +366,13 @@ class Main:
         # ZOOM
         if cam == self.camera_controller.cameras["freecam"]:
             txt = self.font.render(
-                "x" + str(round(self.camera_controller.cameras["freecam"].zoom * 10**3) / 10**3), False, (0, 0, 0)
+                "x"
+                + str(
+                    round(self.camera_controller.cameras["freecam"].zoom * 10**3)
+                    / 10**3
+                ),
+                False,
+                (0, 0, 0),
             )
             self.screen.blit(txt, (Globals.SCREEN_WIDTH - txt.get_rect().width, 0))
 
@@ -381,17 +415,24 @@ class Main:
         pygame.draw.line(self.screen, boundry_rgb, origin, bottom)
         pygame.draw.line(self.screen, boundry_rgb, right, rightbottom)
         pygame.draw.line(self.screen, boundry_rgb, bottom, rightbottom)
-        
+
         self.draw_status_bars(cam)
 
-    def draw_status_bars(self, cam): # TODO Split up in more functions
-        if cam in [self.camera_controller.cameras["playercam"], self.camera_controller.cameras["simcam"]]:
+    def draw_status_bars(self, cam):  # TODO Split up in more functions
+        if cam in [
+            self.camera_controller.cameras["playercam"],
+            self.camera_controller.cameras["simcam"],
+        ]:
             stamina_bar2 = pygame.Rect(20, 600, 258, 23)
             pygame.draw.rect(self.screen, Globals.COLOR_BAR, stamina_bar2)
             stamina_bar = pygame.Rect(
                 24,
                 604,
-                int(self.tile_manager.players[0].stamina / self.tile_manager.players[0].max_stamina * 250), # TODO Multiple agents
+                int(
+                    self.tile_manager.players[0].stamina
+                    / self.tile_manager.players[0].max_stamina
+                    * 250
+                ),  # TODO Multiple agents
                 15,
             )
             pygame.draw.rect(self.screen, Globals.COLOR_STAMINA, stamina_bar)
@@ -399,7 +440,14 @@ class Main:
             food_bar2 = pygame.Rect(20, 630, 258, 23)
             pygame.draw.rect(self.screen, Globals.COLOR_BAR, food_bar2)
             food_bar = pygame.Rect(
-                24, 634, int(self.tile_manager.players[0].food / self.tile_manager.players[0].max_food * 250), 15 # TODO Multiple agents
+                24,
+                634,
+                int(
+                    self.tile_manager.players[0].food
+                    / self.tile_manager.players[0].max_food
+                    * 250
+                ),
+                15,  # TODO Multiple agents
             )
             pygame.draw.rect(self.screen, Globals.COLOR_FOOD, food_bar)
 
@@ -408,13 +456,25 @@ class Main:
             health_bar = pygame.Rect(
                 24,
                 664,
-                int(self.tile_manager.players[0].health / self.tile_manager.players[0].max_health * 250), # TODO Multiple agents
+                int(
+                    self.tile_manager.players[0].health
+                    / self.tile_manager.players[0].max_health
+                    * 250
+                ),  # TODO Multiple agents
                 15,
             )
             pygame.draw.rect(self.screen, Globals.COLOR_HEALTH, health_bar)
 
         # debug mode for cam
-        if Globals.DEBUG and cam in [self.camera_controller.cameras["followcam"], self.camera_controller.cameras["simcam"]] and self.camera_target:
+        if (
+            Globals.DEBUG
+            and cam
+            in [
+                self.camera_controller.cameras["followcam"],
+                self.camera_controller.cameras["simcam"],
+            ]
+            and self.camera_target
+        ):
             debug_info = self.camera_target.get_debug_info()
 
             txt = self.font.render("DEBUG: ", False, (0, 0, 0))
@@ -450,6 +510,7 @@ class Main:
             )
         # Flip (draw) the display
         pygame.display.flip()
+
 
 if __name__ == "__main__":
     main = Main()
