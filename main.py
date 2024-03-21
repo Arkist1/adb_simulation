@@ -100,6 +100,7 @@ class Main:
 
         self.handle_inputs(dt, dt_mili)
         self.handle_cooldowns(dt_mili, fps)
+        self.handle_pickups()
 
         if Globals.DRAW:
             self.draw(fps)
