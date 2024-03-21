@@ -18,6 +18,8 @@ class Globals:
     TILE_WIDTH = 1000
     TILE_HEIGHT = 700
     TILE_SIZE = pygame.Vector2(TILE_WIDTH, TILE_HEIGHT)
+    
+    FPS_POSITION = (0, 0)
 
     SQR2 = 2 ** (1 / 2)
     root = os.getcwd()

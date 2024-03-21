@@ -88,17 +88,22 @@ class Main:
         dt = self.clock.tick(Globals.FPS) / 1000
         dt_mili = self.clock.get_time()
         fps = self.clock.get_fps()
-        fps_position = (0, 0)
 
         # check for closing pygame._sdl2.video.Window
         for event in pygame.event.get():  # event loop
             if event.type == pygame.QUIT:
                 self.running = False
+                
+        self.handle_inputs(dt, dt_mili)
+        self.handle_cooldowns(dt_mili, fps)
+        
+        if Globals.DRAW:
+            self.draw(fps)
 
+    def handle_inputs(self, dt, dt_mili) -> None:
         keys = pygame.key.get_pressed()
         mouse_keys = pygame.mouse.get_pressed()
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
-        current_player = self.tile_manager.players[0]
 
         inputs = {
             "up": keys[pygame.K_w],
@@ -114,10 +119,17 @@ class Main:
             "dt": dt,
             "dt_mili": dt_mili,
         }
+        
+        self.handle_sim_state(keys, inputs)
+        self.handle_players(inputs)
+        self.handle_cams(dt_mili, inputs, keys, mouse_keys)
+        self.handle_debug(dt_mili, keys) # TODO Remove this
+        self.handle_entity_movement(dt, inputs)
+        self.handle_camera_movement(dt, keys)
 
-        ### RESTART SIM ###
+    def handle_sim_state(self, keys, inputs):
         if keys[pygame.K_r]:
-            running = False
+            self.running = False
             Globals.RESTART = True
             return
 
@@ -130,16 +142,13 @@ class Main:
 
         if Globals.PAUSE:
             return
-
-        ### cooldowns ###
-        for key, item in self.cooldowns.items():
-            if self.cooldowns[key] >= 0:
-                self.cooldowns[key] = max(0, item - dt_mili)
-
-        if self.cooldowns["fps"] <= 0:
-            self.cooldowns["fps"] = 1000
-            print(len(self.tile_manager.enemies), "FPS:", fps)
-
+        
+        if keys[pygame.K_BACKSPACE] and self.cooldowns["draw_switch"] <= 0:
+            self.cooldowns["draw_switch"] = 500
+            Globals.DRAW = False if Globals.DRAW else True
+            print("Drawing state:", Globals.DRAW)
+        
+    def handle_players(self, inputs):
         for player in self.tile_manager.players:
             if player.health <= 0:
                 self.tile_manager.players.remove(player)
@@ -165,24 +174,8 @@ class Main:
 
             self.camera_controller.cameras["playercam"].position = player.pos - self.camera_controller.cameras["playercam"].size / 2
             self.camera_controller.cameras["memecam"].position = player.pos - self.camera_controller.cameras["memecam"].size / 2
-
-        ### pickup collision detection ###
-
-        for pu in self.tile_manager(current_player.pos).pickups:
-            if current_player.is_colliding(pu):
-                self.tile_manager(current_player.pos).pickups.remove(pu)
-                current_player.remove_pickup_from_memory(self.tile_manager, pu)
-                if pu.pickup_type == 0 or pu.pickup_type == 1:
-                    current_player.health = min(
-                        (current_player.health + pu.picked_up()),
-                        current_player.max_health,
-                    )
-                elif pu.pickup_type == 2 or pu.pickup_type == 3:
-                    current_player.food = min(
-                        (current_player.food + pu.picked_up()), current_player.max_food
-                    )
-
-        ### cam switch ###
+            
+    def handle_cams(self, dt_mili, inputs, keys, mouse_keys):
         if mouse_keys[2] and dt_mili - self.cooldowns["cam_switch"] >= 0:
             self.cooldowns["cam_switch"] = 500
             cams = list(self.camera_controller.cameras.keys())
@@ -206,8 +199,7 @@ class Main:
                 self.camera_controller.change_cam("memecam")
             else:
                 self.cooldowns["cam_switch"] = 0
-
-        ### selector cam targeting ###
+                
         if (mouse_keys[1] or keys[pygame.K_t]) and dt_mili - self.cooldowns["target_self.cooldowns"] >= 0:
             self.cooldowns["target_self.cooldowns"] = 500
             vectors = []
@@ -226,17 +218,38 @@ class Main:
                     closest_obj = item
 
             self.camera_target = closest_obj
-
+            
         if keys[pygame.K_g]:
             self.camera_target = None
 
-        ###    Draw call switch   ###
-        if keys[pygame.K_BACKSPACE] and self.cooldowns["draw_switch"] <= 0:
-            self.cooldowns["draw_switch"] = 500
-            Globals.DRAW = False if Globals.DRAW else True
-            print("Drawing state:", Globals.DRAW)
+    def handle_cooldowns(self, dt_mili, fps):
+        for key, item in self.cooldowns.items():
+            if self.cooldowns[key] >= 0:
+                self.cooldowns[key] = max(0, item - dt_mili)
 
-        ### manual enemy spawning ###
+        if self.cooldowns["fps"] <= 0:
+            self.cooldowns["fps"] = 1000
+            print(len(self.tile_manager.enemies), "FPS:", fps)
+
+    def handle_pickups(self) -> None: # TODO Handle multiple agents
+        current_player = self.tile_manager.players[0]
+        for pu in self.tile_manager(current_player.pos).pickups:
+            if current_player.is_colliding(pu):
+                self.tile_manager(current_player.pos).pickups.remove(pu)
+                current_player.remove_pickup_from_memory(self.tile_manager, pu)
+                if pu.pickup_type == 0 or pu.pickup_type == 1:
+                    current_player.health = min(
+                        (current_player.health + pu.picked_up()),
+                        current_player.max_health,
+                    )
+                elif pu.pickup_type == 2 or pu.pickup_type == 3:
+                    current_player.food = min(
+                        (current_player.food + pu.picked_up()), current_player.max_food
+                    )
+                    
+    def handle_manual_spawn(self, dt_mili, inputs, keys):
+
+                ### manual enemy spawning ###
         if keys[pygame.K_b] and dt_mili - self.cooldowns["spawn"] > 0:
             self.cooldowns["spawn"] = 100
             self.tile_manager.enemies.append(
@@ -244,7 +257,6 @@ class Main:
                     screen=self.screen, control_type="enemy", start_pos=inputs["mouse_pos"]
                 )
             )
-
         ### manual pickup spawning ###
         if keys[pygame.K_n] and dt_mili - self.cooldowns["spawn"] > 0:
             self.cooldowns["spawn"] = 500
@@ -256,20 +268,25 @@ class Main:
                 )
             )
 
+    def handle_debug(self, dt_mili, keys) -> None: # TODO Remove this
         if keys[pygame.K_f] and dt_mili - self.cooldowns["cam_switch"] >= 0:
             self.cooldowns["cam_switch"] = 10
-            current_player.health -= 25
+            self.tile_manager.players[0].health -= 25
 
-        ###### Movement #####
+    def handle_entity_movement(self, dt, inputs):
         for en in self.tile_manager.enemies:
             if en.health <= 0:
                 self.tile_manager.enemies.remove(en)
             en.percept(self.tile_manager)
             en.get_move(
-                inputs={"nearest_player": current_player, "dt": dt},
+                inputs={"nearest_player": self.tile_manager.players[0], "dt": dt},
                 entities=self.tile_manager.get_tiled_items(en.pos),
             )
+            
+        for bl in self.tile_manager.bullets:
+            bl.move(inputs)
 
+    def handle_camera_movement(self, dt, keys):
         if self.camera_target:
             self.camera_controller.cameras["followcam"].position = self.camera_target.pos - self.camera_controller.cameras["followcam"].size / 2
 
@@ -294,15 +311,7 @@ class Main:
             else:
                 self.cooldowns["zoom"] = 0
 
-        for bl in self.tile_manager.bullets:
-            bl.move(inputs)
-
-        ##############################################
-        ##              Drawing cycle               ##
-        ##############################################
-
-        if not Globals.DRAW:
-            return
+    def draw(self, fps) -> None: # TODO Split up in more functions
 
         self.screen.fill((255, 255, 255))  # white background
 
@@ -315,16 +324,16 @@ class Main:
 
         for tile_row in self.tile_manager.tiles:
             for tile in tile_row:
-                if tile in self.tile_manager.players[0].searched_tiles:
+                if tile in self.tile_manager.players[0].searched_tiles: # TODO Multiple agents
                     tile.draw(self.screen, cam, cols_searched[col_idx])
-                elif tile in self.tile_manager.players[0].visited_tiles:
+                elif tile in self.tile_manager.players[0].visited_tiles: # TODO Multiple agents
                     tile.draw(self.screen, cam, cols_visited[col_idx])
                 else:
                     tile.draw(self.screen, cam, cols[col_idx])
                 col_idx = 1 - col_idx
 
-        fps_text = self.font.render(f"FPS: {int(min(0, fps))}", False, (0, 0, 0))
-        self.screen.blit(fps_text, fps_position)
+        fps_text = self.font.render(f"FPS: {int(max(0, fps))}", False, (0, 0, 0))
+        self.screen.blit(fps_text, Globals.FPS_POSITION)
 
         # ZOOM
         if cam == self.camera_controller.cameras["freecam"]:
@@ -372,15 +381,17 @@ class Main:
         pygame.draw.line(self.screen, boundry_rgb, origin, bottom)
         pygame.draw.line(self.screen, boundry_rgb, right, rightbottom)
         pygame.draw.line(self.screen, boundry_rgb, bottom, rightbottom)
+        
+        self.draw_status_bars(cam)
 
-        ####### Status bars ######
+    def draw_status_bars(self, cam): # TODO Split up in more functions
         if cam in [self.camera_controller.cameras["playercam"], self.camera_controller.cameras["simcam"]]:
             stamina_bar2 = pygame.Rect(20, 600, 258, 23)
             pygame.draw.rect(self.screen, Globals.COLOR_BAR, stamina_bar2)
             stamina_bar = pygame.Rect(
                 24,
                 604,
-                int(current_player.stamina / current_player.max_stamina * 250),
+                int(self.tile_manager.players[0].stamina / self.tile_manager.players[0].max_stamina * 250), # TODO Multiple agents
                 15,
             )
             pygame.draw.rect(self.screen, Globals.COLOR_STAMINA, stamina_bar)
@@ -388,7 +399,7 @@ class Main:
             food_bar2 = pygame.Rect(20, 630, 258, 23)
             pygame.draw.rect(self.screen, Globals.COLOR_BAR, food_bar2)
             food_bar = pygame.Rect(
-                24, 634, int(current_player.food / current_player.max_food * 250), 15
+                24, 634, int(self.tile_manager.players[0].food / self.tile_manager.players[0].max_food * 250), 15 # TODO Multiple agents
             )
             pygame.draw.rect(self.screen, Globals.COLOR_FOOD, food_bar)
 
@@ -397,7 +408,7 @@ class Main:
             health_bar = pygame.Rect(
                 24,
                 664,
-                int(current_player.health / current_player.max_health * 250),
+                int(self.tile_manager.players[0].health / self.tile_manager.players[0].max_health * 250), # TODO Multiple agents
                 15,
             )
             pygame.draw.rect(self.screen, Globals.COLOR_HEALTH, health_bar)
