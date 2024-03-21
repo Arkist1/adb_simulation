@@ -29,7 +29,7 @@ def main():
     middle_tile = tilemanager.tiles[middle_x][middle_y]
     middle_pos = middle_tile.pos + middle_tile.size / 2
 
-    tilemanager.players.append(Agent(screen=screen, start_pos=middle_pos.copy()))
+    tilemanager.players.append(Agent(screen=screen, start_pos=middle_pos.copy(), control_type=Globals.CONTROL_TYPE))
 
     # Colors
     stamina_yellow = (255, 255, 10)
