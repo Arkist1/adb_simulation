@@ -606,5 +606,6 @@ class Agent(Object):
             "Has_food_pickup": self.has_food_pickup(),
             "Visited_tiles_amt": len(self.visited_tiles),
             "Searched_tiles_amt": len(self.searched_tiles),
+            "Curr_tilemap_tile": self.current_tilemap_tile,
             "Lifetime": self.lifetime,
         }

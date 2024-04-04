@@ -213,4 +213,5 @@ class Enemy(Agent):
             "State": self.state,
             "Health": self.health,
             "Pushable": self.is_pushable,
+            "Curr_tilemap_tile": self.current_tilemap_tile,
         }
