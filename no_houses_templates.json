@@ -1,6 +1,6 @@
 {
 "spawn_chances": [0.6, 0.3, 0.1],
-"house_chance": 0.8,
+"house_chance": 0.7,
 "simple_house":{"walls":[],
                         "pickups": [
                            {"pos": [-200, -140], "chance": 0.5, "type": {"0": 0.3, "1":0.05,  "2":0.5, "3":0.15}},

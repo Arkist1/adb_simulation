@@ -15,17 +15,18 @@ class Main:
     def __init__(self) -> None:
         pygame.init()
         pygame.font.init()
-
         self.font = pygame.font.SysFont("Bahnschrift", 20)
         self.screen = pygame.display.set_mode(
             [Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT]
         )
+
         self.clock = pygame.time.Clock()
 
+    def init_sim(self):
         self.tile_manager = self.generate_tiles()
         self.camera_controller = self.generate_cameras()
 
-        self.camera_target = self.tile_manager.allplayers[0]
+        self.camera_target = self.tile_manager.players[0]
         self.cooldowns = {
             "spawn": 0,
             "bullet": 0,
@@ -42,14 +43,28 @@ class Main:
     def generate_tiles(self) -> TileManager:
         tile_manager = TileManager(Globals.TILE_SIZE, Globals.MAP_SIZE)
 
-        middle_x = math.floor(len(tile_manager.tiles) / 2)
-        middle_y = math.floor(len(tile_manager.tiles[0]) / 2)
-        middle_tile = tile_manager.get_tile([middle_x, middle_y])
-        self.middle_pos = middle_tile.pos + middle_tile.size / 2
+        if Globals.NUMBER_OF_AGENTS == 1:
+            middle_x = math.floor(len(tile_manager.tiles) / 2)
+            middle_y = math.floor(len(tile_manager.tiles[0]) / 2)
+            middle_tile = tile_manager.get_tile([middle_x, middle_y])
+            self.middle_pos = middle_tile.pos + middle_tile.size / 2
 
-        tile_manager.add_entity(
-            Agent(screen=self.screen, start_pos=self.middle_pos.copy())
-        )
+            tile_manager.add_entity(
+                Agent(screen=self.screen, start_pos=self.middle_pos.copy())
+            )
+        else:
+            for _ in range(Globals.NUMBER_OF_AGENTS):
+                tile_manager.add_entity(
+                    Agent(
+                        screen=self.screen,
+                        start_pos=pygame.Vector2(
+                            [
+                                int(random.random() * Globals.MAP_WIDTH),
+                                int(random.random() * Globals.MAP_HEIGHT),
+                            ]
+                        ),
+                    )
+                )
 
         templates = json.load(open("no_houses_templates.json", "r"))
         tile_manager.generate_terrain(templates, screen=self.screen)
@@ -79,6 +94,9 @@ class Main:
 
     def start(self) -> None:
         while Globals.RESTART:
+            print("Initializing new simulation")
+            self.init_sim()
+
             print("Starting new simulation")
             Globals.RESTART = False
             self.running = True
@@ -101,6 +119,9 @@ class Main:
 
         self.tile_manager.update_tiles()
         self.handle_inputs(dt, dt_mili)
+        if not self.running:
+            return
+
         self.handle_cooldowns(dt_mili, fps)
         self.handle_pickups()
 
@@ -129,6 +150,9 @@ class Main:
         }
 
         self.handle_sim_state(keys, inputs)
+        if not self.running:
+            return
+
         self.handle_players(inputs)
         self.handle_cams(dt_mili, inputs, keys, mouse_keys)
         self.handle_debug(dt_mili, keys)  # TODO Remove this
@@ -159,7 +183,7 @@ class Main:
             print("Drawing state:", Globals.DRAW)
 
     def handle_players(self, inputs):
-        for player in self.tile_manager.allplayers:
+        for player in self.tile_manager.players:
             if player.health <= 0:
                 self.tile_manager.remove_entity(player)
                 self.tile_manager.add_entity(
@@ -167,9 +191,9 @@ class Main:
                 )
                 if (
                     isinstance(self.camera_target, Agent)
-                    and self.camera_target not in self.tile_manager.allplayers
+                    and self.camera_target not in self.tile_manager.players
                 ):
-                    self.camera_target = self.tile_manager.allplayers[0]
+                    self.camera_target = self.tile_manager.players
 
                 self.running = False
                 Globals.RESTART = True
@@ -248,11 +272,11 @@ class Main:
 
         if self.cooldowns["fps"] <= 0:
             self.cooldowns["fps"] = 1000
-            print(len(self.tile_manager.allenemies), "FPS:", fps)
+            print(len(self.tile_manager.enemies), "FPS:", fps)
 
     def handle_pickups(self) -> None:  # TODO Handle multiple agents
         # current_player = self.tile_manager.allplayers[0]
-        for player in self.tile_manager.allplayers:
+        for player in self.tile_manager.players:
             for pu in self.tile_manager.get_adjacent_pickups(
                 tile_pos=player.current_tilemap_tile
             ):
@@ -295,10 +319,10 @@ class Main:
     def handle_debug(self, dt_mili, keys) -> None:  # TODO Remove this
         if keys[pygame.K_f] and dt_mili - self.cooldowns["cam_switch"] >= 0:
             self.cooldowns["cam_switch"] = 10
-            self.tile_manager.allplayers[0].health -= 25
+            self.tile_manager.players.health -= 25
 
     def handle_entity_movement(self, dt, inputs):
-        for en in self.tile_manager.allenemies:
+        for en in self.tile_manager.enemies:
             if en.health <= 0:
                 self.tile_manager.remove_entity(en)
 
@@ -350,6 +374,10 @@ class Main:
                 self.cooldowns["zoom"] = 0
 
     def draw(self, fps) -> None:  # TODO Split up in more functions
+        if type(self.camera_target) == Agent:
+            self.draw_player = self.camera_target
+        else:
+            self.draw_player = self.tile_manager.players[0]
 
         self.screen.fill((255, 255, 255))  # white background
 
@@ -362,13 +390,9 @@ class Main:
 
         for tile_row in self.tile_manager.tiles:
             for tile in tile_row:
-                if (
-                    tile in self.tile_manager.allplayers[0].searched_tiles
-                ):  # TODO Multiple agents
+                if tile in self.draw_player.searched_tiles:  # TODO Multiple agents
                     tile.draw(self.screen, cam, cols_searched[col_idx])
-                elif (
-                    tile in self.tile_manager.allplayers[0].visited_tiles
-                ):  # TODO Multiple agents
+                elif tile in self.draw_player.visited_tiles:  # TODO Multiple agents
                     tile.draw(self.screen, cam, cols_visited[col_idx])
                 else:
                     tile.draw(self.screen, cam, cols[col_idx])
@@ -402,17 +426,17 @@ class Main:
 
             bl.draw(cam=cam)
 
-        for pu in self.tile_manager.allpickups:
+        for pu in self.tile_manager.pickups:
             pu.draw(cam=cam)
 
-        for en in self.tile_manager.allenemies:
+        for en in self.tile_manager.enemies:
             en.draw(cam=cam)
 
-        for player in self.tile_manager.allplayers:
+        for player in self.tile_manager.players:
             # print(player)
             player.draw(cam=cam)
 
-        for wall in self.tile_manager.allwalls:
+        for wall in self.tile_manager.walls:
             wall.draw(cam=cam)
 
         ######## Map boundary drawing ########
@@ -444,9 +468,7 @@ class Main:
                 24,
                 604,
                 int(
-                    self.tile_manager.allplayers[0].stamina
-                    / self.tile_manager.allplayers[0].max_stamina
-                    * 250
+                    self.draw_player.stamina / self.draw_player.max_stamina * 250
                 ),  # TODO Multiple agents
                 15,
             )
@@ -457,11 +479,7 @@ class Main:
             food_bar = pygame.Rect(
                 24,
                 634,
-                int(
-                    self.tile_manager.allplayers[0].food
-                    / self.tile_manager.allplayers[0].max_food
-                    * 250
-                ),
+                int(self.draw_player.food / self.draw_player.max_food * 250),
                 15,  # TODO Multiple agents
             )
             pygame.draw.rect(self.screen, Globals.COLOR_FOOD, food_bar)
@@ -472,9 +490,7 @@ class Main:
                 24,
                 664,
                 int(
-                    self.tile_manager.allplayers[0].health
-                    / self.tile_manager.allplayers[0].max_health
-                    * 250
+                    self.draw_player.health / self.draw_player.max_health * 250
                 ),  # TODO Multiple agents
                 15,
             )
@@ -499,14 +515,15 @@ class Main:
                 self.screen.blit(txt, (0, index * 18 + 40))
 
         # debug, draw vectors from mouse to every entity when targetting for target cam
-        for en in self.tile_manager.get_mortals():
-            if self.cooldowns["target_self.cooldowns"] != 0:
-                pygame.draw.line(
-                    self.screen,
-                    (100, 200, 200),
-                    self.tile_manager.allplayers[0].pos * cam.zoom - cam.position,
-                    en.pos * cam.zoom - cam.position,
-                )
+        # if Globals.DEBUG:
+        #     for en in self.tile_manager.get_mortals():
+        #         if self.cooldowns["target_self.cooldowns"] != 0:
+        #             pygame.draw.line(
+        #                 self.screen,
+        #                 (100, 200, 200),
+        #                 self.draw_player.pos * cam.zoom - cam.position,
+        #                 en.pos * cam.zoom - cam.position,
+        #             )
 
         if cam == self.camera_controller.cameras["memecam"]:
             IMPACT = pygame.font.SysFont("impact", 100)

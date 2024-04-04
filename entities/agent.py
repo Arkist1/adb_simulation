@@ -112,10 +112,13 @@ class Agent(Object):
         self.current_tile = curr_tile
 
     def remove_pickup_from_memory(self, tilemanager, pu):
-        self.tile_pickups = self.tile_dict[
-            tilemanager.get_tile(self.current_tilemap_tile)
-        ]  # self.tile_dict[tilemanager(self.pos)]
-        self.tile_pickups = set(p for p in self.tile_pickups if p != pu)
+        for tile, pickups in self.tile_dict.items():
+            if pu in pickups:
+                self.tile_dict[tile].remove(pu)
+
+        # self.tile_dict[tilemanager.get_tile(self.current_tilemap_tile)].remove(pu)
+
+        # self.tile_pickups = set(p for p in self.tile_pickups if p != pu)
 
     def get_move(self, inputs: dict[str, bool], entities, bullets, mortals) -> None:
         """
@@ -127,6 +130,7 @@ class Agent(Object):
         Returns:
             pygame.Vector2: The move for the agent.
         """
+        # print(self.current_tilemap_tile)
         self.lifetime += inputs["dt_mili"]
         # generic move code
         for key, value in self.cd.items():
@@ -354,7 +358,7 @@ class Agent(Object):
                 not self.target_pickup
                 or utils.dist(self.target_pickup.pos, self.pos) < 5
             ):
-                target_pickup = None
+                self.target_pickup = None
                 closest_dist = 0
 
                 for tile, pickups in self.tile_dict.items():
@@ -364,11 +368,10 @@ class Agent(Object):
                                 dist_ := utils.dist(self.pos, pickup.pos)
                             ) < closest_dist or not closest_dist:
                                 closest_dist = dist_
-                                target_pickup = pickup
+                                self.target_pickup = pickup
 
                 # self.poi = target_tile.pos + (target_tile.size / 2)
-                self.poi = target_pickup.pos.copy()
-                self.target_pickup = target_pickup
+                self.poi = self.target_pickup.pos.copy()
                 self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
             # print(self.target_pickup, self.poi)
@@ -384,7 +387,8 @@ class Agent(Object):
                 not self.target_pickup
                 or utils.dist(self.target_pickup.pos, self.pos) < 5
             ):
-                target_pickup = None
+                print("getting new target pickup")
+                self.target_pickup = None
                 closest_dist = 0
 
                 for tile, pickups in self.tile_dict.items():
@@ -394,11 +398,10 @@ class Agent(Object):
                                 dist_ := utils.dist(self.pos, pickup.pos)
                             ) < closest_dist or not closest_dist:
                                 closest_dist = dist_
-                                target_pickup = pickup
+                                self.target_pickup = pickup
 
                 # self.poi = target_tile.pos + (target_tile.size / 2)
-                self.poi = target_pickup.pos.copy()
-                self.target_pickup = target_pickup
+                self.poi = self.target_pickup.pos.copy()
                 self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
             if dist(self.pos, self.poi) > 5:
@@ -619,5 +622,6 @@ class Agent(Object):
             "Visited_tiles_amt": len(self.visited_tiles),
             "Searched_tiles_amt": len(self.searched_tiles),
             "Curr_tilemap_tile": self.current_tilemap_tile,
+            "Poi": self.poi,
             "Lifetime": self.lifetime,
         }
