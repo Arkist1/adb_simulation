@@ -11,14 +11,14 @@ class Globals:
     SCREEN_HEIGHT = 700
     SCREEN_SIZE = pygame.Vector2(SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    MAP_WIDTH = SCREEN_WIDTH * 5
-    MAP_HEIGHT = SCREEN_HEIGHT * 5
+    MAP_WIDTH = SCREEN_WIDTH * 20
+    MAP_HEIGHT = SCREEN_HEIGHT * 20
     MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
 
     TILE_WIDTH = 1000
     TILE_HEIGHT = 700
     TILE_SIZE = pygame.Vector2(TILE_WIDTH, TILE_HEIGHT)
-    
+
     FPS_POSITION = (0, 0)
 
     SQR2 = 2 ** (1 / 2)
@@ -28,14 +28,14 @@ class Globals:
     DEBUG = True
     DRAW = True
 
-    CONTROL_TYPE = "agent"
+    CONTROL_TYPE = "human"
 
     SIM_SPEED = 1
     FPS = 60 * SIM_SPEED
 
     RESTART = True
     PAUSE = False
-    
+
     COLOR_STAMINA = (255, 255, 10)
     COLOR_FOOD = (90, 255, 140)
     COLOR_HEALTH = (255, 30, 70)

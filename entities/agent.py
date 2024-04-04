@@ -90,6 +90,7 @@ class Agent(Object):
         self.target_pickup = None
 
         self.lifetime = 0
+        self.current_tilemap_tile = []
 
     def memory(self, tilemanager, pickups):
         curr_tile = tilemanager(self.pos)
@@ -122,6 +123,7 @@ class Agent(Object):
         Returns:
             pygame.Vector2: The move for the agent.
         """
+        self.lifetime += inputs["dt_mili"]
         # generic move code
         for key, value in self.cd.items():
             if self.cd[key] >= 0:
@@ -528,12 +530,12 @@ class Agent(Object):
     def percept(self, tilemanager):
         self.vision_detections = []
         self.pickup_detections = []
-        for entity in tilemanager.get_mortal():
+        for entity in tilemanager.get_adjacent_mortals(self.pos):
             if self.detect(entity, tilemanager(self.pos).walls):
                 self.vision_detections.append(entity)
 
-        tile = tilemanager(self.pos)
-        for entity in tilemanager(self.pos).pickups:
+        # tile = tilemanager(self.pos)
+        for entity in tilemanager.get_adjacent_pickups(self.pos):
             if self.detect(entity, tilemanager(self.pos).walls):
                 self.pickup_detections.append(entity)
 
@@ -604,4 +606,5 @@ class Agent(Object):
             "Has_food_pickup": self.has_food_pickup(),
             "Visited_tiles_amt": len(self.visited_tiles),
             "Searched_tiles_amt": len(self.searched_tiles),
+            "Lifetime": self.lifetime,
         }

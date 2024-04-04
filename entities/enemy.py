@@ -129,8 +129,9 @@ class Enemy(Agent):
         """
         visions = []
         sounds = []
-        for entity in entities.players:
-            # print(self.pos)
+        # for entity in entities.get_adjacent_players(self.pos):
+        for entity in entities.get_adjacent_players(self.pos):
+            # print(entity)
             if self.detect(entity, entities(self.pos).walls):
                 visions.append(entity)
 
