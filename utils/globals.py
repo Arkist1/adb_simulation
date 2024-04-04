@@ -11,8 +11,8 @@ class Globals:
     SCREEN_HEIGHT = 700
     SCREEN_SIZE = pygame.Vector2(SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    MAP_WIDTH = SCREEN_WIDTH * 20
-    MAP_HEIGHT = SCREEN_HEIGHT * 20
+    MAP_WIDTH = SCREEN_WIDTH * 30
+    MAP_HEIGHT = SCREEN_HEIGHT * 30
     MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
 
     TILE_WIDTH = 1000
@@ -30,8 +30,8 @@ class Globals:
 
     CONTROL_TYPE = "human"
 
-    SIM_SPEED = 3
-    FPS = 60 * SIM_SPEED
+    SIM_SPEED = 1
+    FPS = 1 * SIM_SPEED
 
     RESTART = True
     PAUSE = False

@@ -67,6 +67,7 @@ class TileManager(EntityHolder):
                     return [x, y]
 
     def __call__(self, pos: pygame.Vector2) -> Tile:
+        print("we have a caller")
         indices = self.get_curr_tile(pos)
         return self.tiles[indices[0]][indices[1]]
 
