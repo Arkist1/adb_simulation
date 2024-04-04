@@ -1,7 +1,7 @@
 from camera import Camera, CameraController
 
 from entities import Bullet, Agent, Wall, Pickup, Enemy
-from utils import Object, Hitbox, Globals, EntityHolder, House, TileManager
+from utils import Object, Hitbox, Globals, EntityHolder, House, TileManager, dist
 
 import random
 import pygame
@@ -44,7 +44,7 @@ class Main:
 
         middle_x = math.floor(len(tile_manager.tiles) / 2)
         middle_y = math.floor(len(tile_manager.tiles[0]) / 2)
-        middle_tile = tile_manager.tiles[middle_x][middle_y]
+        middle_tile = tile_manager.get_tile([middle_x, middle_y])
         self.middle_pos = middle_tile.pos + middle_tile.size / 2
 
         tile_manager.add_entity(
@@ -81,6 +81,7 @@ class Main:
         while Globals.RESTART:
             print("Starting new simulation")
             Globals.RESTART = False
+            self.running = True
             self.run_simulation()
         pygame.quit()
 
@@ -160,8 +161,8 @@ class Main:
     def handle_players(self, inputs):
         for player in self.tile_manager.allplayers:
             if player.health <= 0:
-                self.tile_manager.allplayers.remove(player)
-                self.tile_manager.allplayers.append(
+                self.tile_manager.remove_entity(player)
+                self.tile_manager.add_entity(
                     Agent(screen=self.screen, start_pos=self.middle_pos.copy())
                 )
                 if (
@@ -173,12 +174,17 @@ class Main:
                 self.running = False
                 Globals.RESTART = True
                 continue
+
             player.percept(self.tile_manager)
             player.get_move(
                 inputs,
-                self.tile_manager.get_adjacent_items(player.pos),
+                self.tile_manager.get_adjacent_items(
+                    tile_pos=player.current_tilemap_tile
+                ),
                 self.tile_manager.bullets,
-                self.tile_manager.get_mortal(),
+                self.tile_manager.get_adjacent_mortals(
+                    tile_pos=player.current_tilemap_tile
+                ),
             )
 
             self.camera_controller.cameras["playercam"].position = (
@@ -219,16 +225,16 @@ class Main:
             self.cooldowns["target_self.cooldowns"] = 500
             closest_obj = None
             closest_dist = None
-            for item in self.tile_manager.get_items():
-                dist = abs(sum(inputs["mouse_pos"] - item.pos))
+            for entity in self.tile_manager.get_items():
+                distance = dist(inputs["mouse_pos"], entity.pos)
                 if not closest_dist:
-                    closest_dist = dist
-                    closest_obj = item
+                    closest_dist = distance
+                    closest_obj = entity
                     continue
 
-                if closest_dist > dist:
-                    closest_dist = dist
-                    closest_obj = item
+                if closest_dist > distance:
+                    closest_dist = distance
+                    closest_obj = entity
 
             self.camera_target = closest_obj
 
@@ -245,20 +251,23 @@ class Main:
             print(len(self.tile_manager.allenemies), "FPS:", fps)
 
     def handle_pickups(self) -> None:  # TODO Handle multiple agents
-        current_player = self.tile_manager.allplayers[0]
-        for pu in self.tile_manager(current_player.pos).pickups:
-            if current_player.is_colliding(pu):
-                self.tile_manager(current_player.pos).pickups.remove(pu)
-                current_player.remove_pickup_from_memory(self.tile_manager, pu)
-                if pu.pickup_type == 0 or pu.pickup_type == 1:
-                    current_player.health = min(
-                        (current_player.health + pu.picked_up()),
-                        current_player.max_health,
-                    )
-                elif pu.pickup_type == 2 or pu.pickup_type == 3:
-                    current_player.food = min(
-                        (current_player.food + pu.picked_up()), current_player.max_food
-                    )
+        # current_player = self.tile_manager.allplayers[0]
+        for player in self.tile_manager.allplayers:
+            for pu in self.tile_manager.get_adjacent_pickups(
+                tile_pos=player.current_tilemap_tile
+            ):
+                if player.is_colliding(pu):
+                    self.tile_manager.remove_entity(pu)
+                    player.remove_pickup_from_memory(self.tile_manager, pu)
+                    if pu.pickup_type == 0 or pu.pickup_type == 1:
+                        player.health = min(
+                            (player.health + pu.picked_up()),
+                            player.max_health,
+                        )
+                    elif pu.pickup_type == 2 or pu.pickup_type == 3:
+                        player.food = min(
+                            (player.food + pu.picked_up()), player.max_food
+                        )
 
     def handle_manual_spawn(self, dt_mili, inputs, keys):
 
@@ -275,7 +284,7 @@ class Main:
         ### manual pickup spawning ###
         if keys[pygame.K_n] and dt_mili - self.cooldowns["spawn"] > 0:
             self.cooldowns["spawn"] = 500
-            self.tile_manager.pickups.append(
+            self.tile_manager.add_entity(
                 Pickup(
                     pickup_type=random.randint(0, 3),
                     start_pos=inputs["mouse_pos"],
@@ -292,10 +301,13 @@ class Main:
         for en in self.tile_manager.allenemies:
             if en.health <= 0:
                 self.tile_manager.remove_entity(en)
+
             en.percept(self.tile_manager)
             en.get_move(
                 inputs={"dt": dt},
-                entities=self.tile_manager.get_tiled_items(en.pos),
+                entities=self.tile_manager.get_adjacent_items(
+                    tile_pos=en.current_tilemap_tile
+                ),
             )
 
         for bl in self.tile_manager.bullets:
@@ -487,7 +499,7 @@ class Main:
                 self.screen.blit(txt, (0, index * 18 + 40))
 
         # debug, draw vectors from mouse to every entity when targetting for target cam
-        for en in self.tile_manager.get_mortal():
+        for en in self.tile_manager.get_mortals():
             if self.cooldowns["target_self.cooldowns"] != 0:
                 pygame.draw.line(
                     self.screen,

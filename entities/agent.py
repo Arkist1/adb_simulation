@@ -93,7 +93,9 @@ class Agent(Object):
         self.current_tilemap_tile = []
 
     def memory(self, tilemanager, pickups):
-        curr_tile = tilemanager(self.pos)
+        curr_tile = tilemanager.get_tile(
+            self.current_tilemap_tile
+        )  # tilemanager(self.pos)
         if curr_tile in self.visited_tiles and self.current_tile != curr_tile:
             self.tile_pickups = self.tile_dict[curr_tile]
         if self.current_tile == curr_tile:
@@ -110,7 +112,9 @@ class Agent(Object):
         self.current_tile = curr_tile
 
     def remove_pickup_from_memory(self, tilemanager, pu):
-        self.tile_pickups = self.tile_dict[tilemanager(self.pos)]
+        self.tile_pickups = self.tile_dict[
+            tilemanager.get_tile(self.current_tilemap_tile)
+        ]  # self.tile_dict[tilemanager(self.pos)]
         self.tile_pickups = set(p for p in self.tile_pickups if p != pu)
 
     def get_move(self, inputs: dict[str, bool], entities, bullets, mortals) -> None:
@@ -530,13 +534,21 @@ class Agent(Object):
     def percept(self, tilemanager):
         self.vision_detections = []
         self.pickup_detections = []
-        for entity in tilemanager.get_adjacent_mortals(self.pos):
-            if self.detect(entity, tilemanager(self.pos).walls):
+        for entity in tilemanager.get_adjacent_mortals(
+            tile_pos=self.current_tilemap_tile
+        ):
+            if self.detect(
+                entity, tilemanager.get_tile(self.current_tilemap_tile).walls
+            ):
                 self.vision_detections.append(entity)
 
         # tile = tilemanager(self.pos)
-        for entity in tilemanager.get_adjacent_pickups(self.pos):
-            if self.detect(entity, tilemanager(self.pos).walls):
+        for entity in tilemanager.get_adjacent_pickups(
+            tile_pos=self.current_tilemap_tile
+        ):
+            if self.detect(
+                entity, tilemanager.get_tile(self.current_tilemap_tile).walls
+            ):
                 self.pickup_detections.append(entity)
 
         self.memory(tilemanager, self.pickup_detections)

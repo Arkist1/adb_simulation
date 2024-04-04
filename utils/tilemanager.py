@@ -30,8 +30,8 @@ class TileManager(EntityHolder):
                     )
                 )
 
-        self.max_x = self.max_x
-        self.max_y = self.max_y
+        self.max_x = len(self.tiles)
+        self.max_y = len(self.tiles[0])
 
     def get_curr_tile(self, pos: pygame.Vector2) -> list[int, int]:
         for xindex in range(0, self.max_x):
@@ -124,6 +124,8 @@ class TileManager(EntityHolder):
                     self.tiles[xindex][yindex].walls = h.walls
                     self.tiles[xindex][yindex].pickups = h.pickups
                     self.tiles[xindex][yindex].enemies = h.enemies
+                    for en in h.enemies:
+                        en.current_tilemap_tile = [xindex, yindex]
 
     def get_tiled_items(self, pos: pygame.Vector2):
         tile = self(pos)
@@ -138,72 +140,51 @@ class TileManager(EntityHolder):
 
     def get_items(self):
         return (
-            self.players
+            self.allplayers
             + self.boxes
             + self.bullets
-            + self.enemies
+            + self.allenemies
             + self.allwalls
             + self.allpickups
         )
 
-    def get_adjacent_items(self, pos=None, tile_pos=None, xrange=1, yrange=1):
+    def get_adjacent_entities(
+        self, pos=None, tile_pos=None, xrange=1, yrange=1, attr=None
+    ):
+        # print(tile_pos)
         if not tile_pos:
-        indices = self.get_curr_tile(pos)
+            tile_pos = self.get_curr_tile(pos)
+
+        center_x, center_y = tile_pos
+
         entities = []
         for x in range(
-            max(0, indices[0] - xrange), min(self.max_x, indices[0] + xrange + 1)
+            max(0, center_x - xrange), min(self.max_x, center_x + xrange + 1)
         ):
             for y in range(
-                max(0, indices[1] - yrange),
-                min(self.max_y, indices[1] + yrange + 1),
+                max(0, center_y - yrange),
+                min(self.max_y, center_y + yrange + 1),
             ):
                 # print(x, y)
-                entities += self.tiles[x][y].get_items()
+                res = getattr(self.tiles[x][y], attr)
+                if callable(res):
+                    entities += res()
+                else:
+                    entities += res
 
         return entities
 
-    def get_adjacent_pickups(self, pos, xrange=1, yrange=1):
-        indices = self.get_curr_tile(pos)
-        entities = []
-        for x in range(
-            max(0, indices[0] - xrange), min(self.max_x, indices[0] + xrange + 1)
-        ):
-            for y in range(
-                max(0, indices[1] - yrange),
-                min(self.max_y, indices[1] + yrange + 1),
-            ):
-                # print(x, y)
-                entities += self.tiles[x][y].pickups
+    def get_adjacent_items(self, pos=None, tile_pos=None, xrange=1, yrange=1):
+        return self.get_adjacent_entities(pos, tile_pos, xrange, yrange, "get_items")
 
-        return entities
+    def get_adjacent_mortals(self, pos=None, tile_pos=None, xrange=1, yrange=1):
+        return self.get_adjacent_entities(pos, tile_pos, xrange, yrange, "get_mortals")
 
-    def get_adjacent_mortals(self, pos, xrange=1, yrange=1):
-        indices = self.get_curr_tile(pos)
-        entities = []
-        for x in range(
-            max(0, indices[0] - xrange), min(self.max_x, indices[0] + xrange + 1)
-        ):
-            for y in range(
-                max(0, indices[1] - yrange),
-                min(self.max_y, indices[1] + yrange + 1),
-            ):
-                entities += self.tiles[x][y].get_mortal()
+    def get_adjacent_pickups(self, pos=None, tile_pos=None, xrange=1, yrange=1):
+        return self.get_adjacent_entities(pos, tile_pos, xrange, yrange, "pickups")
 
-        return entities
-
-    def get_adjacent_players(self, pos, xrange=1, yrange=1):
-        curr_x, curr_y = self.get_curr_tile(pos)
-        entities = []
-        for x in range(max(0, curr_x - xrange), min(self.max_x, curr_x + xrange + 1)):
-            for y in range(
-                max(0, curr_y - yrange),
-                min(self.max_y, curr_y + yrange + 1),
-            ):
-                # print(x, y)
-                # print(self.tiles[x][y].players)
-                entities += self.tiles[x][y].players
-
-        return entities
+    def get_adjacent_players(self, pos=None, tile_pos=None, xrange=1, yrange=1):
+        return self.get_adjacent_entities(pos, tile_pos, xrange, yrange, "players")
 
     def update_tiles(self):
         for x in range(self.max_x):
@@ -238,15 +219,23 @@ class TileManager(EntityHolder):
             self.tiles[x][y].enemies.append(entity)
             entity.current_tilemap_tile = [x, y]
 
-    def remove_entity(self, entity):
-        if isinstance(entity, Agent):
-            indices = self.get_curr_tile(entity.pos)
-            self.tiles[indices[0]][indices[1]].players.remove(entity)
+        elif isinstance(entity, Pickup):
+            x, y = self.get_curr_tile(entity.pos)
+            self.tiles[x][y].pickups.append(entity)
+            entity.current_tilemap_tile = [x, y]
 
-        elif isinstance(entity, Enemy):
+    def remove_entity(self, entity):
+        if isinstance(entity, Enemy):
             indices = self.get_curr_tile(entity.pos)
             self.tiles[indices[0]][indices[1]].enemies.remove(entity)
+
+        elif isinstance(entity, Agent):
+            indices = self.get_curr_tile(entity.pos)
+            self.tiles[indices[0]][indices[1]].players.remove(entity)
 
         elif isinstance(entity, Pickup):
             indices = self.get_curr_tile(entity.pos)
             self.tiles[indices[0]][indices[1]].pickups.remove(entity)
+
+    def get_tile(self, tile_pos):
+        return self.tiles[tile_pos[0]][tile_pos[1]]

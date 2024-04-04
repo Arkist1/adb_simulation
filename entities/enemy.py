@@ -117,7 +117,7 @@ class Enemy(Agent):
 
         return delta
 
-    def percept(self, entities):
+    def percept(self, tilemanager):
         """
         Checks if the given agent is within the vision cone of this enemy.
 
@@ -130,9 +130,13 @@ class Enemy(Agent):
         visions = []
         sounds = []
         # for entity in entities.get_adjacent_players(self.pos):
-        for entity in entities.get_adjacent_players(self.pos):
+        for entity in tilemanager.get_adjacent_players(
+            tile_pos=self.current_tilemap_tile
+        ):
             # print(entity)
-            if self.detect(entity, entities(self.pos).walls):
+            if self.detect(
+                entity, tilemanager.get_tile(self.current_tilemap_tile).walls
+            ):
                 visions.append(entity)
 
             if self.hear(entity):
