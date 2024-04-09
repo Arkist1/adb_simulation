@@ -41,6 +41,8 @@ class Globals:
     COLOR_FOOD = (90, 255, 140)
     COLOR_HEALTH = (255, 30, 70)
     COLOR_BAR = (75, 75, 75)
+    
+    MAIN = None
 
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:

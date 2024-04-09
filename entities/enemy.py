@@ -2,6 +2,7 @@ from math import sqrt, atan2, degrees
 import math
 from .agent import Agent
 from utils import Globals
+from utils.logger import EnemyDetection, EnemyChangeState
 import utils
 
 import random
@@ -138,9 +139,11 @@ class Enemy(Agent):
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
             ):
                 visions.append(entity)
+                Globals.MAIN.logger.log(EnemyDetection("vision", self.__hash__(), entity.__hash__()))
 
             if self.hear(entity):
                 sounds.append(entity)
+                Globals.MAIN.logger.log(EnemyDetection("sound", self.__hash__(), entity.__hash__()))
                 # print("sound")
             if (entity.radius + self.radius + 10) > utils.dist(
                 self.pos, entity.pos
@@ -151,6 +154,8 @@ class Enemy(Agent):
         if visions:
             # print("vision detection has been made")
             # print(detections[0].pos)
+            if self.state != "chasing":
+                Globals.MAIN.logger.log(EnemyChangeState(self.__hash__(), self.state, "chasing"))
             self.state = "chasing"
             self.poi = visions[0].pos.copy()
             self.last_agent = visions[0]
@@ -159,6 +164,8 @@ class Enemy(Agent):
 
         elif sounds:
             # print("sound detection has been made")
+            if self.state != "alert":
+                Globals.MAIN.logger.log(EnemyChangeState(self.__hash__(), self.state, "alert"))
             self.state = "alert"
             self.poi = sounds[0].pos.copy()
 
@@ -170,11 +177,14 @@ class Enemy(Agent):
             if self.state == "chasing":
                 if self in self.last_agent.chasing_enemies:
                     self.last_agent.chasing_enemies.remove(self)
+                Globals.MAIN.logger.log(EnemyChangeState(self.__hash__(), self.state, "alert"))
                 self.state = "alert"
 
             elif (
                 not self.moving and self.move_timer <= 0
             ):  # Only get new poi if old one has been reached
+                if self.state != "wandering":
+                    Globals.MAIN.logger.log(EnemyChangeState(self.__hash__(), self.state, "wandering"))
                 self.state = "wandering"
 
                 self.poi = pygame.Vector2(

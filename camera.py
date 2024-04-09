@@ -1,4 +1,4 @@
-from utils import Globals
+from utils import Globals, ChangeCam
 
 import pygame
 
@@ -37,6 +37,7 @@ class CameraController:
 
     def change_cam(self, cam: str):
         print("switching to", cam)
+        Globals.MAIN.logger.log(ChangeCam(self.curr_cam_name, cam))
         self.curr_cam_name = cam
         self.curr_cam = self.cameras[cam]
 

@@ -2,7 +2,8 @@ from .gun import Gun
 from .sword import Sword
 from .vision_cone import VisionCone
 from .sound_circle import SoundCircle
-from utils import Globals, Object, Hitbox, dist
+from utils import Globals, Object, dist
+from utils.logger import AgentDetection
 import utils
 import math
 import numpy
@@ -544,6 +545,7 @@ class Agent(Object):
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
             ):
                 self.vision_detections.append(entity)
+                Globals.MAIN.logger.log(AgentDetection("vision", self.__hash__(), entity.__hash__()))
 
         # tile = tilemanager(self.pos)
         for entity in tilemanager.get_adjacent_pickups(
@@ -553,6 +555,7 @@ class Agent(Object):
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
             ):
                 self.pickup_detections.append(entity)
+                Globals.MAIN.logger.log(AgentDetection("pickup", self.__hash__(), entity.__hash__()))
 
         self.memory(tilemanager, self.pickup_detections)
         # print(self.pickup_detections)

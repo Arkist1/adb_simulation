@@ -1,7 +1,7 @@
 from camera import Camera, CameraController
 
 from entities import Bullet, Agent, Wall, Pickup, Enemy
-from utils import Object, Hitbox, Globals, EntityHolder, House, TileManager, dist
+from utils import *
 
 import random
 import pygame
@@ -21,6 +21,8 @@ class Main:
         )
 
         self.clock = pygame.time.Clock()
+        self.logger = Logger()
+        Globals.MAIN = self
 
     def init_sim(self):
         self.tile_manager = self.generate_tiles()
@@ -115,6 +117,8 @@ class Main:
         # check for closing pygame._sdl2.video.Window
         for event in pygame.event.get():  # event loop
             if event.type == pygame.QUIT:
+                with open("log.json", 'w') as f:
+                    json.dump([log.dict() for log in self.logger.logs], f)
                 self.running = False
 
         self.tile_manager.update_tiles()
@@ -132,6 +136,10 @@ class Main:
         keys = pygame.key.get_pressed()
         mouse_keys = pygame.mouse.get_pressed()
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
+
+        if keys[pygame.K_o] and self.cooldowns["pause_switch"] == 0:
+            print(self.logger)
+            self.cooldowns["pause_switch"] = 500
 
         inputs = {
             "up": keys[pygame.K_w],
@@ -163,6 +171,7 @@ class Main:
         if keys[pygame.K_r]:
             self.running = False
             Globals.RESTART = True
+            self.logger.log(ChangeSimState("restart"))
             return
 
         self.cooldowns["pause_switch"] = max(
@@ -172,6 +181,7 @@ class Main:
         if keys[pygame.K_p] and self.cooldowns["pause_switch"] == 0:
             Globals.PAUSE = not Globals.PAUSE
             print("Pause_state:", Globals.PAUSE)
+            self.logger.log(ChangeSimState(f"pause={Globals.PAUSE}"))
             self.cooldowns["pause_switch"] = 500
 
         if Globals.PAUSE:
@@ -180,6 +190,7 @@ class Main:
         if keys[pygame.K_BACKSPACE] and self.cooldowns["draw_switch"] <= 0:
             self.cooldowns["draw_switch"] = 500
             Globals.DRAW = False if Globals.DRAW else True
+            ChangeDrawState(Globals.DRAW)
             print("Drawing state:", Globals.DRAW)
 
     def handle_players(self, inputs):
@@ -305,16 +316,19 @@ class Main:
                     start_pos=inputs["mouse_pos"],
                 )
             )
+            self.logger.log(ManualSpawn("enemy", inputs["mouse_pos"]))
         ### manual pickup spawning ###
         if keys[pygame.K_n] and dt_mili - self.cooldowns["spawn"] > 0:
             self.cooldowns["spawn"] = 500
+            r = random.randint(0, 3)
             self.tile_manager.add_entity(
                 Pickup(
-                    pickup_type=random.randint(0, 3),
+                    pickup_type=r,
                     start_pos=inputs["mouse_pos"],
                     screen=self.screen,
                 )
             )
+            self.logger.log(ManualSpawn(f"pickup({r})", inputs["mouse_pos"]))
 
     def handle_debug(self, dt_mili, keys) -> None:  # TODO Remove this
         if keys[pygame.K_f] and dt_mili - self.cooldowns["cam_switch"] >= 0:
