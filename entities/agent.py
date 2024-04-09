@@ -67,12 +67,13 @@ class Agent(Object):
         self.stamina = stamina
         self.max_stamina = stamina
         self.stamina_cooldown = 1000
+        self.wait_for_stamina = 5000
 
         # is moving flags
         self.is_crouching = False
         self.is_running = False
 
-        self.cd = {"stamina_regen": 0, "food": 0}
+        self.cd = {"stamina_regen": 0, "food": 0, "stamina_wait": 0}
 
         self.is_moving = False
 
@@ -142,6 +143,30 @@ class Agent(Object):
         self.is_crouching = False
         self.is_running = False
 
+        moving = inputs["up"] or inputs["down"] or inputs["left"] or inputs["right"]
+
+        if inputs["sprint"] and self.stamina > 0 and moving:
+            self.sprint()
+
+        elif inputs["crouch"] and self.stamina > 0 and moving:
+            self.crouch()
+
+        elif moving:
+            self.walk()
+
+        else:
+            self.standing()
+
+        if inputs["attack"]:
+            if type(self.weapon) == Gun:
+                self.shoot(inputs["mouse_pos"], bullets)
+            elif type(self.weapon) == Sword:
+                self.swing(inputs["mouse_pos"])
+                for entity in mortals:
+                    if self.weapon.hit(entity) and not self.weapon.did_damage:
+                        entity.health -= self.weapon.damage
+                self.weapon.did_damage = True
+
         if type(self.weapon) == Sword and self.weapon.duration_cd >= 0:
             self.weapon.duration_cd -= inputs["dt_mili"] * Globals.SIM_SPEED
         else:
@@ -180,203 +205,280 @@ class Agent(Object):
                     entity.health -= self.weapon.damage
             self.weapon.did_damage = True
 
+    def standing(self):
+        self.speed = self.speeds["walking"]
+        self.sound_circle.sound_range = 0
+
+    def walk(self):
+        self.speed = self.speeds["walking"]
+        self.sound_circle.sound_range = self.base_sound_range
+
+
+    def sprint(self):
+        self.stamina -= 1
+        self.cd["stamina_regen"] = self.stamina_cooldown
+        self.speed = self.speeds["sprinting"]
+
+        self.hunger_rate = self.hunger_rates["low"]
+        self.is_running = True
+        self.sound_circle.sound_range = self.base_sound_range * 2
+
+    def crouch(self):
+        self.stamina -= 0.5
+        self.cd["stamina_regen"] = self.stamina_cooldown
+        self.speed = self.speeds["crouching"]
+        
+        self.hunger_rate = self.hunger_rates["low"]
+        self.is_crouching = True
+        self.sound_circle.sound_range = self.base_sound_range / 3
+
     def get_agent_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
-        if self.chasing_enemies:
+        if self.vision_detections:
+            closest_enemy = None
+            closest_dist = 0
+            for en in self.vision_detections:
+                if (
+                    dist_ := utils.dist(self.pos, en.pos)
+                ) < closest_dist or not closest_dist:
+                    closest_dist = dist_
+                    closest_enemy = en
+            if self.health >= (self.max_health * 0.5) and closest_enemy.state != "chasing" \
+               and self.stamina >= (self.max_stamina * 0.50):
+                self.state = "sneak"
+                self.sneak(inputs, entities, closest_enemy, closest_dist)
+            elif self.health >= (self.max_health * 0.5) and self.stamina >= (self.max_stamina * 0.25):
+                self.state = "fight"
+                self.fight(inputs, entities, closest_enemy, closest_dist)
+            else:
+                self.state = "flee"
+                self.flee(inputs, entities, self.vision_detections)
+
+        elif self.chasing_enemies:
             closest_enemy = None
             closest_dist = 0
 
             for en in self.chasing_enemies:
                 if (
                     dist_ := utils.dist(self.pos, en.pos)
-                ) > closest_dist or not closest_dist:
+                ) < closest_dist or not closest_dist:
                     closest_dist = dist_
                     closest_enemy = en
 
             if self.health >= (self.max_health * 0.5) and (
-                closest_dist < 130 or self.food <= (self.max_food * 0.3)
+                closest_dist < 130 or self.food <= (self.max_food * 0.3) and self.stamina >= (self.max_stamina * 0.25)
             ):
                 self.state = "fight"
+                self.fight(inputs, entities, closest_enemy, closest_dist)
             else:
                 self.state = "flee"
-
+                self.flee(inputs, entities, self.chasing_enemies)
         else:
             if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
                 self.state = "low_health"
+                self.low_health(inputs, entities)
             elif self.food < (self.max_food * 0.3) and self.has_food_pickup():
                 self.state = "low_food"
+                self.low_food(inputs, entities)
             else:
                 self.state = "explore"
+                self.explore(inputs, entities)
 
-        # Xanders ballencode
-        if self.state == "explore":
-            self.target_pickup = None
-            if self.current_tile not in self.searched_tiles:
+        print(self.state)
+        self.chasing_enemies = set()
+        # self.get_random_move(inputs, entities)
+
+    def explore(self, inputs, entities):
+        
+        self.target_pickup = None
+        self.walk()
+        if self.current_tile not in self.searched_tiles:
+            tx = (self.pos.x // 1000) * 1000 + 500
+            ty = (self.pos.y // 700) * 700 + 350
+            center = pygame.Vector2(tx, ty)
+            self.vision_cone.rotation = utils.angle_to(center, self.pos)
+            if dist(self.pos, center) > (5 * Globals.SIM_SPEED):
+                
+                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+                vec = center - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
+
+            else:
+                self.poi = None
+                self.standing()
+                if self.search_angle < 180:
+                    self.search_angle += 3 * Globals.SIM_SPEED
+
+                else:
+                    self.search_angle = -180
+                    self.searched_tiles.add(self.current_tile)
+                self.vision_cone.rotation = self.search_angle
+        else:
+            if not self.poi:
                 tx = (self.pos.x // 1000) * 1000 + 500
                 ty = (self.pos.y // 700) * 700 + 350
-                center = pygame.Vector2(tx, ty)
-                self.vision_cone.rotation = utils.angle_to(center, self.pos)
-                if dist(self.pos, center) > (5 * Globals.SIM_SPEED):
-                    s = self.speed * inputs["dt"] * Globals.SIM_SPEED
-                    vec = center - self.pos
-                    vec = vec.normalize() * s
-                    self.move(vec, entities)
-                    self.sound_circle.sound_range = self.base_sound_range
+                directions = [0, 1, 2, 3]
+                random.shuffle(directions)
+                visit = 1
+                for r in directions:
+                    if visit == 0 or r == directions[3]:
+                        # print("break")
+                        break
 
-                else:
-                    self.poi = None
-                    if self.search_angle < 180:
-                        self.search_angle += 3 * Globals.SIM_SPEED
+                    direction = [[1000, 0], [-1000, 0], [0, 700], [0, -700]][r]
+                    cent_point = [tx + direction[0], ty + direction[1]]
 
-                    else:
-                        self.search_angle = -180
-                        self.searched_tiles.add(self.current_tile)
-                    self.sound_circle.sound_range = 0
-                    self.vision_cone.rotation = self.search_angle
-            else:
-                if not self.poi:
-                    tx = (self.pos.x // 1000) * 1000 + 500
-                    ty = (self.pos.y // 700) * 700 + 350
-                    directions = [0, 1, 2, 3]
-                    random.shuffle(directions)
-                    visit = 1
-                    for r in directions:
-                        if visit == 0 or r == directions[3]:
-                            # print("break")
+                    if cent_point[0] <= 0.0:
+                        cent_point[0] += 1000
+                    if cent_point[0] >= Globals.MAP_WIDTH:
+                        cent_point[0] -= 1000
+                    if cent_point[1] <= 0.0:
+                        cent_point[1] += 700
+                    if cent_point[1] >= Globals.MAP_HEIGHT:
+                        cent_point[1] -= 700
+
+                    center = pygame.Vector2(cent_point[0], cent_point[1])
+                    self.poi = center.copy()
+
+                    for tile in self.searched_tiles:
+                        # print(
+                        #     tile.pos,
+                        #     tile.rect.center,
+                        #     self.poi,
+                        #     tile.rect.collidepoint(self.poi),
+                        # )
+                        if tile.rect.collidepoint(self.poi):
+                            visit = 1
+                            # print(visit)
                             break
 
-                        direction = [[1000, 0], [-1000, 0], [0, 700], [0, -700]][r]
-                        cent_point = [tx + direction[0], ty + direction[1]]
+                        else:
+                            visit = 0
+                            # print(visit)
 
-                        if cent_point[0] <= 0.0:
-                            cent_point[0] += 1000
-                        if cent_point[0] >= Globals.MAP_WIDTH:
-                            cent_point[0] -= 1000
-                        if cent_point[1] <= 0.0:
-                            cent_point[1] += 700
-                        if cent_point[1] >= Globals.MAP_HEIGHT:
-                            cent_point[1] -= 700
+                self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
-                        center = pygame.Vector2(cent_point[0], cent_point[1])
-                        self.poi = center.copy()
+            if dist(self.pos, self.poi) > (5 * Globals.SIM_SPEED):
 
-                        for tile in self.searched_tiles:
-                            # print(
-                            #     tile.pos,
-                            #     tile.rect.center,
-                            #     self.poi,
-                            #     tile.rect.collidepoint(self.poi),
-                            # )
-                            if tile.rect.collidepoint(self.poi):
-                                visit = 1
-                                # print(visit)
-                                break
+                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+                vec = self.poi - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
 
-                            else:
-                                visit = 0
-                                # print(visit)
+            else:
+                self.poi = None
 
-                    self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
-
-                if dist(self.pos, self.poi) > (5 * Globals.SIM_SPEED):
-
-                    s = self.speed * inputs["dt"] * Globals.SIM_SPEED
-                    vec = self.poi - self.pos
-                    vec = vec.normalize() * s
-                    self.move(vec, entities)
-                    self.sound_circle.sound_range = self.base_sound_range
-
-                else:
-                    self.poi = None
-
-        elif self.state == "fight":
-            self.target_pickup = None
-            self.poi = closest_enemy.pos.copy()
+    def fight(self, inputs, entities, closest_enemy, closest_dist):
+        if closest_dist >= 100 and self.stamina >= (self.max_stamina * 0.5):
+            self.sprint()
+        else:
+            self.walk()
+        self.target_pickup = None
+        self.poi = closest_enemy.pos.copy()
+        if closest_dist <= 100:
             self.swing(self.poi)
 
+        s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+        vec = self.poi - self.pos
+        vec = vec.normalize() * s
+        self.move(vec, entities)
+        self.vision_cone.rotation = vec.angle_to([0, 0])
+
+    
+    def sneak(self, inputs, entities, closest_enemy, closest_dist):
+        if closest_dist >= 250:
+            self.walk()
+        else:
+            self.crouch()
+        self.target_pickup = None
+        self.poi = closest_enemy.pos.copy()
+        if closest_dist <= 100:
+            self.swing(self.poi)
+
+        s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+        vec = self.poi - self.pos
+        vec = vec.normalize() * s
+        self.move(vec, entities)
+        self.vision_cone.rotation = vec.angle_to([0, 0])
+
+    def flee(self, inputs, entities, chasing_enemies):
+        if self.stamina >= 25 and self.cd["stamina_wait"] <= 0:
+            self.sprint()
+        else:
+            self.wait_for_stamina = 5000
+            self.walk()
+        self.target_pickup = None
+        self.poi = None
+        # calculating best angle to flee at
+        angle = pygame.Vector2([0, 0])
+        for en in chasing_enemies:
+            angle += utils.angle_to_direction(
+                math.radians(utils.angle_to(self.pos, en.pos))
+            )
+
+        angle = angle / len(chasing_enemies) + pygame.Vector2(
+            random.random() / 5, random.random() / 5
+        )
+        self.vision_cone.rotation = angle.angle_to([0, 0])
+        self.move((angle * self.speed * inputs["dt"] * Globals.SIM_SPEED), entities)
+
+    def low_health(self, inputs, entities):
+        self.walk()
+        if (
+            not self.target_pickup
+            or utils.dist(self.target_pickup.pos, self.pos) < 5
+        ):
+            self.target_pickup = None
+            closest_dist = 0
+
+            for tile, pickups in self.tile_dict.items():
+                for pickup in pickups:
+                    if pickup.pickup_type < 2:
+                        if (
+                            dist_ := utils.dist(self.pos, pickup.pos)
+                        ) < closest_dist or not closest_dist:
+                            closest_dist = dist_
+                            self.target_pickup = pickup
+
+            # self.poi = target_tile.pos + (target_tile.size / 2)
+            self.poi = self.target_pickup.pos.copy()
+            self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
+
+        # print(self.target_pickup, self.poi)
+        if dist(self.pos, self.poi) > 5:
             s = self.speed * inputs["dt"] * Globals.SIM_SPEED
             vec = self.poi - self.pos
             vec = vec.normalize() * s
             self.move(vec, entities)
-            self.vision_cone.rotation = vec.angle_to([0, 0])
-            self.sound_circle.sound_range = self.base_sound_range
 
-        elif self.state == "flee":
+    def low_food(self, inputs, entities):
+        self.walk()
+        if (
+            not self.target_pickup
+            or utils.dist(self.target_pickup.pos, self.pos) < 5
+        ):
+            print("getting new target pickup")
             self.target_pickup = None
-            self.poi = None
-            # calculating best angle to flee at
-            angle = pygame.Vector2([0, 0])
-            for en in self.chasing_enemies:
-                angle += utils.angle_to_direction(
-                    math.radians(utils.angle_to(self.pos, en.pos))
-                )
+            closest_dist = 0
 
-            angle = angle / len(self.chasing_enemies) + pygame.Vector2(
-                random.random() / 5, random.random() / 5
-            )
-            self.vision_cone.rotation = angle.angle_to([0, 0])
-            self.move((angle * self.speed * inputs["dt"] * Globals.SIM_SPEED), entities)
-            self.sound_circle.sound_range = self.base_sound_range
+            for tile, pickups in self.tile_dict.items():
+                for pickup in pickups:
+                    if pickup.pickup_type >= 2:
+                        if (
+                            dist_ := utils.dist(self.pos, pickup.pos)
+                        ) < closest_dist or not closest_dist:
+                            closest_dist = dist_
+                            self.target_pickup = pickup
 
-        elif self.state == "low_health":
-            if (
-                not self.target_pickup
-                or utils.dist(self.target_pickup.pos, self.pos) < 5
-            ):
-                self.target_pickup = None
-                closest_dist = 0
+            # self.poi = target_tile.pos + (target_tile.size / 2)
+            self.poi = self.target_pickup.pos.copy()
+            self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
-                for tile, pickups in self.tile_dict.items():
-                    for pickup in pickups:
-                        if pickup.pickup_type < 2:
-                            if (
-                                dist_ := utils.dist(self.pos, pickup.pos)
-                            ) < closest_dist or not closest_dist:
-                                closest_dist = dist_
-                                self.target_pickup = pickup
-
-                # self.poi = target_tile.pos + (target_tile.size / 2)
-                self.poi = self.target_pickup.pos.copy()
-                self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
-
-            # print(self.target_pickup, self.poi)
-            if dist(self.pos, self.poi) > 5:
-                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
-                vec = self.poi - self.pos
-                vec = vec.normalize() * s
-                self.move(vec, entities)
-                self.sound_circle.sound_range = self.base_sound_range
-
-        elif self.state == "low_food":
-            if (
-                not self.target_pickup
-                or utils.dist(self.target_pickup.pos, self.pos) < 5
-            ):
-                print("getting new target pickup")
-                self.target_pickup = None
-                closest_dist = 0
-
-                for tile, pickups in self.tile_dict.items():
-                    for pickup in pickups:
-                        if pickup.pickup_type >= 2:
-                            if (
-                                dist_ := utils.dist(self.pos, pickup.pos)
-                            ) < closest_dist or not closest_dist:
-                                closest_dist = dist_
-                                self.target_pickup = pickup
-
-                # self.poi = target_tile.pos + (target_tile.size / 2)
-                self.poi = self.target_pickup.pos.copy()
-                self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
-
-            if dist(self.pos, self.poi) > 5:
-                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
-                vec = self.poi - self.pos
-                vec = vec.normalize() * s
-                self.move(vec, entities)
-                self.sound_circle.sound_range = self.base_sound_range
-
-        self.chasing_enemies = set()
-        # self.get_random_move(inputs, entities)
+        if dist(self.pos, self.poi) > 5:
+            s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+            vec = self.poi - self.pos
+            vec = vec.normalize() * s
+            self.move(vec, entities)
 
     def has_health_pickup(self):
         for _, pickups in self.tile_dict.items():
@@ -485,7 +587,9 @@ class Agent(Object):
             self.weapon.cd = self.weapon.fire_rate
 
     def swing(self, location):
-        if self.weapon.cd <= 0:
+        if self.weapon.cd <= 0 and self.stamina > 15:
+            self.stamina -= 15
+            self.cd["stamina_regen"] = self.stamina_cooldown
             self.weapon.swing(location)
             self.weapon.cd = self.weapon.fire_rate
             self.weapon.size = self.weapon.sword_size
@@ -544,6 +648,8 @@ class Agent(Object):
         for entity in tilemanager.get_adjacent_mortals(
             tile_pos=self.current_tilemap_tile
         ):
+            if entity == self:
+                continue
             if self.detect(
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
             ):
