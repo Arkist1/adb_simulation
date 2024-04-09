@@ -13,24 +13,26 @@ from utils import (
     EntityPositionUpdate,
 )
 
-import random
 import pygame
+from pygame._sdl2.video import Window
+
+import random
 import json
 import math
-
-from pygame._sdl2.video import Window
 
 
 class Main:
     def __init__(
         self, headless=False, self_restart=False, max_ticks=-1, prints=True
     ) -> None:
+
         self.headless = headless
         self.restart = self_restart
         self.max_ticks = max_ticks
         self.prints = prints
 
         self.first_sim = True
+        self.n_ticks = 0
 
         if not self.headless:
             pygame.init()
@@ -116,7 +118,7 @@ class Main:
         self.camera_controller = CameraController(
             cams=cams, window=Window.from_display_module()
         )
-        self.camera_controller.curr_cam = memecam
+        self.camera_controller.curr_cam = simcam
         return self.camera_controller
 
     def start(self) -> None:
@@ -137,7 +139,7 @@ class Main:
 
     def run_simulation(self) -> None:
         while self.running and (
-            pygame.time.get_ticks() < self.max_ticks or self.max_ticks < 0
+            self.n_ticks < self.max_ticks or self.max_ticks < 0
         ):
             self.tick()
 
@@ -149,11 +151,10 @@ class Main:
             json.dump([log.dict() for log in self.logger.logs], f)
 
     def tick(self) -> None:
+        self.n_ticks += 1
         dt = self.clock.tick(Globals.FPS) / 1000
         dt_mili = self.clock.get_time()
         fps = self.clock.get_fps()
-
-        self.tick
 
         # check for closing pygame._sdl2.video.Window
         if not self.headless:
@@ -252,11 +253,6 @@ class Main:
                 # self.tile_manager.add_entity(
                 #     Agent(screen=self.screen, start_pos=self.middle_pos.copy())
                 # )
-                if (
-                    isinstance(self.camera_target, Agent)
-                    and self.camera_target not in self.tile_manager.players
-                ):
-                    self.camera_target = self.tile_manager.players[0]
 
                 self.running = False
                 self.restart = True
@@ -325,10 +321,8 @@ class Main:
                     closest_obj = entity
 
             self.camera_target = closest_obj
-            try:
+            if isinstance(closest_obj, Agent) and self.prints:
                 print(closest_obj.state)
-            except:
-                pass
 
         if keys[pygame.K_g]:
             self.camera_target = None
@@ -397,6 +391,7 @@ class Main:
         for en in self.tile_manager.enemies:
             if en.health <= 0:
                 self.tile_manager.remove_entity(en)
+                continue
 
             en.percept(self.tile_manager)
             en.get_move(

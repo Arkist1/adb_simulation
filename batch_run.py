@@ -2,11 +2,15 @@ import multiprocessing as mp
 from main import Main
 import json
 import os
+import dotenv
 
+dotenv.load_dotenv()
 
-SIM_AMOUNT = 8
-CPU_CORES = 8
-MAX_TICKS = 1_000
+SIM_AMOUNT = 20
+CPU_CORES = 5
+MAX_TICKS = 1000
+
+RUN_HEADLESS = True
 
 RESULTS_FOLDER = "Results/"
 
@@ -16,7 +20,7 @@ def get_new_folder():
 
 
 def get_json_path(folder, id):
-    return RESULTS_FOLDER + f"{folder}/" + f"SIM_{id}"
+    return RESULTS_FOLDER + f"{folder}/" + f"SIM_{id}.json"
 
 
 def run_main(inputs):
@@ -25,7 +29,9 @@ def run_main(inputs):
     print("starting sim:", id)
     mp.freeze_support()
 
-    m = Main(headless=True, self_restart=False, max_ticks=MAX_TICKS, prints=False)
+    m = Main(
+        headless=RUN_HEADLESS, self_restart=False, max_ticks=MAX_TICKS, prints=False
+    )
     m.start()
     m.save_logs(get_json_path(folder, id))
 

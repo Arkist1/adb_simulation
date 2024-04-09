@@ -201,26 +201,38 @@ class TileManager(EntityHolder):
         return self.get_adjacent_entities(pos, tile_pos, xrange, yrange, "players")
 
     def update_tiles(self):
-        for x in range(self.max_x):
-            for y in range(self.max_y):
-                tile = self.tiles[x][y]
-                for enemy in tile.enemies:
-                    if not self.is_in_tile(self.tiles[x][y], enemy.pos):
-                        tile.enemies.remove(enemy)
+        # for x in range(self.max_x):
+        #     for y in range(self.max_y):
+        #         tile = self.tiles[x][y]
+        #         for enemy in tile.enemies:
+        #             if not self.is_in_tile(self.tiles[x][y], enemy.pos):
+        #                 tile.enemies.remove(enemy)
 
-                        new_x, new_y = self.get_correct_tile(enemy.pos, [x, y])
-                        self.tiles[new_x][new_y].enemies.append(enemy)
+        #                 new_x, new_y = self.get_correct_tile(enemy.pos, [x, y])
+        #                 self.tiles[new_x][new_y].enemies.append(enemy)
 
-                        enemy.curr_tilemap_tile = [new_x, new_y]
+        #                 enemy.curr_tilemap_tile = [new_x, new_y]
 
-                # for player in tile.players:
-                #     if not self.is_in_tile(self.tiles[x][y], player.pos):
-                #         tile.players.remove(player)
+        #         # for player in tile.players:
+        #         #     if not self.is_in_tile(self.tiles[x][y], player.pos):
+        #         #         tile.players.remove(player)
 
-                #         new_x, new_y = self.get_correct_tile(player.pos, [x, y])
-                #         self.tiles[new_x][new_y].players.append(player)
+        #         #         new_x, new_y = self.get_correct_tile(player.pos, [x, y])
+        #         #         self.tiles[new_x][new_y].players.append(player)
 
-                #         player.curr_tilemap_tile = [new_x, new_y]
+        #         #         player.curr_tilemap_tile = [new_x, new_y]
+        for enemy in self.enemies:
+            if not (
+                self.is_in_tile(self.get_tile(enemy.current_tilemap_tile), enemy.pos)
+            ):
+                self.get_tile(enemy.current_tilemap_tile).enemies.remove(enemy)
+
+                new_tile_coords = self.get_correct_tile(
+                    enemy.pos, enemy.current_tilemap_tile
+                )
+                self.get_tile(new_tile_coords).enemies.append(enemy)
+
+                enemy.current_tilemap_tile = new_tile_coords
 
         for player in self.players:
             if not (
@@ -255,12 +267,17 @@ class TileManager(EntityHolder):
             self.tiles[x][y].pickups.append(entity)
             self.pickups.append(entity)
             entity.current_tilemap_tile = [x, y]
-            Globals.MAIN.logger.log(EntitySpawn("pickup", entity.__hash__(), entity.pos))
+            Globals.MAIN.logger.log(
+                EntitySpawn("pickup", entity.__hash__(), entity.pos)
+            )
 
     def remove_entity(self, entity):
         if isinstance(entity, Enemy):
-            indices = self.get_curr_tile(entity.pos)
-            self.tiles[indices[0]][indices[1]].enemies.remove(entity)
+            x, y = entity.current_tilemap_tile
+            # print(entity, "tiles:", self.tiles[x][y].enemies)
+            self.tiles[x][y].enemies.remove(entity)
+            # indices = self.get_curr_tile(entity.pos)
+            # self.tiles[indices[0]][indices[1]].enemies.remove(entity)
             self.enemies.remove(entity)
             Globals.MAIN.logger.log(EntityDeath("enemy", entity.__hash__(), entity.pos))
 
@@ -274,7 +291,9 @@ class TileManager(EntityHolder):
             indices = self.get_curr_tile(entity.pos)
             self.tiles[indices[0]][indices[1]].pickups.remove(entity)
             self.pickups.remove(entity)
-            Globals.MAIN.logger.log(EntityDeath("pickup", entity.__hash__(), entity.pos))
+            Globals.MAIN.logger.log(
+                EntityDeath("pickup", entity.__hash__(), entity.pos)
+            )
 
     def get_tile(self, tile_pos):
         return self.tiles[tile_pos[0]][tile_pos[1]]

@@ -143,30 +143,6 @@ class Agent(Object):
         self.is_crouching = False
         self.is_running = False
 
-        moving = inputs["up"] or inputs["down"] or inputs["left"] or inputs["right"]
-
-        if inputs["sprint"] and self.stamina > 0 and moving:
-            self.sprint()
-
-        elif inputs["crouch"] and self.stamina > 0 and moving:
-            self.crouch()
-
-        elif moving:
-            self.walk()
-
-        else:
-            self.standing()
-
-        if inputs["attack"]:
-            if type(self.weapon) == Gun:
-                self.shoot(inputs["mouse_pos"], bullets)
-            elif type(self.weapon) == Sword:
-                self.swing(inputs["mouse_pos"])
-                for entity in mortals:
-                    if self.weapon.hit(entity) and not self.weapon.did_damage:
-                        entity.health -= self.weapon.damage
-                self.weapon.did_damage = True
-
         if type(self.weapon) == Sword and self.weapon.duration_cd >= 0:
             self.weapon.duration_cd -= inputs["dt_mili"] * Globals.SIM_SPEED
         else:
@@ -213,7 +189,6 @@ class Agent(Object):
         self.speed = self.speeds["walking"]
         self.sound_circle.sound_range = self.base_sound_range
 
-
     def sprint(self):
         self.stamina -= 1
         self.cd["stamina_regen"] = self.stamina_cooldown
@@ -227,7 +202,7 @@ class Agent(Object):
         self.stamina -= 0.5
         self.cd["stamina_regen"] = self.stamina_cooldown
         self.speed = self.speeds["crouching"]
-        
+
         self.hunger_rate = self.hunger_rates["low"]
         self.is_crouching = True
         self.sound_circle.sound_range = self.base_sound_range / 3
@@ -242,11 +217,16 @@ class Agent(Object):
                 ) < closest_dist or not closest_dist:
                     closest_dist = dist_
                     closest_enemy = en
-            if self.health >= (self.max_health * 0.5) and closest_enemy.state != "chasing" \
-               and self.stamina >= (self.max_stamina * 0.50):
+            if (
+                self.health >= (self.max_health * 0.5)
+                and closest_enemy.state != "chasing"
+                and self.stamina >= (self.max_stamina * 0.50)
+            ):
                 self.state = "sneak"
                 self.sneak(inputs, entities, closest_enemy, closest_dist)
-            elif self.health >= (self.max_health * 0.5) and self.stamina >= (self.max_stamina * 0.25):
+            elif self.health >= (self.max_health * 0.5) and self.stamina >= (
+                self.max_stamina * 0.25
+            ):
                 self.state = "fight"
                 self.fight(inputs, entities, closest_enemy, closest_dist)
             else:
@@ -265,7 +245,9 @@ class Agent(Object):
                     closest_enemy = en
 
             if self.health >= (self.max_health * 0.5) and (
-                closest_dist < 130 or self.food <= (self.max_food * 0.3) and self.stamina >= (self.max_stamina * 0.25)
+                closest_dist < 130
+                or self.food <= (self.max_food * 0.3)
+                and self.stamina >= (self.max_stamina * 0.25)
             ):
                 self.state = "fight"
                 self.fight(inputs, entities, closest_enemy, closest_dist)
@@ -283,12 +265,11 @@ class Agent(Object):
                 self.state = "explore"
                 self.explore(inputs, entities)
 
-        print(self.state)
         self.chasing_enemies = set()
         # self.get_random_move(inputs, entities)
 
     def explore(self, inputs, entities):
-        
+
         self.target_pickup = None
         self.walk()
         if self.current_tile not in self.searched_tiles:
@@ -297,7 +278,7 @@ class Agent(Object):
             center = pygame.Vector2(tx, ty)
             self.vision_cone.rotation = utils.angle_to(center, self.pos)
             if dist(self.pos, center) > (5 * Globals.SIM_SPEED):
-                
+
                 s = self.speed * inputs["dt"] * Globals.SIM_SPEED
                 vec = center - self.pos
                 vec = vec.normalize() * s
@@ -384,7 +365,6 @@ class Agent(Object):
         self.move(vec, entities)
         self.vision_cone.rotation = vec.angle_to([0, 0])
 
-    
     def sneak(self, inputs, entities, closest_enemy, closest_dist):
         if closest_dist >= 250:
             self.walk()
@@ -424,10 +404,7 @@ class Agent(Object):
 
     def low_health(self, inputs, entities):
         self.walk()
-        if (
-            not self.target_pickup
-            or utils.dist(self.target_pickup.pos, self.pos) < 5
-        ):
+        if not self.target_pickup or utils.dist(self.target_pickup.pos, self.pos) < 5:
             self.target_pickup = None
             closest_dist = 0
 
@@ -453,10 +430,7 @@ class Agent(Object):
 
     def low_food(self, inputs, entities):
         self.walk()
-        if (
-            not self.target_pickup
-            or utils.dist(self.target_pickup.pos, self.pos) < 5
-        ):
+        if not self.target_pickup or utils.dist(self.target_pickup.pos, self.pos) < 5:
             print("getting new target pickup")
             self.target_pickup = None
             closest_dist = 0
