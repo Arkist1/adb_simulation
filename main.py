@@ -22,10 +22,13 @@ from pygame._sdl2.video import Window
 
 
 class Main:
-    def __init__(self, headless=False, self_restart=False, max_ticks=-1) -> None:
+    def __init__(
+        self, headless=False, self_restart=False, max_ticks=-1, prints=True
+    ) -> None:
         self.headless = headless
         self.restart = self_restart
         self.max_ticks = max_ticks
+        self.prints = prints
 
         self.first_sim = True
 
@@ -119,10 +122,12 @@ class Main:
     def start(self) -> None:
         while self.first_sim or self.restart:
             self.first_sim = False
-            print("Initializing new simulation")
+            if self.prints:
+                print("Initializing new simulation")
             self.init_sim()
 
-            print("Starting new simulation")
+            if self.prints:
+                print("Starting new simulation")
             self.restart = False
             self.running = True
             self.run_simulation()
@@ -331,7 +336,8 @@ class Main:
 
         if self.cooldowns["fps"] <= 0:
             self.cooldowns["fps"] = 1000
-            print(len(self.tile_manager.enemies), "FPS:", fps)
+            if self.prints:
+                print(len(self.tile_manager.enemies), "FPS:", fps)
 
     def handle_pickups(self) -> None:  # TODO Handle multiple agents
         # current_player = self.tile_manager.allplayers[0]
