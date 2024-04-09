@@ -22,8 +22,10 @@ from pygame._sdl2.video import Window
 
 
 class Main:
-    def __init__(self, headless=False) -> None:
+    def __init__(self, headless=False, self_restart=False, max_ticks=-1) -> None:
         self.headless = headless
+        self.restart = self_restart
+        self.max_ticks = max_ticks
 
         if not self.headless:
             pygame.init()
@@ -113,24 +115,26 @@ class Main:
         return self.camera_controller
 
     def start(self) -> None:
-        while Globals.RESTART:
+        while self.restart:
             print("Initializing new simulation")
             self.init_sim()
 
             print("Starting new simulation")
-            Globals.RESTART = False
+            self.restart = False
             self.running = True
             self.run_simulation()
         pygame.quit()
 
     def run_simulation(self) -> None:
-        while self.running:
+        while self.running and (pygame.time.get_ticks() < self.max_ticks or self.max_ticks < 0):
             self.tick()
 
     def tick(self) -> None:
         dt = self.clock.tick(Globals.FPS) / 1000
         dt_mili = self.clock.get_time()
         fps = self.clock.get_fps()
+
+        self.tick
 
         # check for closing pygame._sdl2.video.Window
         if not self.headless:
@@ -201,7 +205,7 @@ class Main:
     def handle_sim_state(self, keys, inputs):
         if keys[pygame.K_r]:
             self.running = False
-            Globals.RESTART = True
+            self.restart = True
             self.logger.log(ChangeSimState("restart"))
             return
 
@@ -238,7 +242,7 @@ class Main:
                     self.camera_target = self.tile_manager.players
 
                 self.running = False
-                Globals.RESTART = True
+                self.restart = True
                 continue
 
             player.percept(self.tile_manager)
@@ -591,5 +595,5 @@ class Main:
 
 
 if __name__ == "__main__":
-    main = Main(headless=False)
+    main = Main(headless=False, self_restart=Globals.RESTART)
     main.start()
