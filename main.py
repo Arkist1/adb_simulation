@@ -22,11 +22,14 @@ from pygame._sdl2.video import Window
 
 
 class Main:
-    def __init__(self, headless=False, self_restart=False, max_ticks=-1) -> None:
+    def __init__(
+        self, headless=False, self_restart=False, max_ticks=-1, prints=True
+    ) -> None:
         self.headless = headless
         self.restart = self_restart
         self.max_ticks = max_ticks
-        
+        self.prints = prints
+
         self.first_sim = True
 
         if not self.headless:
@@ -119,10 +122,12 @@ class Main:
     def start(self) -> None:
         while self.first_sim or self.restart:
             self.first_sim = False
-            print("Initializing new simulation")
+            if self.prints:
+                print("Initializing new simulation")
             self.init_sim()
 
-            print("Starting new simulation")
+            if self.prints:
+                print("Starting new simulation")
             self.restart = False
             self.running = True
             self.run_simulation()
@@ -136,6 +141,13 @@ class Main:
         ):
             self.tick()
 
+        if not self.headless:
+            self.save_logs("log.json")
+
+    def save_logs(self, file_location) -> None:
+        with open(file_location, "w") as f:
+            json.dump([log.dict() for log in self.logger.logs], f)
+
     def tick(self) -> None:
         dt = self.clock.tick(Globals.FPS) / 1000
         dt_mili = self.clock.get_time()
@@ -147,8 +159,6 @@ class Main:
         if not self.headless:
             for event in pygame.event.get():  # event loop
                 if event.type == pygame.QUIT:
-                    with open("log.json", "w") as f:
-                        json.dump([log.dict() for log in self.logger.logs], f)
                     self.running = False
 
         self.tile_manager.update_tiles()
@@ -330,7 +340,8 @@ class Main:
 
         if self.cooldowns["fps"] <= 0:
             self.cooldowns["fps"] = 1000
-            print(len(self.tile_manager.enemies), "FPS:", fps)
+            if self.prints:
+                print(len(self.tile_manager.enemies), "FPS:", fps)
 
     def handle_pickups(self) -> None:  # TODO Handle multiple agents
         # current_player = self.tile_manager.allplayers[0]
