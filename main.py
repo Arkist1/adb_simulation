@@ -255,8 +255,8 @@ class Main:
                 #     Agent(screen=self.screen, start_pos=self.middle_pos.copy())
                 # )
 
-                self.running = False
-                self.restart = True
+                # self.running = False
+                # self.restart = True
                 continue
 
             player.percept(self.tile_manager)
@@ -278,6 +278,9 @@ class Main:
                 self.camera_controller.cameras["memecam"].position = (
                     player.pos - self.camera_controller.cameras["memecam"].size / 2
                 )
+
+        if len(self.tile_manager.players) == 0:
+            self.running = False
 
     def handle_cams(self, dt_mili, inputs, keys, mouse_keys):
         if mouse_keys[2] and dt_mili - self.cooldowns["cam_switch"] >= 0:
