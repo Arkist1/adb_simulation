@@ -90,7 +90,7 @@ class EntityPositionUpdate(LogItem):
     def __init__(self, entities: list) -> None:
         super().__init__()
         self.entities = [{
-            "entity_class": str(entity.__class__).split('.')[-1][:-2], 
-            "agent_id": entity.__hash__(), 
+            "entity_type": str(entity.__class__).split('.')[-1][:-2], 
+            "entity_id": entity.__hash__(), 
             "pos": [entity.pos.x, entity.pos.y]
             } for entity in entities]
