@@ -1,7 +1,16 @@
 from camera import Camera, CameraController
 
 from entities import Bullet, Agent, Wall, Pickup, Enemy
-from utils import *
+from utils import (
+    Globals,
+    Logger,
+    TileManager,
+    ChangeSimState,
+    ChangeDrawState,
+    EnemyChangeState,
+    ManualSpawn,
+    dist,
+)
 
 import random
 import pygame
@@ -12,13 +21,16 @@ from pygame._sdl2.video import Window
 
 
 class Main:
-    def __init__(self) -> None:
-        pygame.init()
-        pygame.font.init()
-        self.font = pygame.font.SysFont("Bahnschrift", 20)
-        self.screen = pygame.display.set_mode(
-            [Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT]
-        )
+    def __init__(self, headless=False) -> None:
+        self.headless = headless
+
+        if not self.headless:
+            pygame.init()
+            pygame.font.init()
+            self.font = pygame.font.SysFont("Bahnschrift", 20)
+            self.screen = pygame.display.set_mode(
+                [Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT]
+            )
 
         self.clock = pygame.time.Clock()
         self.logger = Logger()
