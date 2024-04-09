@@ -186,14 +186,14 @@ class Main:
         for player in self.tile_manager.players:
             if player.health <= 0:
                 self.tile_manager.remove_entity(player)
-                self.tile_manager.add_entity(
-                    Agent(screen=self.screen, start_pos=self.middle_pos.copy())
-                )
+                # self.tile_manager.add_entity(
+                #     Agent(screen=self.screen, start_pos=self.middle_pos.copy())
+                # )
                 if (
                     isinstance(self.camera_target, Agent)
                     and self.camera_target not in self.tile_manager.players
                 ):
-                    self.camera_target = self.tile_manager.players
+                    self.camera_target = self.tile_manager.players[0]
 
                 self.running = False
                 Globals.RESTART = True
@@ -261,6 +261,10 @@ class Main:
                     closest_obj = entity
 
             self.camera_target = closest_obj
+            try:
+                print(closest_obj.state)
+            except:
+                pass
 
         if keys[pygame.K_g]:
             self.camera_target = None
