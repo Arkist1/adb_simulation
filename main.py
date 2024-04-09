@@ -10,6 +10,7 @@ from utils import (
     EnemyChangeState,
     ManualSpawn,
     dist,
+    EntityPositionUpdate,
 )
 
 import random
@@ -151,16 +152,16 @@ class Main:
 
         if Globals.DRAW and not self.headless:
             self.draw(fps)
-            
+
         if self.cooldowns["every_second"] == 0:
             self.every_second()
             self.cooldowns["every_second"] = 1000
-            
+
     def every_second(self) -> None:
         self.logger.log(EntityPositionUpdate(self.tile_manager.players))
 
     def handle_inputs(self, dt, dt_mili) -> None:
-        inputs = {"dt": dt,"dt_mili": dt_mili}
+        inputs = {"dt": dt, "dt_mili": dt_mili}
 
         if not self.headless:
             keys = pygame.key.get_pressed()
@@ -196,7 +197,7 @@ class Main:
             self.handle_camera_movement(dt, keys)
 
         self.handle_entity_movement(dt, inputs)
-        
+
     def handle_sim_state(self, keys, inputs):
         if keys[pygame.K_r]:
             self.running = False
