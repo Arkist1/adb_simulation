@@ -54,6 +54,7 @@ class Main:
             "draw_switch": 0,
             "fps": 0,
             "pause_switch": 0,
+            "every_second": 0,
         }
 
         self.running = True
@@ -150,6 +151,13 @@ class Main:
 
         if Globals.DRAW and not self.headless:
             self.draw(fps)
+            
+        if self.cooldowns["every_second"] == 0:
+            self.every_second()
+            self.cooldowns["every_second"] = 1000
+            
+    def every_second(self) -> None:
+        self.logger.log(EntityPositionUpdate(self.tile_manager.players))
 
     def handle_inputs(self, dt, dt_mili) -> None:
         inputs = {"dt": dt,"dt_mili": dt_mili}
