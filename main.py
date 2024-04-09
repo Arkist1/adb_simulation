@@ -26,6 +26,8 @@ class Main:
         self.headless = headless
         self.restart = self_restart
         self.max_ticks = max_ticks
+        
+        self.first_sim = True
 
         if not self.headless:
             pygame.init()
@@ -115,7 +117,8 @@ class Main:
         return self.camera_controller
 
     def start(self) -> None:
-        while self.restart:
+        while self.first_sim or self.restart:
+            self.first_sim = False
             print("Initializing new simulation")
             self.init_sim()
 
@@ -123,10 +126,14 @@ class Main:
             self.restart = False
             self.running = True
             self.run_simulation()
-        pygame.quit()
+
+        if not self.headless:
+            pygame.quit()
 
     def run_simulation(self) -> None:
-        while self.running and (pygame.time.get_ticks() < self.max_ticks or self.max_ticks < 0):
+        while self.running and (
+            pygame.time.get_ticks() < self.max_ticks or self.max_ticks < 0
+        ):
             self.tick()
 
     def tick(self) -> None:
