@@ -591,5 +591,5 @@ class Main:
 
 
 if __name__ == "__main__":
-    main = Main(headless=True)
+    main = Main(headless=False)
     main.start()
