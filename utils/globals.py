@@ -29,7 +29,7 @@ class Globals:
     DRAW = True
 
     CONTROL_TYPE = "agent"
-    NUMBER_OF_AGENTS = 5
+    NUMBER_OF_AGENTS = 2
 
     SIM_SPEED = 1
     FPS = 60 * SIM_SPEED

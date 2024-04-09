@@ -31,6 +31,8 @@ class Main:
             self.screen = pygame.display.set_mode(
                 [Globals.SCREEN_WIDTH, Globals.SCREEN_HEIGHT]
             )
+        else:
+            self.screen = None
 
         self.clock = pygame.time.Clock()
         self.logger = Logger()
@@ -38,9 +40,11 @@ class Main:
 
     def init_sim(self):
         self.tile_manager = self.generate_tiles()
-        self.camera_controller = self.generate_cameras()
 
-        self.camera_target = self.tile_manager.players[0]
+        if not self.headless:
+            self.camera_controller = self.generate_cameras()
+            self.camera_target = self.tile_manager.players[0]
+
         self.cooldowns = {
             "spawn": 0,
             "bullet": 0,
@@ -127,58 +131,64 @@ class Main:
         fps = self.clock.get_fps()
 
         # check for closing pygame._sdl2.video.Window
-        for event in pygame.event.get():  # event loop
-            if event.type == pygame.QUIT:
-                with open("log.json", "w") as f:
-                    json.dump([log.dict() for log in self.logger.logs], f)
-                self.running = False
+        if not self.headless:
+            for event in pygame.event.get():  # event loop
+                if event.type == pygame.QUIT:
+                    with open("log.json", "w") as f:
+                        json.dump([log.dict() for log in self.logger.logs], f)
+                    self.running = False
 
         self.tile_manager.update_tiles()
+
         self.handle_inputs(dt, dt_mili)
+
         if not self.running:
             return
 
         self.handle_cooldowns(dt_mili, fps)
         self.handle_pickups()
 
-        if Globals.DRAW:
+        if Globals.DRAW and not self.headless:
             self.draw(fps)
 
     def handle_inputs(self, dt, dt_mili) -> None:
-        keys = pygame.key.get_pressed()
-        mouse_keys = pygame.mouse.get_pressed()
-        mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
+        inputs = {"dt": dt,"dt_mili": dt_mili}
 
-        if keys[pygame.K_o] and self.cooldowns["pause_switch"] == 0:
-            print(self.logger)
-            self.cooldowns["pause_switch"] = 500
+        if not self.headless:
+            keys = pygame.key.get_pressed()
+            mouse_keys = pygame.mouse.get_pressed()
+            mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
 
-        inputs = {
-            "up": keys[pygame.K_w],
-            "down": keys[pygame.K_s],
-            "left": keys[pygame.K_a],
-            "right": keys[pygame.K_d],
-            "sprint": keys[pygame.K_LSHIFT],
-            "crouch": keys[pygame.K_LCTRL],
-            "attack": mouse_keys[0],
-            "block": mouse_keys[2],
-            "mouse_pos": mouse_pos / self.camera_controller.curr_cam.zoom
-            + self.camera_controller.curr_cam.position
-            / self.camera_controller.curr_cam.zoom,
-            "dt": dt,
-            "dt_mili": dt_mili,
-        }
+            if keys[pygame.K_o] and self.cooldowns["pause_switch"] == 0:
+                print(self.logger)
+                self.cooldowns["pause_switch"] = 500
 
-        self.handle_sim_state(keys, inputs)
-        if not self.running:
-            return
+            inputs = inputs | {
+                "up": keys[pygame.K_w],
+                "down": keys[pygame.K_s],
+                "left": keys[pygame.K_a],
+                "right": keys[pygame.K_d],
+                "sprint": keys[pygame.K_LSHIFT],
+                "crouch": keys[pygame.K_LCTRL],
+                "attack": mouse_keys[0],
+                "block": mouse_keys[2],
+                "mouse_pos": mouse_pos / self.camera_controller.curr_cam.zoom
+                + self.camera_controller.curr_cam.position
+                / self.camera_controller.curr_cam.zoom,
+            }
+
+            self.handle_sim_state(keys, inputs)
+            if not self.running:
+                return
 
         self.handle_players(inputs)
-        self.handle_cams(dt_mili, inputs, keys, mouse_keys)
-        self.handle_debug(dt_mili, keys)  # TODO Remove this
-        self.handle_entity_movement(dt, inputs)
-        self.handle_camera_movement(dt, keys)
+        if not self.headless:
+            self.handle_cams(dt_mili, inputs, keys, mouse_keys)
+            self.handle_debug(dt_mili, keys)  # TODO Remove this
+            self.handle_camera_movement(dt, keys)
 
+        self.handle_entity_movement(dt, inputs)
+        
     def handle_sim_state(self, keys, inputs):
         if keys[pygame.K_r]:
             self.running = False
@@ -234,12 +244,13 @@ class Main:
                 ),
             )
 
-            self.camera_controller.cameras["playercam"].position = (
-                player.pos - self.camera_controller.cameras["playercam"].size / 2
-            )
-            self.camera_controller.cameras["memecam"].position = (
-                player.pos - self.camera_controller.cameras["memecam"].size / 2
-            )
+            if not self.headless:
+                self.camera_controller.cameras["playercam"].position = (
+                    player.pos - self.camera_controller.cameras["playercam"].size / 2
+                )
+                self.camera_controller.cameras["memecam"].position = (
+                    player.pos - self.camera_controller.cameras["memecam"].size / 2
+                )
 
     def handle_cams(self, dt_mili, inputs, keys, mouse_keys):
         if mouse_keys[2] and dt_mili - self.cooldowns["cam_switch"] >= 0:
@@ -571,5 +582,5 @@ class Main:
 
 
 if __name__ == "__main__":
-    main = Main()
+    main = Main(headless=True)
     main.start()
