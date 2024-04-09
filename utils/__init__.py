@@ -12,3 +12,4 @@ from .entityholder import EntityHolder
 from .house import House
 from .tile import Tile
 from .tilemanager import TileManager
+from .logger import *
