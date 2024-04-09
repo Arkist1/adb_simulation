@@ -4,6 +4,7 @@ from . import Tile
 from . import House
 from . import Globals
 from . import EntityHolder
+from .logger import EntityDeath, EntitySpawn
 
 from entities import Agent, Enemy, Pickup
 
@@ -240,34 +241,40 @@ class TileManager(EntityHolder):
             self.tiles[x][y].players.append(entity)
             self.players.append(entity)
             entity.current_tilemap_tile = [x, y]
+            Globals.MAIN.logger.log(EntitySpawn("agent", entity.__hash__(), entity.pos))
 
         elif isinstance(entity, Enemy):
             x, y = self.get_curr_tile(entity.pos)
             self.tiles[x][y].enemies.append(entity)
             self.enemies.append(entity)
             entity.current_tilemap_tile = [x, y]
+            Globals.MAIN.logger.log(EntitySpawn("enemy", entity.__hash__(), entity.pos))
 
         elif isinstance(entity, Pickup):
             x, y = self.get_curr_tile(entity.pos)
             self.tiles[x][y].pickups.append(entity)
             self.pickups.append(entity)
             entity.current_tilemap_tile = [x, y]
+            Globals.MAIN.logger.log(EntitySpawn("pickup", entity.__hash__(), entity.pos))
 
     def remove_entity(self, entity):
         if isinstance(entity, Enemy):
             indices = self.get_curr_tile(entity.pos)
             self.tiles[indices[0]][indices[1]].enemies.remove(entity)
             self.enemies.remove(entity)
+            Globals.MAIN.logger.log(EntityDeath("enemy", entity.__hash__(), entity.pos))
 
         elif isinstance(entity, Agent):
             indices = self.get_curr_tile(entity.pos)
             self.tiles[indices[0]][indices[1]].players.remove(entity)
             self.players.remove(entity)
+            Globals.MAIN.logger.log(EntityDeath("agent", entity.__hash__(), entity.pos))
 
         elif isinstance(entity, Pickup):
             indices = self.get_curr_tile(entity.pos)
             self.tiles[indices[0]][indices[1]].pickups.remove(entity)
             self.pickups.remove(entity)
+            Globals.MAIN.logger.log(EntityDeath("pickup", entity.__hash__(), entity.pos))
 
     def get_tile(self, tile_pos):
         return self.tiles[tile_pos[0]][tile_pos[1]]

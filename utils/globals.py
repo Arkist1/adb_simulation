@@ -11,8 +11,9 @@ class Globals:
     SCREEN_HEIGHT = 700
     SCREEN_SIZE = pygame.Vector2(SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    MAP_WIDTH = SCREEN_WIDTH * 3
-    MAP_HEIGHT = SCREEN_HEIGHT * 3
+    MAP_WIDTH = SCREEN_WIDTH * 5
+    MAP_HEIGHT = SCREEN_HEIGHT * 5
+
     MAP_SIZE = pygame.Vector2(MAP_WIDTH, MAP_HEIGHT)
 
     TILE_WIDTH = 1000
@@ -41,6 +42,8 @@ class Globals:
     COLOR_FOOD = (90, 255, 140)
     COLOR_HEALTH = (255, 30, 70)
     COLOR_BAR = (75, 75, 75)
+
+    MAIN = None
 
 
 def dist(p1: pygame.Vector2, p2: pygame.Vector2) -> float:

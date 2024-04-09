@@ -2,7 +2,8 @@ from .gun import Gun
 from .sword import Sword
 from .vision_cone import VisionCone
 from .sound_circle import SoundCircle
-from utils import Globals, Object, Hitbox, dist
+from utils import Globals, Object, dist
+from utils.logger import AgentDetection
 import utils
 import math
 import numpy
@@ -141,6 +142,7 @@ class Agent(Object):
         ### sprint and crouch ###
         self.is_crouching = False
         self.is_running = False
+
         moving = inputs["up"] or inputs["down"] or inputs["left"] or inputs["right"]
 
         if inputs["sprint"] and self.stamina > 0 and moving:
@@ -191,7 +193,7 @@ class Agent(Object):
             self.weapon.cd -= inputs["dt_mili"] * Globals.SIM_SPEED
 
         if self.controltype == "human":
-            return self.get_human_move(inputs, entities)
+            return self.get_human_move(inputs, entities, bullets, mortals)
 
         if self.controltype == "random":
             return self.get_random_move(inputs, entities)
@@ -502,7 +504,9 @@ class Agent(Object):
         self.move(vec, entities)
         self.vision_cone.rotation += random.randint(-5, 5)
 
-    def get_human_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
+    def get_human_move(
+        self, inputs: dict[str, bool], entities, bullets, mortals
+    ) -> pygame.Vector2:
         """
         Calculates the movement vector based on the user inputs.
 
@@ -514,6 +518,44 @@ class Agent(Object):
         Returns:
             pygame.Vector2: The movement vector calculated based on the user inputs.
         """
+        moving = inputs["up"] or inputs["down"] or inputs["left"] or inputs["right"]
+
+        if inputs["sprint"] and self.stamina > 0 and moving:
+            self.stamina -= 1
+            self.speed = self.speeds["sprinting"]
+            self.cd["stamina_regen"] = self.stamina_cooldown
+
+            self.hunger_rate = self.hunger_rates["low"]
+            self.is_running = True
+            self.sound_circle.sound_range = self.base_sound_range * 2
+
+        elif inputs["crouch"] and self.stamina > 0 and moving:
+            self.stamina -= 0.5
+            self.speed = self.speeds["crouching"]
+            self.hunger_rate = self.hunger_rates["low"]
+
+            self.cd["stamina_regen"] = self.stamina_cooldown
+            self.is_crouching = True
+            self.sound_circle.sound_range = self.base_sound_range / 3
+
+        elif moving:
+            self.speed = self.speeds["walking"]
+            self.sound_circle.sound_range = self.base_sound_range
+
+        else:
+            self.speed = self.speeds["walking"]
+            self.sound_circle.sound_range = 0
+
+        if inputs["attack"]:
+            if type(self.weapon) == Gun:
+                self.shoot(inputs["mouse_pos"], bullets)
+            elif type(self.weapon) == Sword:
+                self.swing(inputs["mouse_pos"])
+                for entity in mortals:
+                    if self.weapon.hit(entity) and not self.weapon.did_damage:
+                        entity.health -= self.weapon.damage
+                self.weapon.did_damage = True
+
         s = self.speed * inputs["dt"] * Globals.SIM_SPEED
         vec = pygame.Vector2(0, 0)
 
@@ -612,6 +654,9 @@ class Agent(Object):
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
             ):
                 self.vision_detections.append(entity)
+                Globals.MAIN.logger.log(
+                    AgentDetection("vision", self.__hash__(), entity.__hash__())
+                )
 
         # tile = tilemanager(self.pos)
         for entity in tilemanager.get_adjacent_pickups(
@@ -621,6 +666,9 @@ class Agent(Object):
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
             ):
                 self.pickup_detections.append(entity)
+                Globals.MAIN.logger.log(
+                    AgentDetection("pickup", self.__hash__(), entity.__hash__())
+                )
 
         self.memory(tilemanager, self.pickup_detections)
         # print(self.pickup_detections)
