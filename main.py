@@ -26,7 +26,7 @@ class Main:
         self.headless = headless
         self.restart = self_restart
         self.max_ticks = max_ticks
-        
+
         self.first_sim = True
 
         if not self.headless:
@@ -136,6 +136,13 @@ class Main:
         ):
             self.tick()
 
+        if not self.headless:
+            self.save_logs("log.json")
+
+    def save_logs(self, file_location) -> None:
+        with open(file_location, "w") as f:
+            json.dump([log.dict() for log in self.logger.logs], f)
+
     def tick(self) -> None:
         dt = self.clock.tick(Globals.FPS) / 1000
         dt_mili = self.clock.get_time()
@@ -147,8 +154,6 @@ class Main:
         if not self.headless:
             for event in pygame.event.get():  # event loop
                 if event.type == pygame.QUIT:
-                    with open("log.json", "w") as f:
-                        json.dump([log.dict() for log in self.logger.logs], f)
                     self.running = False
 
         self.tile_manager.update_tiles()
@@ -246,7 +251,7 @@ class Main:
                     isinstance(self.camera_target, Agent)
                     and self.camera_target not in self.tile_manager.players
                 ):
-                    self.camera_target = self.tile_manager.players
+                    self.camera_target = self.tile_manager.players[0]
 
                 self.running = False
                 self.restart = True
