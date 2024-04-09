@@ -138,9 +138,7 @@ class Main:
             pygame.quit()
 
     def run_simulation(self) -> None:
-        while self.running and (
-            self.n_ticks < self.max_ticks or self.max_ticks < 0
-        ):
+        while self.running and (self.n_ticks < self.max_ticks or self.max_ticks < 0):
             self.tick()
 
         if not self.headless:
@@ -152,7 +150,10 @@ class Main:
 
     def tick(self) -> None:
         self.n_ticks += 1
-        dt = self.clock.tick(Globals.FPS) / 1000
+        if not self.headless:
+            dt = self.clock.tick(Globals.FPS) / 1000
+        else:
+            dt = self.clock.tick(10_000) / 1000
         dt_mili = self.clock.get_time()
         fps = self.clock.get_fps()
 

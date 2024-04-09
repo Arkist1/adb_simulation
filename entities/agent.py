@@ -139,16 +139,6 @@ class Agent(Object):
             if self.cd[key] >= 0:
                 self.cd[key] = max(0, value - inputs["dt_mili"] * Globals.SIM_SPEED)
 
-        if inputs["attack"]:
-            if type(self.weapon) == Gun:
-                self.shoot(inputs["mouse_pos"], bullets)
-            elif type(self.weapon) == Sword:
-                self.swing(inputs["mouse_pos"])
-                for entity in mortals:
-                    if self.weapon.hit(entity) and not self.weapon.did_damage:
-                        entity.health -= self.weapon.damage
-                self.weapon.did_damage = True
-
         if type(self.weapon) == Sword and self.weapon.duration_cd >= 0:
             self.weapon.duration_cd -= inputs["dt_mili"] * Globals.SIM_SPEED
         else:
