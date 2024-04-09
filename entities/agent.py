@@ -139,9 +139,15 @@ class Agent(Object):
             if self.cd[key] >= 0:
                 self.cd[key] = max(0, value - inputs["dt_mili"] * Globals.SIM_SPEED)
 
-        ### sprint and crouch ###
-        self.is_crouching = False
-        self.is_running = False
+        if inputs["attack"]:
+            if type(self.weapon) == Gun:
+                self.shoot(inputs["mouse_pos"], bullets)
+            elif type(self.weapon) == Sword:
+                self.swing(inputs["mouse_pos"])
+                for entity in mortals:
+                    if self.weapon.hit(entity) and not self.weapon.did_damage:
+                        entity.health -= self.weapon.damage
+                self.weapon.did_damage = True
 
         if type(self.weapon) == Sword and self.weapon.duration_cd >= 0:
             self.weapon.duration_cd -= inputs["dt_mili"] * Globals.SIM_SPEED
@@ -208,7 +214,9 @@ class Agent(Object):
         self.sound_circle.sound_range = self.base_sound_range / 3
 
     def get_agent_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
-        if self.vision_detections:
+        action_taken = False
+        if self.vision_detections and not action_taken:
+            action_taken = True
             closest_enemy = None
             closest_dist = 0
             for en in self.vision_detections:
@@ -230,10 +238,14 @@ class Agent(Object):
                 self.state = "fight"
                 self.fight(inputs, entities, closest_enemy, closest_dist)
             else:
-                self.state = "flee"
-                self.flee(inputs, entities, self.vision_detections)
+                action_taken = False
+            # TODO
+            # else:
+            #     self.state = "flee"
+            #     self.flee(inputs, entities, self.vision_detections)
 
-        elif self.chasing_enemies:
+        if self.chasing_enemies and not action_taken:
+            action_taken = True
             closest_enemy = None
             closest_dist = 0
 
@@ -254,7 +266,8 @@ class Agent(Object):
             else:
                 self.state = "flee"
                 self.flee(inputs, entities, self.chasing_enemies)
-        else:
+
+        if not action_taken:
             if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
                 self.state = "low_health"
                 self.low_health(inputs, entities)
@@ -269,7 +282,7 @@ class Agent(Object):
         # self.get_random_move(inputs, entities)
 
     def explore(self, inputs, entities):
-
+        # Xander's ballencode
         self.target_pickup = None
         self.walk()
         if self.current_tile not in self.searched_tiles:
@@ -404,7 +417,9 @@ class Agent(Object):
 
     def low_health(self, inputs, entities):
         self.walk()
-        if not self.target_pickup or utils.dist(self.target_pickup.pos, self.pos) < 5:
+        # if (self.target_pickup):
+        #     print(self.target_pickup.pos, self.pos)
+        if not self.target_pickup or utils.dist(self.target_pickup.pos, self.pos) < 10:
             self.target_pickup = None
             closest_dist = 0
 
