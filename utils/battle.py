@@ -18,18 +18,23 @@ class Battle:
         active_agents = []
 
         for agent in self.agents:
-            if agent.do_battle(BattleSummary(self)):
-                self.history[agent].append(True)
-                active_agents.append(agent)
-            else:
-                self.history[agent].append(False)
+            if agent.health > 0:
+                if agent.do_battle(BattleSummary(self)):
+                    self.history[agent].append(True)
+                    active_agents.append(agent)
+                else:
+                    self.history[agent].append(False)
 
         self.battle_sim(active_agents)
 
     def battle_sim(self, active_agents):
         # get total damage
-        total_enemy_damage = sum([enemy.damage for enemy in self.enemies])
-        total_player_damage = sum([player.weapon.damage for player in active_agents])
+        total_enemy_damage = sum(
+            [enemy.damage for enemy in self.enemies if enemy.health > 0]
+        )
+        total_player_damage = sum(
+            [player.weapon.damage for player in active_agents if player.health > 0]
+        )
 
         # distribute damage
         for agent in active_agents:
@@ -43,7 +48,7 @@ class BattleSummary:
     def __init__(self, b: Battle) -> None:
         self.enemies = [enemy.health for enemy in b.enemies]
         self.agents = [agent.health for agent in b.agents]
-        self.agent_history = b.history
+        self.agent_history = {agent: moves[-1] for agent, moves in b.history.items()}
 
     def __str__(self) -> str:
         return (

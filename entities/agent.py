@@ -57,7 +57,6 @@ class Agent(Object):
         )
 
         # hp
-        print(health)
         self.health = health
         self.max_health = health
 
@@ -100,6 +99,7 @@ class Agent(Object):
 
         self.battle_type = battle_type
         self.miss_chance = battle_miss_chance
+        self.agents_history = {}
 
     def memory(self, tilemanager, pickups):
         curr_tile = tilemanager.get_tile(
@@ -586,13 +586,28 @@ class Agent(Object):
         self.health = max(0, self.health)
 
     def do_battle(self, battle_summary):
+        for agent, move in battle_summary.items():
+            if agent in self.agents_history:
+                self.agents_history[agent].append(move)
+            else:
+                self.agents_history[agent] = [move]
+
         choice = True
 
         if self.battle_type == "cheater":
             choice = False
 
-        if self.battle_type == "helper":
+        elif self.battle_type == "helper":
             choice = True
+
+        elif self.battle_type == "copycat":
+            pass
+
+        elif self.battle_type == "":
+            pass
+
+        elif self.battle_type == "":
+            pass
 
         if random.random() < self.miss_chance:
             return not choice
