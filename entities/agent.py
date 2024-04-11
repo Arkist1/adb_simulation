@@ -100,8 +100,16 @@ class Agent(Object):
         self.battle_type = battle_type
         self.miss_chance = battle_miss_chance
         self.agents_history = {}
+
+        # detective code
         self.detective_history = {}
         self.detective_sequence = [True, False, True, True]
+
+        # kitten code
+        self.kitten_cheat = 0
+
+        # simpleton code
+        self.simpleton_last_move = True
 
     def memory(self, tilemanager, pickups):
         curr_tile = tilemanager.get_tile(
@@ -608,6 +616,24 @@ class Agent(Object):
         elif self.battle_type == "copycat":
             if other_move:
                 choice = other_move
+        
+        elif self.battle_type == "copykitten": # meow :3
+            if not other_move:
+                self.kitten_cheat += 1
+            else:
+                self.kitten_cheat = 0
+
+            if self.kitten_cheat >= 2:
+                choice = False
+
+        elif self.battle_type == "simpleton":
+            if other_move:
+                choice = self.simpleton_last_move
+            else:
+                choice = not self.simpleton_last_move
+
+        elif self.battle_type == "random":
+            choice = True if random.random > .5 else False
 
         elif self.battle_type == "grudger":
             if False in self.agents_history[other_agent]:
@@ -620,14 +646,16 @@ class Agent(Object):
             if not len(self.detective_history[other_agent]) < 4:
                 choice = self.detective_sequence[len(self.detective_history[other_agent])]
             else:
-                if False in self.detective_history[other_agent]:
+                if False not in self.detective_history[other_agent]:
                     choice = False
                 else:
                     choice = other_move
                     
 
         if random.random() < self.miss_chance:
-            return not choice
+            choice = not choice
+        
+        self.simpleton_last_move = choice
         return choice
 
     def draw(self, cam):
