@@ -811,7 +811,6 @@ class Agent(Object):
         return {
             "Type": type(self).__name__,
             "Position": self.pos,
-            "long_pos": self.long_pos,
             "Rotation": self.vision_cone.rotation,
             "Speed": self.speed * Globals.SIM_SPEED,
             "Crouching": self.is_crouching,
