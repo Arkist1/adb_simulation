@@ -23,9 +23,16 @@ class Enemy(Agent):
     """
 
     def __init__(
-        self, screen, start_pos=[250, 250], control_type=None, colour=(255, 0, 0)
+        self,
+        screen,
+        start_pos=[250, 250],
+        control_type=None,
+        colour=(255, 0, 0),
+        **kwargs
     ) -> None:
-        super().__init__(screen, start_pos, control_type=control_type, colour=colour)
+        super().__init__(
+            screen, start_pos, control_type=control_type, colour=colour, **kwargs
+        )
         self.weapon = None
         self.sound_circle = None
         self.poi = self.pos  # Point Of Interest (POI)

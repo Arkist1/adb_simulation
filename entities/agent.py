@@ -30,6 +30,7 @@ class Agent(Object):
         health: int = 250,
         battle_type: str = "helper",
         battle_miss_chance: int = 0.1,
+        **kwargs,
     ) -> None:
         super().__init__(pos=start_pos, radius=size)
         if control_type:
@@ -56,6 +57,7 @@ class Agent(Object):
         )
 
         # hp
+        print(health)
         self.health = health
         self.max_health = health
 
@@ -587,7 +589,7 @@ class Agent(Object):
         choice = True
 
         if self.battle_type == "cheater":
-            choice = False         
+            choice = False
 
         if self.battle_type == "helper":
             choice = True
