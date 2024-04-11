@@ -28,6 +28,8 @@ class Agent(Object):
         stamina: int = 250,
         food: int = 250,
         health: int = 250,
+        battle_type: str = "helper",
+        battle_miss_chance: int = 0.1,
     ) -> None:
         super().__init__(pos=start_pos, radius=size)
         if control_type:
@@ -93,6 +95,9 @@ class Agent(Object):
 
         self.lifetime = 0
         self.current_tilemap_tile = []
+
+        self.battle_type = battle_type
+        self.miss_chance = battle_miss_chance
 
     def memory(self, tilemanager, pickups):
         curr_tile = tilemanager.get_tile(
@@ -573,6 +578,23 @@ class Agent(Object):
             self.weapon.cd = self.weapon.fire_rate
             self.weapon.size = self.weapon.sword_size
             self.weapon.duration_cd = self.weapon.duration
+
+    def take_damage(self, damage):
+        self.health -= damage
+        self.health = max(0, self.health)
+
+    def do_battle(self, battle_summary):
+        choice = True
+
+        if self.battle_type == "cheater":
+            choice = False         
+
+        if self.battle_type == "helper":
+            choice = True
+
+        if random.random() < self.miss_chance:
+            return not choice
+        return choice
 
     def draw(self, cam):
         """
