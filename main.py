@@ -120,6 +120,21 @@ class Main:
         )
         self.camera_controller.curr_cam = simcam
         return self.camera_controller
+    
+    def single_init(self) -> None:
+        self.first_sim = False
+        if self.prints:
+            print("Initializing new simulation")
+        self.init_sim()
+
+    def single_start(self) -> None:
+        if self.prints:
+            print("Starting new simulation")
+        self.restart = False
+        self.running = True
+        self.run_simulation()
+        if not self.headless:
+            pygame.quit()
 
     def start(self) -> None:
         while self.first_sim or self.restart:
