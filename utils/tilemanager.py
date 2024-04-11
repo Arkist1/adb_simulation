@@ -185,7 +185,6 @@ class TileManager(EntityHolder):
                     entities += res()
                 else:
                     entities += res
-
         return entities
 
     def get_adjacent_items(self, pos=None, tile_pos=None, xrange=1, yrange=1):
@@ -248,19 +247,19 @@ class TileManager(EntityHolder):
                 player.current_tilemap_tile = new_tile_coords
 
     def add_entity(self, entity):
-        if isinstance(entity, Agent):
-            x, y = self.get_curr_tile(entity.pos)
-            self.tiles[x][y].players.append(entity)
-            self.players.append(entity)
-            entity.current_tilemap_tile = [x, y]
-            Globals.MAIN.logger.log(EntitySpawn("agent", entity.__hash__(), entity.pos))
-
-        elif isinstance(entity, Enemy):
+        if isinstance(entity, Enemy):
             x, y = self.get_curr_tile(entity.pos)
             self.tiles[x][y].enemies.append(entity)
             self.enemies.append(entity)
             entity.current_tilemap_tile = [x, y]
             Globals.MAIN.logger.log(EntitySpawn("enemy", entity.__hash__(), entity.pos))
+
+        elif isinstance(entity, Agent):
+            x, y = self.get_curr_tile(entity.pos)
+            self.tiles[x][y].players.append(entity)
+            self.players.append(entity)
+            entity.current_tilemap_tile = [x, y]
+            Globals.MAIN.logger.log(EntitySpawn("agent", entity.__hash__(), entity.pos))
 
         elif isinstance(entity, Pickup):
             x, y = self.get_curr_tile(entity.pos)
@@ -294,6 +293,8 @@ class TileManager(EntityHolder):
             Globals.MAIN.logger.log(
                 EntityDeath("pickup", entity.__hash__(), entity.pos)
             )
+            
+        return entity
 
     def get_tile(self, tile_pos):
         return self.tiles[tile_pos[0]][tile_pos[1]]
