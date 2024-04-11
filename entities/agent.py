@@ -179,9 +179,18 @@ class Agent(Object):
 
         if self.controltype == "agent":
             self.get_agent_move(inputs, entities)
+            target = None
+            hit = False
             for entity in mortals:
-                if self.weapon.hit(entity) and not self.weapon.did_damage:
-                    entity.health -= self.weapon.damage
+                
+                if self.weapon.hit(entity) and not self.weapon.did_damage: 
+                    # change for normal battle
+                    # entity.health -= self.weapon.damage
+
+                    target = entity
+                    hit = True
+            if hit:
+                self.battle_init(target, mortals)   
             self.weapon.did_damage = True
 
     def standing(self):
@@ -574,7 +583,7 @@ class Agent(Object):
 
     def swing(self, location):
         if self.weapon.cd <= 0 and self.stamina > 15:
-            self.stamina -= 15
+            self.stamina -= 5
             self.cd["stamina_regen"] = self.stamina_cooldown
             self.weapon.swing(location)
             self.weapon.cd = self.weapon.fire_rate
@@ -651,7 +660,7 @@ class Agent(Object):
         for entity in tilemanager.get_adjacent_mortals(
             tile_pos=self.current_tilemap_tile
         ):
-            if entity == self:
+            if entity == self or type(entity) == type(self):
                 continue
             if self.detect(
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
@@ -718,11 +727,31 @@ class Agent(Object):
 
     def hear(self, entity):
         return entity.sound_circle.sound_range > utils.dist(self.pos, entity.pos)
+    
+    def battle_init(self, target, mortals):
+        self_team = self.help(mortals)
+        enemy_team = target.help(mortals)
+        battle = utils.Battle(self_team, enemy_team)
+        battle.run_battle()
+        battle_sum = utils.BattleSummary(battle)
+        print(battle_sum)
+        return
+    
+    def help(self, mortals):
+        team = [self]
+        
+        for entity in mortals:
+            
+            if 1000 > utils.dist(self.pos, entity.pos) and entity != self and type(self) == type(entity):
+                team.append(entity)
+                return team
+        return team
 
     def get_debug_info(self):
         return {
             "Type": type(self).__name__,
             "Position": self.pos,
+            "long_pos": self.long_pos,
             "Rotation": self.vision_cone.rotation,
             "Speed": self.speed * Globals.SIM_SPEED,
             "Crouching": self.is_crouching,
