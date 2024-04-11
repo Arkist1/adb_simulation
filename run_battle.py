@@ -12,7 +12,7 @@ print(BattleSummary(b))
 print()
 
 agents = [Agent(None, health=100), Agent(None, health=200)]
-enemies = [Enemy(None, health=150)]
+enemies = [Enemy(None, health=300)]
 b = Battle(agents, enemies)
 print(BattleSummary(b))
 b.run_battle()

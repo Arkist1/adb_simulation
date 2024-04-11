@@ -9,8 +9,8 @@ class Battle:
 
     def run_battle(self):
         while (
-            sum([enemy.health for enemy in self.enemies]) <= 0
-            or sum([player.health for player in self.agents]) <= 0
+            sum([enemy.health for enemy in self.enemies]) > 0
+            and sum([player.health for player in self.agents]) > 0
         ):
             self.one_round()
 

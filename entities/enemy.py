@@ -28,16 +28,20 @@ class Enemy(Agent):
         start_pos=[250, 250],
         control_type=None,
         colour=(255, 0, 0),
+        health=100,
         **kwargs
     ) -> None:
         super().__init__(
-            screen, start_pos, control_type=control_type, colour=colour, **kwargs
+            screen,
+            start_pos,
+            control_type=control_type,
+            colour=colour,
+            health=health,
+            **kwargs
         )
         self.weapon = None
         self.sound_circle = None
         self.poi = self.pos  # Point Of Interest (POI)
-        self.health = 100
-        self.max_health = 100
 
         self.speed = self.speed / 2
         self.alertspeed = self.speed / 3
