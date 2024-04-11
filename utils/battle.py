@@ -6,6 +6,7 @@ class Battle:
         self.agents = agents
         self.enemies = enemies
         self.history = {agent: [] for agent in self.agents}
+        self.logs = []
 
     def run_battle(self):
         while (
@@ -26,6 +27,7 @@ class Battle:
                     self.history[agent].append(False)
 
         self.battle_sim(active_agents)
+        self.logs.append(BattleSummary(self).json())
 
     def battle_sim(self, active_agents):
         # get total damage
@@ -46,16 +48,26 @@ class Battle:
 
 class BattleSummary:
     def __init__(self, b: Battle) -> None:
-        self.enemies = [enemy.health for enemy in b.enemies]
-        self.agents = [agent.health for agent in b.agents]
+        self.enemies = {enemy: enemy.health for enemy in b.enemies}
+        self.agents = {agent: agent.health for agent in b.agents}
         self.agent_history = {
             agent: moves[-1] if len(moves) > 0 else None
             for agent, moves in b.history.items()
         }
+        self.full_agent_history = b.history
 
     def __str__(self) -> str:
         return (
-            f"Agent hp's: \t{self.agents}, \n"
-            + f"Enemy hp's: \t{self.enemies} \n"
+            f"Agent hp's: \t{self.agents.items()}, \n"
+            + f"Enemy hp's: \t{self.enemies.items()} \n"
             + f"Battle  history: \t{self.agent_history}"
         )
+
+    def json(self):
+        return {
+            "agents": {hash(agent): hp for agent, hp in self.agents.items()},
+            "enemies": {hash(enemy): hp for enemy, hp in self.enemies.items()},
+            "battle_history": {
+                hash(agent): values for agent, values in self.full_agent_history.items()
+            },
+        }

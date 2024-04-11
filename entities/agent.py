@@ -596,7 +596,7 @@ class Agent(Object):
         self.health = max(0, self.health)
 
     def do_battle(self, battle_summary):
-        for agent, move in battle_summary.items():
+        for agent, move in battle_summary.agent_history.items():
             if agent is not self:
                 other_move = move
                 other_agent = agent
