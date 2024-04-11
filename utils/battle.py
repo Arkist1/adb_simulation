@@ -48,7 +48,10 @@ class BattleSummary:
     def __init__(self, b: Battle) -> None:
         self.enemies = [enemy.health for enemy in b.enemies]
         self.agents = [agent.health for agent in b.agents]
-        self.agent_history = {agent: moves[-1] for agent, moves in b.history.items()}
+        self.agent_history = {
+            agent: moves[-1] if len(moves) > 0 else None
+            for agent, moves in b.history.items()
+        }
 
     def __str__(self) -> str:
         return (

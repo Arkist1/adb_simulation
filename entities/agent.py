@@ -100,6 +100,8 @@ class Agent(Object):
         self.battle_type = battle_type
         self.miss_chance = battle_miss_chance
         self.agents_history = {}
+        self.detective_history = {}
+        self.detective_sequence = [True, False, True, True]
 
     def memory(self, tilemanager, pickups):
         curr_tile = tilemanager.get_tile(
@@ -587,10 +589,13 @@ class Agent(Object):
 
     def do_battle(self, battle_summary):
         for agent, move in battle_summary.items():
-            if agent in self.agents_history:
-                self.agents_history[agent].append(move)
-            else:
-                self.agents_history[agent] = [move]
+            if agent is not self:
+                other_move = move
+                other_agent = agent
+                if agent in self.agents_history:
+                    self.agents_history[agent].append(move)
+                else:
+                    self.agents_history[agent] = [move]
 
         choice = True
 
@@ -601,13 +606,25 @@ class Agent(Object):
             choice = True
 
         elif self.battle_type == "copycat":
-            pass
+            if other_move:
+                choice = other_move
 
-        elif self.battle_type == "":
-            pass
+        elif self.battle_type == "grudger":
+            if False in self.agents_history[other_agent]:
+                choice = False
 
-        elif self.battle_type == "":
-            pass
+        elif self.battle_type == "detective":
+            if not other_move:
+                self.detective_history[other_agent] = []
+            
+            if not len(self.detective_history[other_agent]) < 4:
+                choice = self.detective_sequence[len(self.detective_history[other_agent])]
+            else:
+                if False in self.detective_history[other_agent]:
+                    choice = False
+                else:
+                    choice = other_move
+                    
 
         if random.random() < self.miss_chance:
             return not choice
