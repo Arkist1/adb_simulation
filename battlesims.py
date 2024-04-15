@@ -25,16 +25,18 @@ agent_types = [
 
 # enable 1 of these. Comment out the other
 # simpel combinations (255) runs
-# for r in range(2, 9):
-#     battles.extend(combinations(agent_types, r))
+for r in range(2, 9):
+    battles.extend(combinations(agent_types, r))
+
+# print(battles)
 
 # complex combinations (12861) runs
 # for r in range(2, 9):
 #     battles.extend(combinations_with_replacement(agent_types, r))
 
 # test combinations
-for r in range(2, 3):
-    battles.extend(combinations_with_replacement(agent_types, r))
+# for r in range(2, 3):
+#     battles.extend(combinations_with_replacement(agent_types, r))
 
 SIM_AMOUNT = len(battles)
 CPU_CORES = 4
