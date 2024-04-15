@@ -199,7 +199,7 @@ class Agent(Object):
 
                     target = entity
                     hit = True
-            if hit:
+            if hit and type(target) != self:
                 self.battle_init(target, mortals)   
             self.weapon.did_damage = True
 
