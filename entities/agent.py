@@ -192,15 +192,15 @@ class Agent(Object):
             target = None
             hit = False
             for entity in mortals:
-                
-                if self.weapon.hit(entity) and not self.weapon.did_damage: 
+
+                if self.weapon.hit(entity) and not self.weapon.did_damage:
                     # change for normal battle
                     # entity.health -= self.weapon.damage
 
                     target = entity
                     hit = True
-            if hit and type(target) != self:
-                self.battle_init(target, mortals)   
+            if hit and type(target) != type(self):
+                self.battle_init(target, mortals)
             self.weapon.did_damage = True
 
     def standing(self):
@@ -625,8 +625,8 @@ class Agent(Object):
         elif self.battle_type == "copycat":
             if other_move:
                 choice = other_move
-        
-        elif self.battle_type == "copykitten": # meow :3
+
+        elif self.battle_type == "copykitten":  # meow :3
             if not other_move:
                 self.kitten_cheat += 1
             else:
@@ -642,7 +642,7 @@ class Agent(Object):
                 choice = not self.simpleton_last_move
 
         elif self.battle_type == "random":
-            choice = True if random.random > .5 else False
+            choice = True if random.random > 0.5 else False
 
         elif self.battle_type == "grudger":
             if False in self.agents_history[other_agent]:
@@ -651,19 +651,20 @@ class Agent(Object):
         elif self.battle_type == "detective":
             if not other_move:
                 self.detective_history[other_agent] = []
-            
+
             if not len(self.detective_history[other_agent]) < 4:
-                choice = self.detective_sequence[len(self.detective_history[other_agent])]
+                choice = self.detective_sequence[
+                    len(self.detective_history[other_agent])
+                ]
             else:
                 if False not in self.detective_history[other_agent]:
                     choice = False
                 else:
                     choice = other_move
-                    
 
         if random.random() < self.miss_chance:
             choice = not choice
-        
+
         self.simpleton_last_move = choice
         return choice
 
@@ -787,7 +788,7 @@ class Agent(Object):
 
     def hear(self, entity):
         return entity.sound_circle.sound_range > utils.dist(self.pos, entity.pos)
-    
+
     def battle_init(self, target, mortals):
         self_team = self.help(mortals)
         enemy_team = target.help(mortals)
@@ -796,13 +797,17 @@ class Agent(Object):
         battle_sum = utils.BattleSummary(battle)
         print(battle_sum)
         return
-    
+
     def help(self, mortals):
         team = [self]
-        
+
         for entity in mortals:
-            
-            if 1000 > utils.dist(self.pos, entity.pos) and entity != self and type(self) == type(entity):
+
+            if (
+                1000 > utils.dist(self.pos, entity.pos)
+                and entity != self
+                and type(self) == type(entity)
+            ):
                 team.append(entity)
                 return team
         return team
