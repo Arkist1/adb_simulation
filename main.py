@@ -159,7 +159,9 @@ class Main:
         # print(self.n_ticks)
         if self.n_ticks >= self.max_ticks:
             self.logger.log(SimStopReason("max_ticks"))
-
+        else:
+            print("Simulation stopped")
+            self.logger.log(SimStopReason("no_players_left"))
         if not self.headless:
             self.save_logs("log.json")
 
