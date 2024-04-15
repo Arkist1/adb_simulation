@@ -23,7 +23,7 @@ agent_types = [
     "detective",
 ]
 
-# enable 1 of these. Comment out the other
+# enable 1 of these. Comment out the other two
 # simpel combinations (255) runs
 for r in range(2, 9):
     battles.extend(combinations(agent_types, r))
@@ -39,8 +39,8 @@ for r in range(2, 9):
 #     battles.extend(combinations_with_replacement(agent_types, r))
 
 SIM_AMOUNT = len(battles)
-CPU_CORES = 4
-MAX_TICKS = 1000
+CPU_CORES = 12
+MAX_TICKS = 10000
 
 RUN_HEADLESS = True
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         "RUN_AMOUNT": SIM_AMOUNT,
         "CORE_AMOUNT": CPU_CORES,
         "MAX_TICKS": MAX_TICKS,
-        # "BATTLE_COMBINATIONS": battles, # display all combinations in config file
+        "BATTLE_COMBINATIONS": battles, # display all combinations in config file
     }
     json.dump(CONFIG, open(RESULTS_FOLDER + f"{folder}/" + "config.json", "w"))
 
