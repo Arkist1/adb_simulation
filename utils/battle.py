@@ -15,6 +15,8 @@ class Battle:
             and sum([player.health for player in self.agents]) > 0
         ):
             self.one_round()
+        for agent in self.agents:
+            Globals.MAIN.logger.log(AgentHealthUpdate(agent.__hash__(), agent.health, agent.battle_type))
 
     def one_round(self):
         active_agents = []
@@ -28,6 +30,7 @@ class Battle:
                     self.history[agent].append(False)
 
         self.battle_sim(active_agents)
+
         self.logs.append(BattleSummary(self).json())
 
     def battle_sim(self, active_agents):
@@ -42,7 +45,7 @@ class Battle:
         # distribute damage
         for agent in active_agents:
             agent.take_damage(int(total_enemy_damage / len(active_agents)))
-            Globals.MAIN.logger.log(AgentHealthUpdate(agent.__hash__(), agent.health, agent.battle_type))
+            # Globals.MAIN.logger.log(AgentHealthUpdate(agent.__hash__(), agent.health, agent.battle_type))
 
         for enemy in self.enemies:
             enemy.take_damage(int(total_player_damage / len(self.enemies)))
