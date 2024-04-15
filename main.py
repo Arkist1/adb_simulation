@@ -11,6 +11,7 @@ from utils import (
     ManualSpawn,
     dist,
     EntityPositionUpdate,
+    SimStopReason
 )
 
 import pygame
@@ -155,6 +156,9 @@ class Main:
     def run_simulation(self) -> None:
         while self.running and (self.n_ticks < self.max_ticks or self.max_ticks < 0):
             self.tick()
+        print(self.n_ticks)
+        if self.n_ticks >= self.max_ticks:
+            self.logger.log(SimStopReason("max_ticks"))
 
         if not self.headless:
             self.save_logs("log.json")
@@ -296,6 +300,7 @@ class Main:
 
         if len(self.tile_manager.players) == 0:
             self.running = False
+            Globals.MAIN.logger.log(SimStopReason("no_players_left"))
 
     def handle_cams(self, dt_mili, inputs, keys, mouse_keys):
         if mouse_keys[2] and dt_mili - self.cooldowns["cam_switch"] >= 0:
