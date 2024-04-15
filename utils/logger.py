@@ -4,7 +4,7 @@ import pygame
 
 class LogItem:
     def __init__(self) -> None:
-        self.ticks = globals.MAIN.n_ticks
+        self.ticks = None
 
     def __repr__(self) -> str:
         return str(self.dict())
@@ -22,14 +22,20 @@ class LogItem:
 class Logger:
     def __init__(self) -> None:
         self.logs: list[LogItem] = []
+        self.ticks = 0
 
     def log(self, log_item: LogItem):
         if not isinstance(log_item, LogItem):
             raise ValueError("Logged item must inherit LogItem")
+
+        log_item.ticks = self.ticks
         self.logs.append(log_item)
 
     def __repr__(self) -> str:
         return str(self.logs)
+
+    def tick(self):
+        self.ticks += 1
 
 
 class ChangeSimState(LogItem):

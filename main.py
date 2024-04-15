@@ -11,7 +11,7 @@ from utils import (
     ManualSpawn,
     dist,
     EntityPositionUpdate,
-    SimStopReason
+    SimStopReason,
 )
 
 import pygame
@@ -121,7 +121,7 @@ class Main:
         )
         self.camera_controller.curr_cam = simcam
         return self.camera_controller
-    
+
     def single_init(self) -> None:
         self.first_sim = False
         if self.prints:
@@ -156,7 +156,7 @@ class Main:
     def run_simulation(self) -> None:
         while self.running and (self.n_ticks < self.max_ticks or self.max_ticks < 0):
             self.tick()
-        print(self.n_ticks)
+        # print(self.n_ticks)
         if self.n_ticks >= self.max_ticks:
             self.logger.log(SimStopReason("max_ticks"))
 
@@ -169,6 +169,8 @@ class Main:
 
     def tick(self) -> None:
         self.n_ticks += 1
+        self.logger.tick()
+
         if not self.headless:
             dt = self.clock.tick(Globals.FPS) / 1000
         else:
