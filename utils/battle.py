@@ -42,7 +42,7 @@ class Battle:
         # distribute damage
         for agent in active_agents:
             agent.take_damage(int(total_enemy_damage / len(active_agents)))
-            Globals.MAIN.logger.log(AgentHealthUpdate(agent.__hash__(), agent.health))
+            Globals.MAIN.logger.log(AgentHealthUpdate(agent.__hash__(), agent.health, agent.battle_type))
 
         for enemy in self.enemies:
             enemy.take_damage(int(total_player_damage / len(self.enemies)))

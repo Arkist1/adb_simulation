@@ -2,7 +2,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-classes = ['EntitySpawn', 'AgentDetection', 'EntityDeath', 'EntityPositionUpdate', 'EnemyDetection', 'EnemyChangeState']
+classes = ['EntitySpawn', 'AgentDetection', 'EntityDeath', 'EntityPositionUpdate', 'EnemyDetection', 'EnemyChangeState', 'AgentHealthUpdate']
 graphs = {cls: [(0,0)] for cls in classes}
 counts = {cls: 0 for cls in classes}
 
