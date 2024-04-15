@@ -38,7 +38,7 @@ def get_new_folder():
 
 
 def get_json_path(folder, id):
-    return RESULTS_FOLDER + f"{folder}/" + f"SIM_{id}.json"  #
+    return RESULTS_FOLDER + f"{folder}/" + f"SIM_{id}.json"
 
 
 def run_main(inputs):

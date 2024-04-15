@@ -95,3 +95,6 @@ def angle_to_direction(angle: float):
     return pygame.math.Vector2(
         math.cos(angle), -math.sin(angle)
     )  # angle has to be in degrees
+
+
+MAIN = None
