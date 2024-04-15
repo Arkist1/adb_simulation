@@ -1,5 +1,4 @@
-# from itertools import combinations_with_replacement
-from itertools import combinations
+from itertools import combinations, combinations_with_replacement
 import multiprocessing as mp
 from main import Main
 from utils import Globals
@@ -12,10 +11,18 @@ import dotenv
 dotenv.load_dotenv()
 
 battles = []
-for r in range(2, 6):
-    battles.extend(
-        combinations(["cheater", "helper", "copycat", "copykitten", "simpleton", "random", "grudger", "detective"], r)
-    )
+
+agent_types = ["cheater", "helper", "copycat", "copykitten", "simpleton", "random", "grudger", "detective"]
+
+# enable 1 of these. Comment out the other
+# simpel combinations (255) runs
+for r in range(2, 9):
+    battles.extend(combinations(agent_types, r))
+
+# complex combinations (12861) runs
+# for r in range(2, 9):
+#     battles.extend(combinations_with_replacement(agent_types, r))
+
 
 SIM_AMOUNT = len(battles)
 CPU_CORES = 4
@@ -76,6 +83,7 @@ if __name__ == "__main__":
         "RUN_AMOUNT": SIM_AMOUNT,
         "CORE_AMOUNT": CPU_CORES,
         "MAX_TICKS": MAX_TICKS,
+        # "BATTLE_COMBINATIONS": battles, # display all combinations in config file
     }
     json.dump(CONFIG, open(RESULTS_FOLDER + f"{folder}/" + "config.json", "w"))
 
