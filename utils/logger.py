@@ -101,3 +101,8 @@ class AgentHealthUpdate(LogItem):
         self.agent_id = agent_id
         self.health = health
         self.battle_type = battle_type
+
+class SimStopReason(LogItem):
+    def __init__(self, reason: str) -> None:
+        super().__init__()
+        self.reason = reason

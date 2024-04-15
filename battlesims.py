@@ -1,5 +1,4 @@
-from itertools import combinations_with_replacement
-from itertools import combinations
+from itertools import combinations, combinations_with_replacement
 import multiprocessing as mp
 from main import Main
 from utils import Globals
@@ -11,16 +10,18 @@ import dotenv
 
 dotenv.load_dotenv()
 
-battles = list(
-    combinations_with_replacement(
-        ["copycat", "cheater", "helper", "grudger", "detective"], 2
-    )
-)
-# battles = []
-# for r in range(2, 6):
-#     battles.extend(
-#         combinations(["copycat", "cheater", "helper", "grudger", "detective"], r)
-#     )
+battles = []
+
+agent_types = ["cheater", "helper", "copycat", "copykitten", "simpleton", "random", "grudger", "detective"]
+
+# enable 1 of these. Comment out the other
+# simpel combinations (255) runs
+for r in range(2, 9):
+    battles.extend(combinations(agent_types, r))
+
+# complex combinations (12861) runs
+# for r in range(2, 9):
+#     battles.extend(combinations_with_replacement(agent_types, r))
 
 
 SIM_AMOUNT = len(battles)
@@ -43,36 +44,32 @@ def get_json_path(folder, id):
 def run_main(inputs):
     id, folder = inputs
 
-    t0, t1 = battles[id]
-    print(f"starting sim: {id=}, {t0=}, {t1=}")
+    t_combination = battles[id]
+    print(f"starting sim: {id=}, {t_combination=}")
     mp.freeze_support()
 
     m = Main(
         headless=RUN_HEADLESS, self_restart=False, max_ticks=MAX_TICKS, prints=False
     )
 
-    x0 = Globals.TILE_WIDTH / 3
-    x1 = Globals.TILE_WIDTH / 3 * 2
-    y0 = Globals.TILE_HEIGHT / 3
-    y1 = Globals.TILE_HEIGHT / 3 * 2
-
+    x_positions = [Globals.TILE_WIDTH / (len(t_combination) + 1) * (i + 1) for i in range(len(t_combination))]
+    y_position = Globals.TILE_HEIGHT / 2
+    
     m.single_init()
-
+    
     for p in list(m.tile_manager.players):
         m.tile_manager.remove_entity(p)
-
+        
     for p in list(m.tile_manager.enemies):
         m.tile_manager.remove_entity(p)
-
-    p0 = Agent(m.screen, start_pos=pygame.Vector2(x0, y0), battle_type=t0)
-    p1 = Agent(m.screen, start_pos=pygame.Vector2(x1, y0), battle_type=t1)
-    e0 = Enemy(m.screen, control_type="enemy", start_pos=pygame.Vector2(x0, y1))
-    e1 = Enemy(m.screen, control_type="enemy", start_pos=pygame.Vector2(x1, y1))
-    m.tile_manager.add_entity(p0)
-    m.tile_manager.add_entity(p1)
+    
+    for i, t in enumerate(t_combination):
+        p = Agent(m.screen, start_pos=pygame.Vector2(x_positions[i], y_position), battle_type=t)
+        m.tile_manager.add_entity(p)
+    
+    e0 = Enemy(m.screen, control_type="enemy", start_pos=pygame.Vector2(Globals.TILE_WIDTH / 2, Globals.TILE_HEIGHT / 4 * 3))
     m.tile_manager.add_entity(e0)
-    m.tile_manager.add_entity(e1)
-
+    
     m.single_start()
     m.save_logs(get_json_path(folder, id))
 
@@ -86,6 +83,7 @@ if __name__ == "__main__":
         "RUN_AMOUNT": SIM_AMOUNT,
         "CORE_AMOUNT": CPU_CORES,
         "MAX_TICKS": MAX_TICKS,
+        # "BATTLE_COMBINATIONS": battles, # display all combinations in config file
     }
     json.dump(CONFIG, open(RESULTS_FOLDER + f"{folder}/" + "config.json", "w"))
 
