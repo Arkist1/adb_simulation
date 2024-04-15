@@ -642,7 +642,7 @@ class Agent(Object):
                 choice = not self.simpleton_last_move
 
         elif self.battle_type == "random":
-            choice = True if random.random > 0.5 else False
+            choice = True if random.random() > 0.5 else False
 
         elif self.battle_type == "grudger":
             if False in self.agents_history[other_agent]:
