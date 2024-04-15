@@ -1,4 +1,4 @@
-# from itertools import combinations_with_replacement
+from itertools import combinations_with_replacement
 from itertools import combinations
 import multiprocessing as mp
 from main import Main
@@ -11,19 +11,23 @@ import dotenv
 
 dotenv.load_dotenv()
 
-# battles = list(combinations_with_replacement(["copycat", "cheater", "helper", "grudger", "detective"], 2) )
-battles = []
-for r in range(2, 6):
-    battles.extend(
-        combinations(["copycat", "cheater", "helper", "grudger", "detective"], r)
+battles = list(
+    combinations_with_replacement(
+        ["copycat", "cheater", "helper", "grudger", "detective"], 2
     )
+)
+# battles = []
+# for r in range(2, 6):
+#     battles.extend(
+#         combinations(["copycat", "cheater", "helper", "grudger", "detective"], r)
+#     )
 
-print(battles)
+
 SIM_AMOUNT = len(battles)
 CPU_CORES = 4
 MAX_TICKS = 1000
 
-RUN_HEADLESS = False
+RUN_HEADLESS = True
 
 RESULTS_FOLDER = "Results/"
 
