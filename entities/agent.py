@@ -649,7 +649,7 @@ class Agent(Object):
                 choice = False
 
         elif self.battle_type == "detective":
-            if other_agent in self.detective_history:
+            if other_agent not in self.detective_history:
                 self.detective_history[other_agent] = []
 
             if not len(self.detective_history[other_agent]) < 4:
