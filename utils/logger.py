@@ -96,7 +96,8 @@ class EntityPositionUpdate(LogItem):
             } for entity in entities]
 
 class AgentHealthUpdate(LogItem):
-    def __init__(self, agent_id: int, health: int) -> None:
+    def __init__(self, agent_id: int, health: int, battle_type: str) -> None:
         super().__init__()
         self.agent_id = agent_id
         self.health = health
+        self.battle_type = battle_type
