@@ -162,11 +162,13 @@ class Enemy(Agent):
                     EnemyDetection("sound", self.__hash__(), entity.__hash__())
                 )
                 # print("sound")
-            # if (entity.radius + self.radius + 10) > utils.dist(
-            #     self.pos, entity.pos
-            # ) and self.attack_cd <= 0:
-            #     entity.health -= self.damage
-            #     self.attack_cd = 1
+            if (entity.radius + self.radius + 10) > utils.dist(
+                self.pos, entity.pos
+            ) and self.attack_cd <= 0:
+                mortals = tilemanager.get_tile(self.current_tilemap_tile).get_mortals()
+                self.ambush(entity, mortals)
+                # entity.health -= self.damage
+                # self.attack_cd = 1
 
         if visions:
             # print("vision detection has been made")

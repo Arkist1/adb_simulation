@@ -412,8 +412,8 @@ class Main:
 
     def handle_debug(self, dt_mili, keys) -> None:  # TODO Remove this
         if keys[pygame.K_f] and dt_mili - self.cooldowns["cam_switch"] >= 0:
-            self.cooldowns["cam_switch"] = 10
-            self.tile_manager.players.health -= 25
+            self.cooldowns["cam_switch"] = 50
+            self.camera_target.health -= 25
 
     def handle_entity_movement(self, dt, inputs):
         for en in self.tile_manager.enemies:
