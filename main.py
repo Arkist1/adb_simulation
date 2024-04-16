@@ -11,6 +11,7 @@ from utils import (
     ManualSpawn,
     dist,
     EntityPositionUpdate,
+    SimStopReason,
 )
 
 import pygame
@@ -120,7 +121,7 @@ class Main:
         )
         self.camera_controller.curr_cam = simcam
         return self.camera_controller
-    
+
     def single_init(self) -> None:
         self.first_sim = False
         if self.prints:
@@ -155,7 +156,12 @@ class Main:
     def run_simulation(self) -> None:
         while self.running and (self.n_ticks < self.max_ticks or self.max_ticks < 0):
             self.tick()
-
+        # print(self.n_ticks)
+        if self.n_ticks >= self.max_ticks:
+            self.logger.log(SimStopReason("max_ticks"))
+        else:
+            print("Simulation stopped")
+            self.logger.log(SimStopReason("no_players_left"))
         if not self.headless:
             self.save_logs("log.json")
 
@@ -165,6 +171,8 @@ class Main:
 
     def tick(self) -> None:
         self.n_ticks += 1
+        self.logger.tick()
+
         if not self.headless:
             dt = self.clock.tick(Globals.FPS) / 1000
         else:
@@ -296,6 +304,7 @@ class Main:
 
         if len(self.tile_manager.players) == 0:
             self.running = False
+            Globals.MAIN.logger.log(SimStopReason("no_players_left"))
 
     def handle_cams(self, dt_mili, inputs, keys, mouse_keys):
         if mouse_keys[2] and dt_mili - self.cooldowns["cam_switch"] >= 0:
@@ -364,7 +373,7 @@ class Main:
             ):
                 if player.is_colliding(pu):
                     self.tile_manager.remove_entity(pu)
-                    player.remove_pickup_from_memory(self.tile_manager, pu)
+                    player.remove_pickup_from_memory(pu)
                     if pu.pickup_type == 0 or pu.pickup_type == 1:
                         player.health = min(
                             (player.health + pu.picked_up()),

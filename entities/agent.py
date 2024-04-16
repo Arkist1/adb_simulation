@@ -2,7 +2,7 @@ from .gun import Gun
 from .sword import Sword
 from .vision_cone import VisionCone
 from .sound_circle import SoundCircle
-from utils import Globals, Object, dist
+from utils import Globals, Object, dist, angle_to_direction
 from utils.logger import AgentDetection
 import utils
 import math
@@ -76,7 +76,14 @@ class Agent(Object):
         self.is_crouching = False
         self.is_running = False
 
-        self.cd = {"stamina_regen": 0, "food": 0, "stamina_wait": 0, "fleeing": 0}
+        self.cd = {
+            "stamina_regen": 0,
+            "food": 0,
+            "stamina_wait": 0,
+            "stuck": 0,
+            "unstuck": 0,
+            "fleeing": 0,
+        }
 
         self.is_moving = False
 
@@ -114,6 +121,10 @@ class Agent(Object):
         # simpleton code
         self.simpleton_last_move = True
 
+        # unstuck vars
+        self.unstuck_angle = None
+        self.last_pos = 0
+
     def memory(self, tilemanager, pickups):
         curr_tile = tilemanager.get_tile(
             self.current_tilemap_tile
@@ -133,7 +144,7 @@ class Agent(Object):
 
         self.current_tile = curr_tile
 
-    def remove_pickup_from_memory(self, tilemanager, pu):
+    def remove_pickup_from_memory(self, pu):
         for tile, pickups in self.tile_dict.items():
             if pu in pickups:
                 self.tile_dict[tile].remove(pu)
@@ -195,15 +206,16 @@ class Agent(Object):
             target = None
             hit = False
             for entity in mortals:
-                
-                if self.weapon.hit(entity) and not self.weapon.did_damage: 
+
+                if self.weapon.hit(entity) and not self.weapon.did_damage:
                     # change for normal battle
                     # entity.health -= self.weapon.damage
 
                     target = entity
                     hit = True
-            if hit:
-                self.battle_init(target, mortals)   
+
+            if hit and type(target) != type(self):
+                self.battle_init(target, mortals)
             self.weapon.did_damage = True
 
     def standing(self):
@@ -234,6 +246,7 @@ class Agent(Object):
 
     def get_agent_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         action_taken = False
+
         if self.vision_detections and not action_taken:
             action_taken = True
         action_taken = False
@@ -290,20 +303,45 @@ class Agent(Object):
             else:
                 self.state = "flee"
                 self.flee(inputs, entities, self.chasing_enemies)
+
         if self.cd["fleeing"] > 0:
             self.flee(inputs, entities, None)
             action_taken = True
-        if not action_taken:
-            if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
-                self.state = "low_health"
-                self.low_health(inputs, entities)
-            elif self.food < (self.max_food * 0.3) and self.has_food_pickup():
-                self.state = "low_food"
-                self.low_food(inputs, entities)
+        if not action_taken:  # stucky states
+            if self.cd["unstuck"] > 0:
+                self.remove_pickup_from_memory(self.target_pickup)
+                self.state = "unstuck"
+                self.poi = None
+                self.unstuck(inputs, entities)
             else:
-                self.state = "explore"
-                self.explore(inputs, entities)
+                last_state = self.state
+                if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
+                    self.state = "low_health"
+                    self.low_health(inputs, entities)
+                elif self.food < (self.max_food * 0.3) and self.has_food_pickup():
+                    self.state = "low_food"
+                    self.low_food(inputs, entities)
+                else:
+                    self.state = "explore"
+                    self.explore(inputs, entities)
 
+                if last_state != self.state:
+                    self.cd["stuck"] = (random.random() + 1) * 1000 + 5000
+
+                elif self.cd["stuck"] <= 0:
+                    if self.last_pos:
+                        if (
+                            dist(self.last_pos, self.pos)
+                            <= self.speed * inputs["dt"] * Globals.SIM_SPEED / 5
+                        ):
+                            if not self.state == "unstuck":
+                                self.cd["unstuck"] = 1000
+                                self.unstuck_angle = int(random.random() * 360) - 180
+
+                        else:
+                            self.cd["stuck"] = (random.random() + 1) * 1000 + 5000
+
+        self.last_pos = self.pos.copy()
         self.chasing_enemies = set()
         # self.get_random_move(inputs, entities)
 
@@ -472,11 +510,12 @@ class Agent(Object):
             self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
         # print(self.target_pickup, self.poi)
-        if dist(self.pos, self.poi) > 5:
-            s = self.speed * inputs["dt"] * Globals.SIM_SPEED
-            vec = self.poi - self.pos
-            vec = vec.normalize() * s
-            self.move(vec, entities)
+        if self.poi:
+            if dist(self.pos, self.poi) > 5:
+                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+                vec = self.poi - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
 
     def low_food(self, inputs, entities):
         self.walk()
@@ -485,7 +524,7 @@ class Agent(Object):
             self.target_pickup = None
             closest_dist = 0
 
-            for tile, pickups in self.tile_dict.items():
+            for _, pickups in self.tile_dict.items():
                 for pickup in pickups:
                     if pickup.pickup_type >= 2:
                         if (
@@ -498,11 +537,19 @@ class Agent(Object):
             self.poi = self.target_pickup.pos.copy()
             self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
-        if dist(self.pos, self.poi) > 5:
-            s = self.speed * inputs["dt"] * Globals.SIM_SPEED
-            vec = self.poi - self.pos
-            vec = vec.normalize() * s
-            self.move(vec, entities)
+        if self.poi:
+            if dist(self.pos, self.poi) > 5:
+                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+                vec = self.poi - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
+
+    def unstuck(self, inputs, entities):
+        s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+        vec = angle_to_direction(math.radians(self.unstuck_angle)) * s
+        # print(vec)
+        self.vision_cone.rotation = self.unstuck_angle
+        self.move(vec, entities)
 
     def has_health_pickup(self):
         for _, pickups in self.tile_dict.items():
@@ -644,8 +691,8 @@ class Agent(Object):
         elif self.battle_type == "copycat":
             if other_move:
                 choice = other_move
-        
-        elif self.battle_type == "copykitten": # meow :3
+
+        elif self.battle_type == "copykitten":  # meow :3
             if not other_move:
                 self.kitten_cheat += 1
             else:
@@ -661,28 +708,29 @@ class Agent(Object):
                 choice = not self.simpleton_last_move
 
         elif self.battle_type == "random":
-            choice = True if random.random > .5 else False
+            choice = True if random.random() > 0.5 else False
 
         elif self.battle_type == "grudger":
             if False in self.agents_history[other_agent]:
                 choice = False
 
         elif self.battle_type == "detective":
-            if not other_move:
+            if other_agent not in self.detective_history:
                 self.detective_history[other_agent] = []
-            
+
             if not len(self.detective_history[other_agent]) < 4:
-                choice = self.detective_sequence[len(self.detective_history[other_agent])]
+                choice = self.detective_sequence[
+                    len(self.detective_history[other_agent])
+                ]
             else:
                 if False not in self.detective_history[other_agent]:
                     choice = False
                 else:
                     choice = other_move
-                    
 
         if random.random() < self.miss_chance:
             choice = not choice
-        
+
         self.simpleton_last_move = choice
         return choice
 
@@ -806,16 +854,16 @@ class Agent(Object):
 
     def hear(self, entity):
         return entity.sound_circle.sound_range > utils.dist(self.pos, entity.pos)
-    
+
     def battle_init(self, target, mortals):
         self_team = self.help(mortals)
         enemy_team = target.help(mortals)
         battle = utils.Battle(self_team, enemy_team)
         battle.run_battle()
         battle_sum = utils.BattleSummary(battle)
-        print(battle_sum)
+        # print(battle_sum)
         return
-    
+
     def ambush(self, target, mortals):
         self_team = target.help(mortals)
         enemy_team = self.help(mortals)
@@ -824,13 +872,17 @@ class Agent(Object):
         battle_sum = utils.BattleSummary(battle)
         print(battle_sum)
         return
-    
+   
     def help(self, mortals):
         team = [self]
-        
+
         for entity in mortals:
-            
-            if 1000 > utils.dist(self.pos, entity.pos) and entity != self and type(self) == type(entity):
+
+            if (
+                1000 > utils.dist(self.pos, entity.pos)
+                and entity != self
+                and type(self) == type(entity)
+            ):
                 team.append(entity)
                 return team
         return team
@@ -858,5 +910,6 @@ class Agent(Object):
             "Searched_tiles_amt": len(self.searched_tiles),
             "Curr_tilemap_tile": self.current_tilemap_tile,
             "Poi": self.poi,
+            "Stuck_timer": self.cd["stuck"],
             "Lifetime": self.lifetime,
         }
