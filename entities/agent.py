@@ -76,7 +76,7 @@ class Agent(Object):
         self.is_crouching = False
         self.is_running = False
 
-        self.cd = {"stamina_regen": 0, "food": 0, "stamina_wait": 0}
+        self.cd = {"stamina_regen": 0, "food": 0, "stamina_wait": 0, "fleeing": 0}
 
         self.is_moving = False
 
@@ -90,6 +90,9 @@ class Agent(Object):
         self.tile_pickups = set()
         self.current_tile = None
         self.state = "explore"
+
+        self.flee_angle = None
+        self.flee_cd = 1500
 
         self.chasing_enemies = set()
         self.target_pickup = None
@@ -233,6 +236,11 @@ class Agent(Object):
         action_taken = False
         if self.vision_detections and not action_taken:
             action_taken = True
+        action_taken = False
+
+        
+        if self.vision_detections and not action_taken:
+            action_taken = True
             closest_enemy = None
             closest_dist = 0
             for en in self.vision_detections:
@@ -282,7 +290,9 @@ class Agent(Object):
             else:
                 self.state = "flee"
                 self.flee(inputs, entities, self.chasing_enemies)
-
+        if self.cd["fleeing"] > 0:
+            self.flee(inputs, entities, None)
+            action_taken = True
         if not action_taken:
             if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
                 self.state = "low_health"
@@ -411,25 +421,34 @@ class Agent(Object):
         self.vision_cone.rotation = vec.angle_to([0, 0])
 
     def flee(self, inputs, entities, chasing_enemies):
+        self.target_pickup = None
+        self.poi = None
+        if self.cd["fleeing"] > 0:
+            self.walk()
+            self.vision_cone.rotation = self.flee_angle.angle_to([0, 0])
+            self.move((self.flee_angle * self.speed * inputs["dt"] * Globals.SIM_SPEED), entities)
+            return
         if self.stamina >= 25 and self.cd["stamina_wait"] <= 0:
             self.sprint()
         else:
             self.wait_for_stamina = 5000
             self.walk()
-        self.target_pickup = None
-        self.poi = None
+        
+        
+        
         # calculating best angle to flee at
-        angle = pygame.Vector2([0, 0])
+        self.flee_angle = pygame.Vector2([0, 0])
         for en in chasing_enemies:
-            angle += utils.angle_to_direction(
+            self.flee_angle += utils.angle_to_direction(
                 math.radians(utils.angle_to(self.pos, en.pos))
             )
 
-        angle = angle / len(chasing_enemies) + pygame.Vector2(
+        self.flee_angle = self.flee_angle / len(chasing_enemies) + pygame.Vector2(
             random.random() / 5, random.random() / 5
         )
-        self.vision_cone.rotation = angle.angle_to([0, 0])
-        self.move((angle * self.speed * inputs["dt"] * Globals.SIM_SPEED), entities)
+        self.vision_cone.rotation = self.flee_angle.angle_to([0, 0])
+        self.move((self.flee_angle * self.speed * inputs["dt"] * Globals.SIM_SPEED), entities)
+        self.cd["fleeing"] = self.flee_cd
 
     def low_health(self, inputs, entities):
         self.walk()
@@ -791,6 +810,15 @@ class Agent(Object):
     def battle_init(self, target, mortals):
         self_team = self.help(mortals)
         enemy_team = target.help(mortals)
+        battle = utils.Battle(self_team, enemy_team)
+        battle.run_battle()
+        battle_sum = utils.BattleSummary(battle)
+        print(battle_sum)
+        return
+    
+    def ambush(self, target, mortals):
+        self_team = target.help(mortals)
+        enemy_team = self.help(mortals)
         battle = utils.Battle(self_team, enemy_team)
         battle.run_battle()
         battle_sum = utils.BattleSummary(battle)
