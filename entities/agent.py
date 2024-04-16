@@ -339,7 +339,7 @@ class Agent(Object):
                                 self.unstuck_angle = int(random.random() * 360) - 180
 
                         else:
-                            self.cd["stuck"] = (random.random() + 1) * 1000 + 5000
+                            self.cd["stuck"] = (random.random() + 1) * 1000 + 4000
 
         self.last_pos = self.pos.copy()
         self.chasing_enemies = set()
