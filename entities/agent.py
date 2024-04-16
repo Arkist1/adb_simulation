@@ -2,7 +2,7 @@ from .gun import Gun
 from .sword import Sword
 from .vision_cone import VisionCone
 from .sound_circle import SoundCircle
-from utils import Globals, Object, dist
+from utils import Globals, Object, dist, angle_to_direction
 from utils.logger import AgentDetection
 import utils
 import math
@@ -76,7 +76,13 @@ class Agent(Object):
         self.is_crouching = False
         self.is_running = False
 
-        self.cd = {"stamina_regen": 0, "food": 0, "stamina_wait": 0}
+        self.cd = {
+            "stamina_regen": 0,
+            "food": 0,
+            "stamina_wait": 0,
+            "stuck": 0,
+            "unstuck": 0,
+        }
 
         self.is_moving = False
 
@@ -110,6 +116,10 @@ class Agent(Object):
 
         # simpleton code
         self.simpleton_last_move = True
+
+        # unstuck vars
+        self.unstuck_angle = None
+        self.last_pos = 0
 
     def memory(self, tilemanager, pickups):
         curr_tile = tilemanager.get_tile(
@@ -199,6 +209,7 @@ class Agent(Object):
 
                     target = entity
                     hit = True
+
             if hit and type(target) != type(self):
                 self.battle_init(target, mortals)
             self.weapon.did_damage = True
@@ -283,17 +294,40 @@ class Agent(Object):
                 self.state = "flee"
                 self.flee(inputs, entities, self.chasing_enemies)
 
-        if not action_taken:
-            if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
-                self.state = "low_health"
-                self.low_health(inputs, entities)
-            elif self.food < (self.max_food * 0.3) and self.has_food_pickup():
-                self.state = "low_food"
-                self.low_food(inputs, entities)
-            else:
-                self.state = "explore"
-                self.explore(inputs, entities)
+        if not action_taken:  # stucky states
+            if self.cd["unstuck"] > 0:
+                self.state = "unstuck"
+                self.unstuck(inputs, entities)
 
+            else:
+                last_state = self.state
+                if self.health <= (self.max_health * 0.5) and self.has_health_pickup():
+                    self.state = "low_health"
+                    self.low_health(inputs, entities)
+                elif self.food < (self.max_food * 0.3) and self.has_food_pickup():
+                    self.state = "low_food"
+                    self.low_food(inputs, entities)
+                else:
+                    self.state = "explore"
+                    self.explore(inputs, entities)
+
+                if last_state != self.state:
+                    self.cd["stuck"] = (random.random() + 1) * 1000 + 5000
+
+                elif self.cd["stuck"] <= 0:
+                    if self.last_pos:
+                        if (
+                            dist(self.last_pos, self.pos)
+                            <= self.speed * inputs["dt"] * Globals.SIM_SPEED / 5
+                        ):
+                            if not self.state == "unstuck":
+                                self.cd["unstuck"] = 1000
+                                self.unstuck_angle = int(random.random() * 360) - 180
+
+                        else:
+                            self.cd["stuck"] = (random.random() + 1) * 1000 + 5000
+
+        self.last_pos = self.pos.copy()
         self.chasing_enemies = set()
         # self.get_random_move(inputs, entities)
 
@@ -484,6 +518,13 @@ class Agent(Object):
             vec = self.poi - self.pos
             vec = vec.normalize() * s
             self.move(vec, entities)
+
+    def unstuck(self, inputs, entities):
+        s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+        vec = angle_to_direction(math.radians(self.unstuck_angle)) * s
+        # print(vec)
+        self.vision_cone.rotation = self.unstuck_angle
+        self.move(vec, entities)
 
     def has_health_pickup(self):
         for _, pickups in self.tile_dict.items():
@@ -795,7 +836,7 @@ class Agent(Object):
         battle = utils.Battle(self_team, enemy_team)
         battle.run_battle()
         battle_sum = utils.BattleSummary(battle)
-        print(battle_sum)
+        # print(battle_sum)
         return
 
     def help(self, mortals):
@@ -835,5 +876,6 @@ class Agent(Object):
             "Searched_tiles_amt": len(self.searched_tiles),
             "Curr_tilemap_tile": self.current_tilemap_tile,
             "Poi": self.poi,
+            "Stuck_timer": self.cd["stuck"],
             "Lifetime": self.lifetime,
         }
