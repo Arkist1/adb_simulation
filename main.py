@@ -371,7 +371,7 @@ class Main:
             ):
                 if player.is_colliding(pu):
                     self.tile_manager.remove_entity(pu)
-                    player.remove_pickup_from_memory(self.tile_manager, pu)
+                    player.remove_pickup_from_memory(pu)
                     if pu.pickup_type == 0 or pu.pickup_type == 1:
                         player.health = min(
                             (player.health + pu.picked_up()),

@@ -140,7 +140,7 @@ class Agent(Object):
 
         self.current_tile = curr_tile
 
-    def remove_pickup_from_memory(self, tilemanager, pu):
+    def remove_pickup_from_memory(self, pu):
         for tile, pickups in self.tile_dict.items():
             if pu in pickups:
                 self.tile_dict[tile].remove(pu)
@@ -242,7 +242,7 @@ class Agent(Object):
 
     def get_agent_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         action_taken = False
-        
+
         if self.vision_detections and not action_taken:
             action_taken = True
             closest_enemy = None
@@ -324,7 +324,6 @@ class Agent(Object):
                             <= self.speed * inputs["dt"] * Globals.SIM_SPEED / 5
                         ):
                             if not self.state == "unstuck":
-                                if 
                                 self.cd["unstuck"] = 1000
                                 self.unstuck_angle = int(random.random() * 360) - 180
 
@@ -491,11 +490,12 @@ class Agent(Object):
             self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
         # print(self.target_pickup, self.poi)
-        if dist(self.pos, self.poi) > 5:
-            s = self.speed * inputs["dt"] * Globals.SIM_SPEED
-            vec = self.poi - self.pos
-            vec = vec.normalize() * s
-            self.move(vec, entities)
+        if self.poi:
+            if dist(self.pos, self.poi) > 5:
+                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+                vec = self.poi - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
 
     def low_food(self, inputs, entities):
         self.walk()
@@ -504,7 +504,7 @@ class Agent(Object):
             self.target_pickup = None
             closest_dist = 0
 
-            for tile, pickups in self.tile_dict.items():
+            for _, pickups in self.tile_dict.items():
                 for pickup in pickups:
                     if pickup.pickup_type >= 2:
                         if (
@@ -517,11 +517,12 @@ class Agent(Object):
             self.poi = self.target_pickup.pos.copy()
             self.vision_cone.rotation = utils.angle_to(self.poi, self.pos)
 
-        if dist(self.pos, self.poi) > 5:
-            s = self.speed * inputs["dt"] * Globals.SIM_SPEED
-            vec = self.poi - self.pos
-            vec = vec.normalize() * s
-            self.move(vec, entities)
+        if self.poi:
+            if dist(self.pos, self.poi) > 5:
+                s = self.speed * inputs["dt"] * Globals.SIM_SPEED
+                vec = self.poi - self.pos
+                vec = vec.normalize() * s
+                self.move(vec, entities)
 
     def unstuck(self, inputs, entities):
         s = self.speed * inputs["dt"] * Globals.SIM_SPEED
