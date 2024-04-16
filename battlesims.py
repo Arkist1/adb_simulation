@@ -40,10 +40,10 @@ for r in range(2, 9):
 #     battles.extend(combinations_with_replacement(agent_types, r))
 
 SIM_AMOUNT = len(battles)
-CPU_CORES = 24
+CPU_CORES = 16
 MAX_TICKS = 10_000
-START = 200
-NUM_SIMS = 100
+START = 2000
+NUM_SIMS = 2000
 
 RUN_HEADLESS = True
 
@@ -108,6 +108,7 @@ if __name__ == "__main__":
     os.makedirs(RESULTS_FOLDER + folder)
 
     CONFIG = {
+        "STARTS_FROM": START,
         "RUN_AMOUNT": NUM_SIMS,
         "CORE_AMOUNT": CPU_CORES,
         "MAX_TICKS": MAX_TICKS,
