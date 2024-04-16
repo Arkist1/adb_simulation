@@ -242,6 +242,7 @@ class Agent(Object):
 
     def get_agent_move(self, inputs: dict[str, bool], entities) -> pygame.Vector2:
         action_taken = False
+        
         if self.vision_detections and not action_taken:
             action_taken = True
             closest_enemy = None
@@ -296,7 +297,9 @@ class Agent(Object):
 
         if not action_taken:  # stucky states
             if self.cd["unstuck"] > 0:
+                self.remove_pickup_from_memory(self.target_pickup)
                 self.state = "unstuck"
+                self.poi = None
                 self.unstuck(inputs, entities)
 
             else:
@@ -321,6 +324,7 @@ class Agent(Object):
                             <= self.speed * inputs["dt"] * Globals.SIM_SPEED / 5
                         ):
                             if not self.state == "unstuck":
+                                if 
                                 self.cd["unstuck"] = 1000
                                 self.unstuck_angle = int(random.random() * 360) - 180
 
