@@ -651,6 +651,7 @@ class Agent(Object):
         self.health = max(0, self.health)
 
     def do_battle(self, battle_summary):
+        other_move = None
         for agent, move in battle_summary.agent_history.items():
             if agent is not self:
                 other_move = move
@@ -773,9 +774,10 @@ class Agent(Object):
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
             ):
                 self.vision_detections.append(entity)
-                Globals.MAIN.logger.log(
-                    AgentDetection("vision", self.__hash__(), entity.__hash__())
-                )
+                if "xander's ballencode" == "goed":
+                    Globals.MAIN.logger.log(
+                        AgentDetection("vision", self.__hash__(), entity.__hash__())
+                    )
 
         # tile = tilemanager(self.pos)
         for entity in tilemanager.get_adjacent_pickups(
@@ -785,9 +787,10 @@ class Agent(Object):
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
             ):
                 self.pickup_detections.append(entity)
-                Globals.MAIN.logger.log(
-                    AgentDetection("pickup", self.__hash__(), entity.__hash__())
-                )
+                if "xander's ballencode" == "goed":
+                    Globals.MAIN.logger.log(
+                        AgentDetection("pickup", self.__hash__(), entity.__hash__())
+                    )
 
         self.memory(tilemanager, self.pickup_detections)
         # print(self.pickup_detections)

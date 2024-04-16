@@ -152,15 +152,17 @@ class Enemy(Agent):
                 entity, tilemanager.get_tile(self.current_tilemap_tile).walls
             ):
                 visions.append(entity)
-                Globals.MAIN.logger.log(
-                    EnemyDetection("vision", self.__hash__(), entity.__hash__())
-                )
+                if "xander's ballencode" == "goed":
+                    Globals.MAIN.logger.log(
+                        EnemyDetection("vision", self.__hash__(), entity.__hash__())
+                    )
 
             if self.hear(entity):
                 sounds.append(entity)
-                Globals.MAIN.logger.log(
-                    EnemyDetection("sound", self.__hash__(), entity.__hash__())
-                )
+                if "xander's ballencode" == "goed":
+                    Globals.MAIN.logger.log(
+                        EnemyDetection("sound", self.__hash__(), entity.__hash__())
+                    )
                 # print("sound")
             # if (entity.radius + self.radius + 10) > utils.dist(
             #     self.pos, entity.pos

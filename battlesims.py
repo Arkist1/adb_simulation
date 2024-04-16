@@ -7,6 +7,7 @@ import json
 import os
 import pygame
 import dotenv
+import time
 
 dotenv.load_dotenv()
 
@@ -25,22 +26,24 @@ agent_types = [
 
 # enable 1 of these. Comment out the other two
 # simpel combinations (255) runs
-for r in range(2, 9):
-    battles.extend(combinations(agent_types, r))
+# for r in range(2, 9):
+#     battles.extend(combinations(agent_types, r))
 
 # print(battles)
 
 # complex combinations (12861) runs
-# for r in range(2, 9):
-#     battles.extend(combinations_with_replacement(agent_types, r))
+for r in range(2, 9):
+    battles.extend(combinations_with_replacement(agent_types, r))
 
 # test combinations
 # for r in range(2, 3):
 #     battles.extend(combinations_with_replacement(agent_types, r))
 
 SIM_AMOUNT = len(battles)
-CPU_CORES = 12
-MAX_TICKS = 10000
+CPU_CORES = 24
+MAX_TICKS = 10_000
+START = 200
+NUM_SIMS = 100
 
 RUN_HEADLESS = True
 
@@ -105,12 +108,17 @@ if __name__ == "__main__":
     os.makedirs(RESULTS_FOLDER + folder)
 
     CONFIG = {
-        "RUN_AMOUNT": SIM_AMOUNT,
+        "RUN_AMOUNT": NUM_SIMS,
         "CORE_AMOUNT": CPU_CORES,
         "MAX_TICKS": MAX_TICKS,
-        "BATTLE_COMBINATIONS": battles, # display all combinations in config file
+        "BATTLE_COMBINATIONS": battles,  # display all combinations in config file
     }
     json.dump(CONFIG, open(RESULTS_FOLDER + f"{folder}/" + "config.json", "w"))
 
+    t1 = time.time()
     with mp.Pool(CPU_CORES) as p:
-        p.map(run_main, zip(range(SIM_AMOUNT), [folder] * SIM_AMOUNT))
+        p.map(run_main, zip(range(START, START + NUM_SIMS), [folder] * NUM_SIMS))
+
+    t2 = time.time()
+
+    print("running all simulations took:", t2 - t1, "ms")
