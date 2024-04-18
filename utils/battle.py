@@ -16,10 +16,10 @@ class Battle:
             and sum([player.health for player in self.agents]) > 0
         ):
             self.one_round()
-        for agent in self.agents:
-            Globals.MAIN.logger.log(
-                AgentHealthUpdate(agent.__hash__(), agent.health, agent.battle_type)
-            )
+        # for agent in self.agents:
+        # Globals.MAIN.logger.log(
+        #     AgentHealthUpdate(agent.__hash__(), agent.health, agent.battle_type)
+        # ) KYSSS
 
     def one_round(self):
         active_agents = []
