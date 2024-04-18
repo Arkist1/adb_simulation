@@ -40,12 +40,12 @@ for r in range(2, 9):
 #     battles.extend(combinations_with_replacement(agent_types, r))
 
 SIM_AMOUNT = len(battles)
-CPU_CORES = 16
+CPU_CORES = 4
 MAX_TICKS = 10_000
 START = 9000
 NUM_SIMS = 2000
 
-RUN_HEADLESS = True
+RUN_HEADLESS = False
 
 RESULTS_FOLDER = "Results/"
 

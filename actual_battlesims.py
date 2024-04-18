@@ -21,11 +21,11 @@ agent_types = [
 ]
 plt_dir = "Test_plots/"
 
-test_types = ["helper", "cheater"]
+test_types = ["helper", "grudger"]
 
 
-# battles.extend(combinations_with_replacement(agent_types, 2))
-battles = [test_types]
+battles.extend(combinations_with_replacement(agent_types, 2))
+# battles = agent_types  # [test_types]
 
 print(len(battles))
 
@@ -34,11 +34,11 @@ N_sims = 1000
 agent_hp = 100
 
 
-all_res = {agent: [] for agent in test_types}
+all_res = {agent: [] for agent in agent_types}
 
 for enemy_hp in range(25, 401, 25):
-
-    battle_results = {agent: [] for agent in test_types}
+    print(enemy_hp)
+    battle_results = {agent: [] for agent in agent_types}
     for _ in range(N_sims):
         for type1, type2 in battles:
             a1 = Agent(None, battle_type=type1, health=agent_hp)
@@ -71,9 +71,9 @@ for enemy_hp in range(25, 401, 25):
 
 # print(list(all_res.values()))
 # print(np.transpose(all_res.values()))
-plt.plot(np.transpose(list(all_res.values())))
+plt.plot(list(range(25, 401, 25)), np.transpose(list(all_res.values())))
 plt.legend(all_res.keys())
-plt.title("Helper en Cheater")
+plt.title("Traject alle types")
 plt.xlabel("Enemy hp")
 plt.ylabel("Agent hp")
-plt.savefig(plt_dir, dpi=450)
+plt.savefig(pt.join(plt_dir, "pic"), dpi=450)
