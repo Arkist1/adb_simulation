@@ -42,7 +42,7 @@ for r in range(2, 9):
 SIM_AMOUNT = len(battles)
 CPU_CORES = 16
 MAX_TICKS = 10_000
-START = 2000
+START = 9000
 NUM_SIMS = 2000
 
 RUN_HEADLESS = True
